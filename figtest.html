@@ -1,7 +1,0 @@
-<!doctype html><html><head><meta charset="utf-8"><style>
-:root{--bg:#34333F;--card:#2A2933;--line:#474656;--ink:#EEEDF5;--g2:#B256A8;--g3:#7A57D6;--g4:#5862DE;--fig-skin:#C98E6B;--fig-skin-far:#A8704F;--fig-hair:#2A1A1F;--fig-legs:#211C3A;--fig-legs-far:#17142B;--fig-shoe:#F4F2FA;--fig-shoe-far:#C9C5D8;--fig-sole:#F2A54A;--fig-iron:#9A97AC;--fig-iron-2:#6E6B80;--fig-band:#F2A54A;--fig-prop:#3D3C4A;--fig-prop-2:#4A4958;--fig-mat:#5862DE;--fig-floor:#302F3A}
-body{background:var(--bg);color:var(--ink);font:12px system-ui;margin:10px}.g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.c{background:var(--fig-floor);border-radius:10px;padding:4px;aspect-ratio:4/3;position:relative}.c svg{position:absolute;inset:16px 0 0 0;width:100%;height:calc(100% - 16px)}
-</style></head><body><div class="g" id="g"></div><script src="figure.js"></script><script>
-const only=['piri','catcow','thread','wallangel','doorway','hipflexor','kneewall','squathold','hamfloss','calfraise'];
-let h='';for(const k of only){const p=POSES[k];h+=`<div class="c">${k} A${FIG.svg(p.a,p)}</div><div class="c">${k} B${FIG.svg(p.b,p)}</div>`}
-document.getElementById('g').innerHTML=h;</script></body></html>
