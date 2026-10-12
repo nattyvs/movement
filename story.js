@@ -2,8 +2,14 @@
 /* THE LONG CARRY — an original serial. Scenes unlock with training sessions; ledger pages unlock with hip and mobility days. */
 const STORY = {
   title: 'The Long Carry',
+  /* A book is a whole story with an ending. Scenes and ledger pages are numbered across all books. */
+  books: [
+    {title:'The Long Carry', notebook:'The satchel', from:0, to:51}
+  ],
+  /* Scenes from..to unlock with training sessions. Ledger pages notes[0]..notes[1] unlock with hip and
+     mobility days, counted from the session that opened the chapter, so the pages keep pace with the story. */
   chapters: [
-    {n:1, title:'Hollowmere', from:0, to:12}
+    {n:1, title:'Hollowmere', from:0, to:12, notes:[0,19]}
   ],
   scenes: [
     {title:'The Offer', text:[
@@ -206,17 +212,77 @@ const STORY = {
     ]}
   ],
   notes: [
-    {title:'Ledger, page 1', text:'Supplies: rope, 40 ft. Lamp oil, two flasks. Biscuit, ten days if Pell stops eating it at night (he will not). Box: one. Contents: unknown. Temperature: warm, like bread. Do not let it get cold. Underlined twice by me, three times by Tibbet.'},
-    {title:'Ledger, page 2', text:'Hal does four stretches morning and night. Ankle over knee, both sides. Knee to chest. A long reach. He says it is not vanity, it is maintenance. Note: the days he skips, he limps by noon. The days he does them, he carries his turn.'},
-    {title:'Ledger, page 3', text:'Corvane\'s purse: one hundred crowns each, in new coin, all minted the same week at Saltglass. Tibbet bit one and declared it real, then looked disappointed. Question: who has new coin from Saltglass in a marsh town that trades in eels?'},
-    {title:'Ledger, page 4', text:'The box hums lower when we turn away from the north-east. I have tested this six times. Pell says it is homesick. Amos says nothing, which is how I know Pell is right.'},
-    {title:'Ledger, page 5', text:'Grey cloaks: no badges, good boots, Margrave\'s silver. Tithe-men usually collect grain. These collect nothing. They are looking for one thing. Map margin, in Pell\'s hand: a very bad drawing of a tithe-man with a turnip for a head.'},
-    {title:'Ledger, page 6', text:'Amos knows nine songs with no words. He sings the low one when the box is cold and the high one when it is restless. Tonight he sang a third I had not heard. The box went silent, the way a room goes silent when someone important walks in.'},
-    {title:'Ledger, page 7', text:'Debt column, revised. Hal: bought. Tibbet: bought. Amos: bought. Pell\'s aunt: bought. Me: bought. Signature: C. The flourish on the C is Tibbet\'s work. He says he taught it to a client once. He will not say which one.'},
-    {title:'Ledger, page 8', text:'Rule for the company, agreed by all five after the cold night: nobody carries alone, nobody watches alone, nobody goes into the water alone. Tibbet asked to add "nobody sings badly". Overruled.'},
-    {title:'Ledger, page 9', text:'Thornwick Pass, eleven years ago. Hal\'s cart. Iron box. Nine dead. I have the quartermaster rolls for that year in my head. The escort was paid by a house that does not exist. Tower and three stars.'},
-    {title:'Ledger, page 10', text:'Pell asked me today what I owe. I told him it was none of his business. He said that was what people say when it is a lot. He is fifteen and annoying and correct.'},
-    {title:'Ledger, page 11', text:'The arrow at the Gate was fletched with grey goose and bound with blue thread. Hollowmere fletchers use black. Lantern Wood fletchers use green. Blue thread means somewhere else entirely. I do not like somewhere else entirely.'},
-    {title:'Ledger, page 12', text:'End of the marsh. Five of us, one box, all still breathing. Hal\'s knee: holding. Tibbet\'s coat: deceased. Amos: still not a priest. Pell: still talking. Me: still counting. The box: warm.'}
+    {kind:'ledger', after:0, title:'Ledger, page 1', text:'Supplies: rope, 40 ft. Lamp oil, two flasks. Biscuit, ten days if Pell stops eating it at night (he will not). Box: one. Contents: unknown. Temperature: warm, like bread. Do not let it get cold. Underlined twice by me, three times by Tibbet.'},
+    {kind:'who', after:1, title:'Hal Pike', text:[
+      'Kesh keeps files on people. Old habit from the quartermaster\'s office. Nobody has asked to see theirs yet.',
+      'Age: fifty-one, he says, in the voice of a man daring you to argue. Trade: soldier, thirty years. Retired, he says. The way he sits with his back to the wall says otherwise.',
+      'Build: like a barn door. Beard going grey from the chin up. Left knee stiff, stuck straight out under the table. Walks on it anyway. Does not like being asked about it.',
+      'Habits: counts the exits when he enters a room. Reads bad news the way other men read a bill. Eats slowly, as if food might be taken away.',
+      'Use: if it comes to a fight, stand behind him.',
+      'Risk: if it comes to a run, he can\'t.']},
+    {kind:'ledger', after:1, title:'Ledger, page 2', text:'Corvane\'s purse: one hundred crowns each, in new coin, all minted the same week at Saltglass. Tibbet bit one and declared it real, then looked disappointed. Question: who has new coin from Saltglass in a marsh town that trades in eels?'},
+    {kind:'who', after:1, title:'Tibbet Sorrel', text:[
+      'Trade: "documents". A forger, then. He corrected me to "artist". I corrected him back.',
+      'Hands: the cleanest in Hollowmere. Polishes his nails on his sleeve when he is nervous, which is always.',
+      'Coat: dove grey, silver buttons, worth more than my year\'s wages. He looks at mud the way priests look at sin.',
+      'Talks constantly, beautifully, and mostly about money. When he lies he gets more precise. Watch for numbers with decimal places.',
+      'Use: can make any paper say anything.',
+      'Risk: so can anyone who pays him more.',
+      'Underneath, in Pell\'s hand: HE SMELLS OF LAVENDER.']},
+    {kind:'sketch', after:1, title:'What Is In The Box', text:[
+      'A charcoal drawing on the back of a biscuit wrapper. The box, cut open like a loaf. Inside, a saint\'s head wearing a crown and looking deeply annoyed.',
+      'Arrows point to its features. "Holy glow." "Very old teeth." "Probably cross about being in a box."',
+      'Underneath, smaller, in different charcoal: "or a ham".',
+      'Under that, in Tibbet\'s neat copperplate: "It is not a ham."',
+      'Under that, Pell again, pressing so hard the wrapper tore: "YOU DON\'T KNOW THAT."']},
+    {kind:'ledger', after:3, title:'Ledger, page 3', text:'The box hums lower when we turn away from the north-east. I have tested this six times. Pell says it is homesick. Amos says nothing, which is how I know Pell is right.'},
+    {kind:'who', after:3, title:'Pell', text:[
+      'Age: fifteen. Has told me so four times, as if it were a qualification.',
+      'Home: an eel stall in Hollowmere, run by an aunt he talks about like weather. Constant, unavoidable, fond.',
+      'Knows: one path to his aunt\'s, where the good eels are, and about forty songs, none of them clean. Does not know: the marsh. Has said otherwise. Often.',
+      'Questions asked on the first day: thirty-one. I stopped counting at noon.',
+      'Parents: he says "gone" and changes the subject, which for Pell is the loudest thing he does.',
+      'Use: notices things grown men walk past. Climbs anything.',
+      'Risk: he will follow you anywhere, and he will not stop to ask whether he should.']},
+    {kind:'ledger', after:4, title:'Ledger, page 4', text:'Hal does four stretches morning and night. Ankle over knee, both sides. Knee to chest. A long reach. He says it is not vanity, it is maintenance. Note: the days he skips, he limps by noon. The days he does them, he carries his turn.'},
+    {kind:'ledger', after:5, title:'Ledger, page 5', text:'Grey cloaks: no badges, good boots, Margrave\'s silver. Tithe-men usually collect grain. These collect nothing. They are looking for one thing. Map margin, in Pell\'s hand: a very bad drawing of a tithe-man with a turnip for a head.'},
+    {kind:'ledger', after:6, title:'Ledger, page 6', text:'Debt column, revised. Hal: bought. Tibbet: bought. Amos: bought. Pell\'s aunt: bought. Me: bought. Signature: C. The flourish on the C is Tibbet\'s work. He says he taught it to a client once. He will not say which one.'},
+    {kind:'ledger', after:6, title:'Ledger, page 7', text:'Pell asked me today what I owe. I told him it was none of his business. He said that was what people say when it is a lot. He is fifteen and annoying and correct.'},
+    {kind:'who', after:6, title:'Mistress Corvane', text:[
+      'Name: not Corvane. Nobody answers to a name that quickly.',
+      'Age: hard to say. Forty, fifty. Grey at the temples, dyed elsewhere. Plain clothes, expensive cloth. Riding boots, resoled twice.',
+      'Stood through the whole meeting. Never sat, never leant, never shifted her weight. Either a soldier or in pain. Possibly both.',
+      'Money: new coin, Saltglass mint, a great deal of it. Signature: C., with a flourish that took practice.',
+      'Knew all our names before we gave them. Knew more than our names.',
+      'What she wants: the box delivered warm. What she wants after that: not stated. People who don\'t state it have usually thought about it the most.']},
+    {kind:'who', after:7, title:'Brother Amos', text:[
+      'Habit: brown, patched, a rope for a belt. Smells of brandy and candle wax in roughly equal parts.',
+      'Prayers: long and rolling, in a language nobody recognises. Possibly holy. Possibly a list of cheeses.',
+      'Bows to the north wall. Priests bow east. Says he is a priest of something. Will not say what.',
+      'Drinks in the evenings and stops before he is drunk, which is harder than drinking or not drinking. A man holding a rope.',
+      'Sings to the box when he thinks we are asleep. No words. The box likes it.',
+      'Use: the box goes quiet for him.',
+      'Risk: somebody wanted him for exactly that, and paid for him.']},
+    {kind:'ledger', after:8, title:'Ledger, page 8', text:'Amos knows nine songs with no words. He sings the low one when the box is cold and the high one when it is restless. Tonight he sang a third I had not heard. The box went silent, the way a room goes silent when someone important walks in.'},
+    {kind:'ledger', after:8, title:'Ledger, page 9', text:'Rule for the company, agreed by all five after the cold night: nobody carries alone, nobody watches alone, nobody goes into the water alone. Tibbet asked to add "nobody sings badly". Overruled.'},
+    {kind:'who', after:9, title:'Kesh, by Pell', text:[
+      '(Found tucked in the back of the ledger. Not my handwriting. K.)',
+      'KESH. Boss, sort of. Says she isn\'t. Is.',
+      'Age: old (thirty?) (don\'t tell her I wrote thirty).',
+      'Writes EVERYTHING down. Wrote down how many biscuits I ate. Was correct.',
+      'Never says what she owes. Says it\'s not my business. That means it\'s a lot.',
+      'Smiles about twice a day. Once at Hal, once at the box. Never at Tibbet.',
+      'Can tell where the box wants to go. Pretends she can\'t.',
+      'Would carry it on her own if we let her. We don\'t let her. That\'s the rule.',
+      'Good at: counting, deciding, looking at people until they tell the truth. Bad at: sleeping, singing, eels.',
+      'P.']},
+    {kind:'map', after:11, title:'The Hollowmere crossing', text:[
+      'Kesh\'s copy of the marsh road, with additions by everyone.',
+      'West to east: the Drowned Lamp. The reed road on its stilts. The ferry crossing, five crowns, paid in Tibbet\'s best forgeries. The fork in the mist where the box chose right. Stillwater causeway and its toll-house, marked with a small turnip.',
+      'North edge: the Drowned Chapel, roof mostly a roof, dragons on the north wall. South: the bog, labelled in Tibbet\'s hand, HERE LIES A VERY GOOD COAT.',
+      'Far east, drawn in dark ink: an arch across the last causeway. The Ferryman\'s Gate. Past it the paper is blank except for one small tree in Pell\'s hand and the words "probably trees".']},
+    {kind:'ledger', after:10, title:'Ledger, page 10', text:'Thornwick Pass, eleven years ago. Hal\'s cart. Iron box. Nine dead. I have the quartermaster rolls for that year in my head. The escort was paid by a house that does not exist. Tower and three stars.'},
+    {kind:'ledger', after:12, title:'Ledger, page 11', text:'The arrow at the Gate was fletched with grey goose and bound with blue thread. Hollowmere fletchers use black. Lantern Wood fletchers use green. Blue thread means somewhere else entirely. I do not like somewhere else entirely.'},
+    {kind:'ledger', after:12, title:'Ledger, page 12', text:'End of the marsh. Five of us, one box, all still breathing. Hal\'s knee: holding. Tibbet\'s coat: deceased. Amos: still not a priest. Pell: still talking. Me: still counting. The box: warm.'}
   ]
 };

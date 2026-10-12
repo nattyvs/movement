@@ -264,8 +264,20 @@ const scenesOpen = () => Math.min(STORY.scenes.length, 1 + trainingTotal());
 const chapterOf = i => STORY.chapters.find(c=>i>=c.from && i<=c.to) || STORY.chapters[STORY.chapters.length-1];
 const sceneLabel = i => { const c = chapterOf(i); return i===0 ? 'Start' : String(c.from===0 ? i : i - c.from + 1); };
 const NUMW = ['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
-const notesOpen = () => Math.min(STORY.notes.length, sessions.filter(s=>s.kind==='hip'||s.kind==='mobility').length);
-const unread = () => { let n = 0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; for(let i=0;i<notesOpen();i++) if(!S.read['n'+i]) n++; return n; };
+const BOOKS = () => STORY.books || [{title:STORY.title, notebook:'Kesh’s ledger', from:0, to:1e9}];
+const bookOf = i => BOOKS().find(b=>i>=b.from && i<=b.to) || BOOKS()[BOOKS().length-1];
+// when did chapter c open? scene i opens after the i-th training session
+function chapterStart(c){ if(c.from===0) return 0; const tr = sessions.filter(x=>TRAINING.has(x.kind)).sort((a,b)=>a.ts-b.ts); return tr[c.from-1] ? tr[c.from-1].ts : Infinity; }
+function openNotes(){
+  const so = scenesOpen(), care = sessions.filter(x=>x.kind==='hip'||x.kind==='mobility'), out = [];
+  STORY.chapters.forEach(c=>{ if(!c.notes || c.from >= so) return; const st = chapterStart(c);
+    let left = care.filter(x=>x.ts>=st).length;
+    // in order; an extra waits until the scene it relates to is open, so nothing spoils the story
+    for(let j=c.notes[0]; j<=c.notes[1] && j<STORY.notes.length && left>0; j++){ if((STORY.notes[j].after||0) >= so) break; out.push(j); left--; } });
+  return out;
+}
+const notesOpen = () => openNotes().length;
+const unread = () => { let n = 0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; openNotes().forEach(i=>{ if(!S.read['n'+i]) n++; }); return n; };
 
 /* ================= Dragon lines and nudges ================= */
 const LINES = {
@@ -476,7 +488,7 @@ function save(){
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
-  const wkBefore = weekInfo(now,true), monthBefore = monthCount(mk), stageBefore = stage().index, scBefore = scenesOpen(), ntBefore = notesOpen();
+  const wkBefore = weekInfo(now,true), monthBefore = monthCount(mk), stageBefore = stage().index, scBefore = scenesOpen(), ntBefore = openNotes();
   let points = POINTS[kind] + ups.length*5, bonus = false;
   if(TRAINING.has(kind) && wkBefore.count+1 === wkBefore.target){ points += 25; bonus = true; }
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
@@ -486,7 +498,7 @@ function save(){
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
-  ui.last = {points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: notesOpen()>ntBefore ? notesOpen()-1 : -1};
+  ui.last = {points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
   touch(); render(); window.scrollTo(0,0);
 }
@@ -855,8 +867,8 @@ function celebrateHTML(){
     </section>
     <div class="say"><q>${dx(said)}</q><span class="by">${esc(S.dragon)}, ${st.name.toLowerCase()}</span></div>
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
-    ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">The Long Carry · tap to read, about two minutes</span></button>` : ''}
-    ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">Kesh’s ledger</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">A new page, tap to read</span></button>` : ''}
+    ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
+    ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -927,46 +939,61 @@ function realmHTML(){
 }
 
 /* ---------- Story ---------- */
+const KIND = {ledger:'Kesh’s ledger', who:'Who’s who', sketch:'Pell’s sketchbook', map:'Map', letter:'Letter', song:'Songbook', lore:'Lore'};
+const kindOf = n => KIND[n.kind||'ledger'] || 'From the satchel';
+const noteChapter = i => STORY.chapters.find(c=>c.notes && i>=c.notes[0] && i<=c.notes[1]);
+const noteBook = i => { const c = noteChapter(i); return bookOf(c ? c.from : 0); };
 function storyCardHTML(){
-  const so = scenesOpen(), no = notesOpen(), all = !!ui.storyAll, last = STORY.scenes.length - 1;
-  const cur = chapterOf(Math.min(so, last));
+  const so = scenesOpen(), all = !!ui.storyAll, last = STORY.scenes.length - 1;
+  const cur = chapterOf(Math.min(so, last)), book = bookOf(cur.from);
+  const finished = so > book.to || (so > last && cur.to >= book.to);
   const row = i => `<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${sceneLabel(i)}</span><span class="stt">${dx(STORY.scenes[i].title)}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`;
-  const locked = so <= last ? `<div class="strow locked"><span class="sn">${sceneLabel(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>`
-    : `<p class="muted" style="margin:10px 0 0;font-size:14px">You’re all caught up. Chapter ${NUMW[cur.n] || cur.n+1} is being written.</p>`;
+  let tail;
+  if(so <= last && so <= book.to) tail = `<div class="strow locked"><span class="sn">${sceneLabel(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>`;
+  else if(finished) tail = `<p class="theend">The end.</p><p class="muted" style="margin:0;font-size:14px;text-align:center">A new story is on its way. Keep training and it starts as soon as it’s written.</p>`;
+  else tail = `<p class="muted" style="margin:10px 0 0;font-size:14px">You’re all caught up. Chapter ${NUMW[cur.n] || cur.n+1} is being written.</p>`;
+  const chs = STORY.chapters.filter(c=>c.from>=book.from && c.to<=book.to);
   let rows = '', hidden = 0;
   if(all){
-    rows = STORY.chapters.filter(c=>c.from < so).map(c=>`<h3 class="chh">Chapter ${c.n}: ${esc(c.title)}</h3>` + Array.from({length:Math.min(c.to, so-1)-c.from+1},(_,k)=>row(c.from+k)).join('')).join('');
+    rows = chs.filter(c=>c.from < so).map(c=>`<h3 class="chh">Chapter ${c.n}: ${esc(c.title)}</h3>` + Array.from({length:Math.min(c.to, so-1)-c.from+1},(_,k)=>row(c.from+k)).join('')).join('');
   } else {
     for(let i=cur.from; i<Math.min(so, cur.to+1); i++){ if(i >= so-3 || !S.read['s'+i]) rows += row(i); else hidden++; }
-    hidden += STORY.chapters.filter(c=>c.to < cur.from).reduce((a,c)=>a + c.to - c.from + 1, 0);
+    hidden += chs.filter(c=>c.to < cur.from).reduce((a,c)=>a + c.to - c.from + 1, 0);
   }
-  rows += locked;
+  rows += tail;
   const excerpt = t => { const w = smart(t).split(/\s+/); return w.length>7 ? w.slice(0,7).join(' ').replace(/[.,;:—–-]+$/,'') + '…' : w.join(' '); };
-  const nOpen = STORY.notes.slice(0,no).map((n,i)=>({n,i}));
-  const nShown = all ? nOpen : nOpen.filter(x=>x.i >= no-2 || !S.read['n'+x.i]);
+  const nOpen = openNotes().filter(i=>{ const c = noteChapter(i); return c && c.from>=book.from && c.to<=book.to; });
+  const nShown = all ? nOpen : nOpen.filter((i,k)=>k >= nOpen.length-2 || !S.read['n'+i]);
   hidden += nOpen.length - nShown.length;
-  const notes = nShown.map(({n,i})=>`<button class="strow note" data-a="read" data-t="n" data-i="${i}"><span class="sn">p. ${i+1}</span><span class="stt">${esc(excerpt(n.text))}</span>${S.read['n'+i]?'':'<span class="new">New</span>'}</button>`).join('');
-  return `<section class="card story"><h2 class="ct">${esc(STORY.title)} <span class="aside">Chapter ${cur.n}: ${esc(cur.title)}</span></h2>
-    <p class="muted" style="margin:0 0 6px;font-size:14px">Every session unlocks a scene. Hip and mobility days add pages from Kesh’s ledger.</p>
+  const notes = nShown.map(i=>{ const n = STORY.notes[i], led = (n.kind||'ledger')==='ledger';
+    return `<button class="strow note${led?'':' doc'}" data-a="read" data-t="n" data-i="${i}"><span class="nmeta"><span class="nk">${esc(kindOf(n))}</span><span class="stt">${led ? esc(excerpt([].concat(n.text).join(' '))) : dx(n.title)}</span></span>${S.read['n'+i]?'':'<span class="new">New</span>'}</button>`; }).join('');
+  const capped = cur.notes && nOpen.filter(i=>noteChapter(i)===cur).length > cur.notes[1]-cur.notes[0];
+  return `<section class="card story"><h2 class="ct">${esc(book.title)} <span class="aside">Chapter ${cur.n}: ${esc(cur.title)}</span></h2>
+    <p class="muted" style="margin:0 0 6px;font-size:14px">Every session unlocks a scene. Hip and mobility days open something from the company’s satchel: ledger pages, who’s who, sketches, maps.</p>
     <div class="slist">${rows}</div>
-    ${no ? `<h3 class="ct" style="margin:16px 0 4px">Kesh’s ledger <span class="aside">${no} of ${STORY.notes.length}</span></h3><div class="slist">${notes}</div>` : `<p class="muted" style="margin:12px 0 0;font-size:14px">Kesh’s ledger opens with your next hip block.</p>`}
-    ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far (${Math.min(so, last+1)} scenes, ${no} pages)`}</button>` : ''}
+    ${nOpen.length ? `<h3 class="ct" style="margin:16px 0 4px">${esc(book.notebook)} <span class="aside">${nOpen.length} ${nOpen.length===1?'thing':'things'}</span></h3><div class="slist">${notes}</div>${capped && !finished ? `<p class="muted" style="margin:8px 0 0;font-size:13.5px">That’s everything in the satchel for now. More turns up as the story moves on.</p>` : ''}` : `<p class="muted" style="margin:12px 0 0;font-size:14px">The satchel opens with your next hip or mobility session.</p>`}
+    ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far`}</button>` : ''}
   </section>`;
 }
 function readHTML(){
   const {t, i} = ui.read; const isScene = t==='s';
   const item = isScene ? STORY.scenes[i] : STORY.notes[i];
   S.read[t+i] = 1; saveLocal(); queueSync();
-  const openN = isScene ? scenesOpen() : notesOpen();
-  const prev = i>0 ? `<button class="btn" data-a="read" data-t="${t}" data-i="${i-1}">Previous</button>` : '';
-  const next = i+1 < openN ? `<button class="btn primary" data-a="read" data-t="${t}" data-i="${i+1}">Next</button>`
-    : `<button class="btn" data-a="realmtab">${isScene ? (i+1 < STORY.scenes.length ? 'Next scene unlocks after your next session' : 'The next chapter is being written') : 'Back to the realm'}</button>`;
-  const body = isScene ? item.text.map(p=>`<p>${esc(smart(p))}</p>`).join('') : `<p>${esc(smart(item.text))}</p>`;
+  let prevI = -1, nextI = -1;
+  if(isScene){ const b = bookOf(i); if(i>b.from) prevI = i-1; if(i+1 < scenesOpen() && i+1 <= b.to) nextI = i+1; }
+  else { const on = openNotes(), k = on.indexOf(i); if(k>0) prevI = on[k-1]; if(k>=0 && k+1<on.length) nextI = on[k+1]; }
+  const isEnd = isScene && i === bookOf(i).to;
+  const prev = prevI>=0 ? `<button class="btn" data-a="read" data-t="${t}" data-i="${prevI}">Previous</button>` : '';
+  const next = nextI>=0 ? `<button class="btn primary" data-a="read" data-t="${t}" data-i="${nextI}">Next</button>`
+    : `<button class="btn" data-a="realmtab">${!isScene ? 'Back to the realm' : isEnd ? 'Back to the realm' : i+1 < STORY.scenes.length && i+1 <= bookOf(i).to ? 'Next scene unlocks after your next session' : 'The next chapter is being written'}</button>`;
+  const doc = !isScene && (item.kind||'ledger')!=='ledger';
+  const body = [].concat(item.text).map(p=>{ let h = esc(smart(p)); if(doc) h = h.replace(/^([A-Z][A-Za-z’ ]{1,18}):/, '<b>$1:</b>'); return `<p>${h}</p>`; }).join('');
+  const c = isScene ? chapterOf(i) : null;
   return `<div class="enter reader" style="display:grid;gap:14px">
     <button class="back" data-a="realmtab">${I.back}Realm</button>
-    <article class="page${isScene?'':' ledger'}"><h1 class="rt">${dx(item.title)}</h1>
-      <p class="rmeta">${isScene ? `Chapter ${chapterOf(i).n}: ${esc(chapterOf(i).title)} · ${i===0?'Prologue':'Scene '+sceneLabel(i)}` : `From Kesh’s ledger · page ${i+1}`}</p>
-      <div class="rbody">${body}</div></article>
+    <article class="page${isScene?'':' ledger'}${!isScene && (item.kind||'ledger')!=='ledger' ? ' doc' : ''}"><h1 class="rt">${dx(item.title)}</h1>
+      <p class="rmeta">${isScene ? `${esc(bookOf(i).title)} · Chapter ${c.n} · ${i===c.from && c.n===1 ? 'Prologue' : 'Scene '+sceneLabel(i)}` : esc(kindOf(item))}</p>
+      <div class="rbody">${body}</div>${isEnd ? `<p class="theend">The end.</p>` : ''}</article>
     <div style="display:flex;gap:10px;flex-wrap:wrap">${prev}${next}</div></div>`;
 }
 
