@@ -261,6 +261,9 @@ function mood(){ const d = daysSinceTraining(); if(d===null) return 'new'; if(d<
 
 /* ================= Story ================= */
 const scenesOpen = () => Math.min(STORY.scenes.length, 1 + trainingTotal());
+const chapterOf = i => STORY.chapters.find(c=>i>=c.from && i<=c.to) || STORY.chapters[STORY.chapters.length-1];
+const sceneLabel = i => { const c = chapterOf(i); return i===0 ? 'Start' : String(c.from===0 ? i : i - c.from + 1); };
+const NUMW = ['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
 const notesOpen = () => Math.min(STORY.notes.length, sessions.filter(s=>s.kind==='hip'||s.kind==='mobility').length);
 const unread = () => { let n = 0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; for(let i=0;i<notesOpen();i++) if(!S.read['n'+i]) n++; return n; };
 
@@ -460,7 +463,7 @@ function finishRun(early){
   unlockScreen();
   const r = ui.run; r.early = early;
   r.loaded = [...new Set(r.steps.filter((s,i)=> s.ex && hasLoad(s.ex) && (!early || i < r.i)).map(s=>s.ex))];
-  if(r.loaded.length){ ui.screen = 'review'; render(); window.scrollTo(0,0); } else save();
+  ui.screen = 'review'; render(); window.scrollTo(0,0);
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
 function save(){
@@ -469,7 +472,7 @@ function save(){
   const ups = [];
   (r.loaded||[]).forEach(id=>{
     const used = r.loads[id]; let next = used;
-    if(r.efforts[id]==='easy' && !EX[id].fixed){ next = Math.min(25, +(used + S.step).toFixed(2)); if(next>used) ups.push({id,next}); }
+    if(r.efforts[id]==='easy' && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){ next = Math.min(25, +(used + S.step).toFixed(2)); if(next>used) ups.push({id,next}); }
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
@@ -479,6 +482,7 @@ function save(){
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
     legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets};
+  if(r.feel) doc.feel = r.feel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
@@ -821,12 +825,20 @@ function runHTML(){
 /* ---------- Review & celebrate ---------- */
 function reviewHTML(){
   const r = ui.run;
+  const pick = (act, cur, val, label, hint, id) => `<button class="chip" data-a="${act}" data-v="${val}"${id?` data-id="${id}"`:''} aria-pressed="${cur===val}">${label}${hint?`<small>${hint}</small>`:''}</button>`;
+  const feel = [['easy','Too easy','could do more'],['right','About right','worked, not wrecked'],['hard','Hard','glad it’s over'],['toomuch','Too much','struggled to finish']];
+  const hip = [['fine','Fine'],['niggly','Niggly'],['sore','Sore']];
+  const weights = (r.loaded||[]).length ? `<section class="card"><h2 class="ct">Weights <span class="aside">reps left on the last set</span></h2>${r.loaded.map(id=>{ const e = EX[id], v = r.efforts[id];
+      return `<div class="eff"><div class="nm">${esc(e.name)}</div><div class="ld">${fmtKg(r.loads[id])} · ${esc(e.unit)}${e.fixed?' · Paris weights':''}</div><div class="chips">${pick('effort',v,'easy','Easy','3+ left',id)}${pick('effort',v,'right','Right','1–2 left',id)}${pick('effort',v,'max','Max','0 left',id)}</div></div>`; }).join('')}
+      <p class="hint" style="margin-top:10px">Easy means that lift goes up next time.</p></section>` : '';
   return `<div class="enter" style="display:grid;gap:14px">
-    <section class="gcard flat"><h1>How did the weights feel?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. Reps left in the tank on your last set. Easy means it goes up next time.</p></section>
-    <section class="card">${r.loaded.map(id=>{ const e = EX[id], v = r.efforts[id];
-      const ch = (val,label,hint) => `<button class="chip" data-a="effort" data-id="${id}" data-v="${val}" aria-pressed="${v===val}">${label}<small>${hint}</small></button>`;
-      return `<div class="eff"><div class="nm">${esc(e.name)}</div><div class="ld">${fmtKg(r.loads[id])} · ${esc(e.unit)}${e.fixed?' · Paris weights':''}</div><div class="chips">${ch('easy','Easy','3+ left')}${ch('right','Right','1–2 left')}${ch('max','Max','0 left')}</div></div>`; }).join('')}
-    </section></div><div class="dock"><div class="in"><button class="btn primary xl" data-a="save">Save session</button></div></div>`;
+    <section class="gcard flat"><h1>How did that feel?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. All optional. It’s what your coach reads at review time.</p></section>
+    <section class="card"><h2 class="ct">Overall</h2><div class="chips">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
+      <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
+      <label class="ct" for="snote" style="display:block;margin:18px 0 8px">Anything to add</label>
+      <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea></section>
+    ${weights}
+  </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="save">Save session</button></div></div>`;
 }
 function celebrateHTML(){
   const L = ui.last || {points:0, ups:[]}; const p = plan_(); const wk = p.wk;
@@ -916,22 +928,29 @@ function realmHTML(){
 
 /* ---------- Story ---------- */
 function storyCardHTML(){
-  const so = scenesOpen(), no = notesOpen(), ch = STORY.chapters[0], all = !!ui.storyAll;
-  const lbl = i => i===0 ? 'Start' : String(i);
-  const open = STORY.scenes.slice(0, so).map((sc,i)=>({sc,i}));
-  const shown = all ? open : open.filter(x=>x.i >= so-3 || !S.read['s'+x.i]);
-  const rows = shown.map(({sc,i})=>`<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${lbl(i)}</span><span class="stt">${dx(sc.title)}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`).join('')
-    + (so < STORY.scenes.length ? `<div class="strow locked"><span class="sn">${lbl(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>` : '');
+  const so = scenesOpen(), no = notesOpen(), all = !!ui.storyAll, last = STORY.scenes.length - 1;
+  const cur = chapterOf(Math.min(so, last));
+  const row = i => `<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${sceneLabel(i)}</span><span class="stt">${dx(STORY.scenes[i].title)}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`;
+  const locked = so <= last ? `<div class="strow locked"><span class="sn">${sceneLabel(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>`
+    : `<p class="muted" style="margin:10px 0 0;font-size:14px">You’re all caught up. Chapter ${NUMW[cur.n] || cur.n+1} is being written.</p>`;
+  let rows = '', hidden = 0;
+  if(all){
+    rows = STORY.chapters.filter(c=>c.from < so).map(c=>`<h3 class="chh">Chapter ${c.n}: ${esc(c.title)}</h3>` + Array.from({length:Math.min(c.to, so-1)-c.from+1},(_,k)=>row(c.from+k)).join('')).join('');
+  } else {
+    for(let i=cur.from; i<Math.min(so, cur.to+1); i++){ if(i >= so-3 || !S.read['s'+i]) rows += row(i); else hidden++; }
+    hidden += STORY.chapters.filter(c=>c.to < cur.from).reduce((a,c)=>a + c.to - c.from + 1, 0);
+  }
+  rows += locked;
   const excerpt = t => { const w = smart(t).split(/\s+/); return w.length>7 ? w.slice(0,7).join(' ').replace(/[.,;:—–-]+$/,'') + '…' : w.join(' '); };
   const nOpen = STORY.notes.slice(0,no).map((n,i)=>({n,i}));
   const nShown = all ? nOpen : nOpen.filter(x=>x.i >= no-2 || !S.read['n'+x.i]);
+  hidden += nOpen.length - nShown.length;
   const notes = nShown.map(({n,i})=>`<button class="strow note" data-a="read" data-t="n" data-i="${i}"><span class="sn">p. ${i+1}</span><span class="stt">${esc(excerpt(n.text))}</span>${S.read['n'+i]?'':'<span class="new">New</span>'}</button>`).join('');
-  const hidden = (open.length - shown.length) + (nOpen.length - nShown.length);
-  return `<section class="card story"><h2 class="ct">${esc(STORY.title)} <span class="aside">Chapter ${ch.n}: ${esc(ch.title)}</span></h2>
+  return `<section class="card story"><h2 class="ct">${esc(STORY.title)} <span class="aside">Chapter ${cur.n}: ${esc(cur.title)}</span></h2>
     <p class="muted" style="margin:0 0 6px;font-size:14px">Every session unlocks a scene. Hip and mobility days add pages from Kesh’s ledger.</p>
     <div class="slist">${rows}</div>
     ${no ? `<h3 class="ct" style="margin:16px 0 4px">Kesh’s ledger <span class="aside">${no} of ${STORY.notes.length}</span></h3><div class="slist">${notes}</div>` : `<p class="muted" style="margin:12px 0 0;font-size:14px">Kesh’s ledger opens with your next hip block.</p>`}
-    ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far (${so} scenes, ${no} pages)`}</button>` : ''}
+    ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far (${Math.min(so, last+1)} scenes, ${no} pages)`}</button>` : ''}
   </section>`;
 }
 function readHTML(){
@@ -941,12 +960,12 @@ function readHTML(){
   const openN = isScene ? scenesOpen() : notesOpen();
   const prev = i>0 ? `<button class="btn" data-a="read" data-t="${t}" data-i="${i-1}">Previous</button>` : '';
   const next = i+1 < openN ? `<button class="btn primary" data-a="read" data-t="${t}" data-i="${i+1}">Next</button>`
-    : `<button class="btn" data-a="realmtab">${isScene ? (i+1 < STORY.scenes.length ? 'Next scene unlocks after your next session' : 'Chapter two arrives soon') : 'Back to the realm'}</button>`;
+    : `<button class="btn" data-a="realmtab">${isScene ? (i+1 < STORY.scenes.length ? 'Next scene unlocks after your next session' : 'The next chapter is being written') : 'Back to the realm'}</button>`;
   const body = isScene ? item.text.map(p=>`<p>${esc(smart(p))}</p>`).join('') : `<p>${esc(smart(item.text))}</p>`;
   return `<div class="enter reader" style="display:grid;gap:14px">
     <button class="back" data-a="realmtab">${I.back}Realm</button>
     <article class="page${isScene?'':' ledger'}"><h1 class="rt">${dx(item.title)}</h1>
-      <p class="rmeta">${isScene ? `${esc(STORY.title)} · ${i===0?'Prologue':'Scene '+i}` : 'From Kesh’s ledger'}</p>
+      <p class="rmeta">${isScene ? `Chapter ${chapterOf(i).n}: ${esc(chapterOf(i).title)} · ${i===0?'Prologue':'Scene '+sceneLabel(i)}` : `From Kesh’s ledger · page ${i+1}`}</p>
       <div class="rbody">${body}</div></article>
     <div style="display:flex;gap:10px;flex-wrap:wrap">${prev}${next}</div></div>`;
 }
@@ -1160,6 +1179,8 @@ document.addEventListener('click', e=>{
     case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'effort': r.efforts[b.dataset.id] = b.dataset.v; render(); break;
+    case 'feel': r.feel = r.feel===b.dataset.v ? null : b.dataset.v; render(); break;
+    case 'hipfeel': r.hip = r.hip===b.dataset.v ? null : b.dataset.v; render(); break;
     case 'save': save(); break;
     case 'exit': ui.sheet = 'exit'; render(); break;
     case 'keep': case 'close': ui.sheet = null; render(); break;
@@ -1193,6 +1214,7 @@ document.addEventListener('submit', e=>{
     toast('Connecting…'); sync();
   }
 });
+document.addEventListener('input', e=>{ if(e.target.id==='snote' && ui.run) ui.run.note = e.target.value; });
 document.addEventListener('change', e=>{
   if(e.target.id==='step'){ S.step = +e.target.value; touch(); }
   if(e.target.id==='dname'){ S.dragon = e.target.value.trim() || 'Pip'; touch(); }

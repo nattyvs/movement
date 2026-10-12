@@ -305,7 +305,8 @@ a{color:var(--violet);text-underline-offset:3px}
 .addrw{display:grid;grid-template-columns:1fr auto;gap:8px;margin-top:14px}
 .addrw .s{grid-column:1/-1;display:flex;gap:8px}
 input[type=text],input[type=password],select{font:inherit;color:var(--ink);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px 12px;min-width:0;width:100%;min-height:46px}
-input::placeholder{color:var(--muted)}
+textarea{font:inherit;color:var(--ink);background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:12px;width:100%;resize:vertical;min-height:70px}
+input::placeholder,textarea::placeholder{color:var(--muted)}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card-2)}
 .seg button{border:0;background:transparent;padding:10px 14px;font-weight:650;font-size:14px;min-height:44px}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
@@ -341,6 +342,8 @@ input::placeholder{color:var(--muted)}
 
 /* story */
 .slist{display:grid}
+.chh{font-family:var(--display);font-style:italic;font-weight:600;font-size:15px;color:var(--muted);margin:14px 0 2px}
+.slist .chh:first-child{margin-top:0}
 .strow{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:12px 0;color:var(--ink)}
 .slist .strow:first-child{border-top:0}
 .strow .sn{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
