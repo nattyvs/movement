@@ -28,6 +28,7 @@
   --fig-iron:#8F8BA3; --fig-iron-2:#6E6B80; --fig-band:#E0912F; --fig-prop:#D9D5E6; --fig-prop-2:#E6E2F0; --fig-mat:#8F94EE; --fig-floor:#EDEAF5;
   --ui:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --display:"Bodoni Moda","Bodoni 72",Didot,Georgia,serif;
+  --read:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -185,6 +186,8 @@ a{color:var(--violet);text-underline-offset:3px}
 .demo.fig::after{display:none}
 .demo.fig svg{position:absolute;inset:0;width:100%;height:100%}
 .nextcard .th.fig::after{display:none}
+.belt{animation:belt .2s linear infinite}
+@keyframes belt{to{stroke-dashoffset:16}}
 .nextcard .th.fig svg{width:100%;height:100%}
 .demo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.05) brightness(1.04)}
 .demo::after{content:"";position:absolute;inset:0;background:var(--grad);mix-blend-mode:soft-light;opacity:.9;pointer-events:none}
@@ -335,6 +338,58 @@ input::placeholder{color:var(--muted)}
 .steps{margin:6px 0 0;padding-left:20px;color:var(--muted);font-size:14px}
 .steps li{margin:4px 0}
 
+
+/* story */
+.slist{display:grid}
+.strow{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:baseline;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:12px 0;color:var(--ink)}
+.slist .strow:first-child{border-top:0}
+.strow .sn{font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.strow .stt{font-family:var(--display);font-style:italic;font-weight:600;font-size:19px;line-height:1.2;min-width:0}
+.strow.note .stt{font-family:var(--read);font-style:italic;font-weight:400;font-size:16px}
+.strow.locked .stt{color:var(--muted);font-weight:500;filter:blur(.6px)}
+.new{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:750;color:#fff;background:var(--violet);border-radius:999px;padding:3px 8px;align-self:center}
+.tab{position:relative}
+.tab.unread::after{content:"";position:absolute;top:6px;left:calc(50% + 9px);width:8px;height:8px;border-radius:50%;background:var(--coral);box-shadow:0 0 0 2px var(--card)}
+.page{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px 22px}
+.page .rt{font-family:var(--display);font-style:italic;font-weight:600;font-size:clamp(34px,10vw,44px);line-height:1.02;letter-spacing:-.015em;margin:0;text-wrap:balance}
+.rmeta{font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:650;color:var(--label);margin:10px 0 18px}
+.rbody{font-family:var(--read);font-size:18.5px;line-height:1.62;color:var(--ink);hyphens:auto;-webkit-hyphens:auto}
+.rbody p{margin:0 0 .9em;text-wrap:pretty}
+.rbody p:last-child{margin-bottom:0}
+.page:not(.ledger) .rbody p:first-child::first-letter{font-family:var(--display);font-style:italic;font-weight:600;float:left;font-size:3.3em;line-height:.82;margin:.06em .1em 0 0;color:var(--violet)}
+.page.ledger{background:var(--card-2)}
+.page.ledger .rbody{font-style:italic}
+.reader .btn{flex:1 1 200px}
+.unlock{display:grid;gap:6px;width:100%;text-align:left;color:var(--ink);border-color:color-mix(in srgb,var(--violet) 45%,var(--line))}
+.unlock .ut{font-family:var(--display);font-style:italic;font-weight:600;font-size:26px;line-height:1.1}
+.unlock .muted{font-size:14px}
+
+/* session preview */
+.pblock{padding:6px 0;border-top:1px solid var(--line)}
+.pblock:first-child{border-top:0;padding-top:0}
+.ptag{display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--label);padding:8px 0 2px}
+.pex{display:grid;grid-template-columns:76px 1fr;gap:14px;align-items:center;width:100%;text-align:left;background:none;border:0;padding:8px 0;color:var(--ink)}
+.pex[disabled]{cursor:default}
+.pth{width:76px;height:57px;border-radius:10px;background:var(--fig-floor);overflow:hidden;display:block}
+.pth svg{width:100%;height:100%;display:block}
+.pnm{display:block;font-weight:650;font-size:16px}
+.pln{display:block;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.pmu{display:block;color:var(--label);font-size:12.5px;font-weight:600;margin-top:2px}
+
+/* muscles */
+.mrow{display:grid;grid-template-columns:118px 1fr 30px;gap:10px;align-items:center;padding:5px 0}
+.ml{font-size:14px;font-weight:600}
+.mb{height:10px;border-radius:5px;background:var(--card-2);border:1px solid var(--line);overflow:hidden}
+.mb i{display:block;height:100%;border-radius:5px;min-width:0}
+.mn{text-align:right;font-weight:700;font-size:14px}
+
+/* run overview */
+.ttlbtn{background:none;border:0;padding:8px 4px;border-radius:10px}
+.ttlbtn span{font-size:11px;margin-left:2px}
+.ovr{display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);font-weight:600}
+.ovr.now{color:var(--violet)}
+.ovr.now .tick{border-color:var(--violet);border-width:2.4px}
+
 /* sheet & toast */
 .scrim{position:fixed;inset:0;z-index:30;background:rgba(18,14,32,.5);display:grid;align-items:end;justify-items:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));animation:fadein .2s ease-out}
 .sheet{width:100%;max-width:476px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:22px 18px 14px;max-height:82vh;overflow:auto;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
@@ -349,7 +404,7 @@ input::placeholder{color:var(--muted)}
 .enter{animation:enter .4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){
-  .enter,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.tick .big,.sheet,.scrim{animation:none}
+  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.tick .big,.sheet,.scrim{animation:none}
   .demo .b{opacity:0} #flash.on{animation-duration:.01s} .prog i,.btn-w,.ringbox .arc{transition:none}
 }
 </style>
@@ -365,6 +420,7 @@ input::placeholder{color:var(--muted)}
 <div id="flash" aria-hidden="true"></div>
 <div id="toast" class="toast" role="status" hidden></div>
 <script src="figure.js"></script>
+<script src="story.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

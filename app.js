@@ -139,6 +139,12 @@ const SESS = {
   walkUK:{title:'Easy walk',sub:'Twenty minutes on the pad',type:'walk',items:['pad_walk']},
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
+const GROUPS = [['legs','Legs','var(--coral)'],['glutes','Glutes','var(--g2)'],['back','Back','var(--indigo)'],['chest','Chest and arms','var(--amber)'],['shoulders','Shoulders','var(--teal)'],['core','Core','var(--good)'],['mobility','Mobility','var(--violet)']];
+const MUSCLES = {goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], tempo_goblet:['legs','glutes'], knee_push:['chest'], hip_thrust:['glutes'], rdl:['glutes','legs'], rdl_heavy:['glutes','legs'], kick_rdl:['glutes','legs'],
+  dead_bug:['core'], split_squat:['legs','glutes'], tempo_split:['legs','glutes'], row:['back'], one_arm_row:['back'], band_row:['back'], step_up:['legs','glutes'], db_press:['shoulders'], pallof:['core'],
+  hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
+  piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
+  hip_flexor:['mobility'], knee_wall:['mobility'], squat_hold:['mobility'], ham_floss:['mobility'], calf_raise:['legs','mobility']};
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
 const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15};
@@ -177,7 +183,7 @@ const SIZE_COST = {small:100, medium:400, big:1200};
 const SIZE_NAME = {small:'Small', medium:'Medium', big:'Big'};
 
 /* ================= State ================= */
-const S = {loc:'uk', loads:{}, step:2, voice:true, theme:'system', dragon:'Pip', rewards:DEFAULT_REWARDS, rewardsUpdated:0,
+const S = {loc:'uk', loads:{}, step:2, voice:true, theme:'system', dragon:'Pip', read:{}, rewards:DEFAULT_REWARDS, rewardsUpdated:0,
   redemptions:[], prizes:{}, planApplied:0, nudged:{}, updated:0, lastSync:0};
 let sessions = [];
 let plan = {};
@@ -252,6 +258,11 @@ function gateClaimed(mk){ return S.redemptions.some(r=>r.source==='gate' && r.mo
 function stage(){ const n = trainingTotal(); let s = STAGES[0], i = 0; STAGES.forEach((x,k)=>{ if(n>=x.at){ s=x; i=k; } }); return Object.assign({index:i, n}, s); }
 function nextStage(){ const st = stage(); return STAGES[st.index+1] || null; }
 function mood(){ const d = daysSinceTraining(); if(d===null) return 'new'; if(d<=1) return 'smug'; if(d<=3) return 'peckish'; return 'sulk'; }
+
+/* ================= Story ================= */
+const scenesOpen = () => Math.min(STORY.scenes.length, 1 + trainingTotal());
+const notesOpen = () => Math.min(STORY.notes.length, sessions.filter(s=>s.kind==='hip'||s.kind==='mobility').length);
+const unread = () => { let n = 0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; for(let i=0;i<notesOpen();i++) if(!S.read['n'+i]) n++; return n; };
 
 /* ================= Dragon lines and nudges ================= */
 const LINES = {
@@ -392,7 +403,7 @@ function startSession(code, trim){
   audioOn(); lockScreen();
   const steps = build(code, trim), loads = {};
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = loadOf(s.ex); });
-  ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, lastSec:null};
+  ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null; enterStep(true); window.scrollTo(0,0);
 }
 function spokenFor(s){
@@ -414,6 +425,7 @@ function startTimer(sec){ ui.run.timer = {end:Date.now()+sec*1000, total:sec, pa
 function advance(){
   const r = ui.run, s = r.steps[r.i];
   if(s.t!=='rest') r.done++;
+  if(s.ex && (s.t==='work' || s.t==='time' || (s.t==='hold'))) r.sets[s.ex] = (r.sets[s.ex]||0) + 1;
   r.i++;
   if(r.i >= r.steps.length){ chime(); flash('Done'); say('Done. Lovely work.'); finishRun(false); return; }
   const n = r.steps[r.i];
@@ -461,16 +473,16 @@ function save(){
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
-  const wkBefore = weekInfo(now,true), monthBefore = monthCount(mk), stageBefore = stage().index;
+  const wkBefore = weekInfo(now,true), monthBefore = monthCount(mk), stageBefore = stage().index, scBefore = scenesOpen(), ntBefore = notesOpen();
   let points = POINTS[kind] + ups.length*5, bonus = false;
   if(TRAINING.has(kind) && wkBefore.count+1 === wkBefore.target){ points += 25; bonus = true; }
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
-    legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts};
+    legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets};
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
-  ui.last = {points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow};
+  ui.last = {points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: notesOpen()>ntBefore ? notesOpen()-1 : -1};
   ui.run = null; ui.screen = 'celebrate';
   touch(); render(); window.scrollTo(0,0);
 }
@@ -499,7 +511,7 @@ async function ghPut(path, data, sha, message){
 }
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
 const stateOut = () => ({loc:S.loc, step:S.step, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
-  redemptions:S.redemptions, prizes:S.prizes, planApplied:S.planApplied, seenStage:S.seenStage||0, updated:S.updated});
+  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
   if(syncing) return; if(!navigator.onLine){ setSync('wait','Offline. Will sync when you have signal.'); return; }
@@ -520,6 +532,7 @@ async function sync(retry){
     if((rs.rewardsUpdated||0) > (S.rewardsUpdated||0)){ S.rewards = rs.rewards; S.rewardsUpdated = rs.rewardsUpdated; }
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
+    S.read = Object.assign({}, rs.read||{}, S.read||{});
     S.planApplied = Math.max(rs.planApplied||0, S.planApplied||0);
     S.updated = Math.max(rs.updated||0, S.updated||0);
     const out = stateOut();
@@ -549,6 +562,7 @@ window.addEventListener('online', ()=>queueSync());
 
 /* ================= Rendering helpers ================= */
 const $ = id => document.getElementById(id);
+const smart = s => String(s).replace(/(^|[\s(\[—–])"/g,'$1“').replace(/"/g,'”').replace(/(^|[\s(\[—–])'/g,'$1‘').replace(/'/g,'’');
 const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dx = t => esc(t).replace(/([WVY])(?=[a-z\u00e0-\u00ff])/g,'<span class="kw">$1</span>');
 const fmtKg = n => (Math.round(n*10)/10).toString().replace(/\.0$/,'')+' kg';
@@ -621,6 +635,7 @@ function dragonSVG(opts={}){
 
 function render(){
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-current', ui.screen==='tab' && t.dataset.tab===ui.tab ? 'page' : 'false'));
+  const rt = document.querySelector('.tab[data-tab="realm"]'); if(rt) rt.classList.toggle('unread', unread()>0);
   $('tabs').hidden = !(ui.screen==='tab');
   const app = $('app'); app.classList.toggle('run', ui.screen==='run');
   let html = '';
@@ -631,6 +646,8 @@ function render(){
   else if(ui.screen==='review') html = reviewHTML();
   else if(ui.screen==='celebrate') html = celebrateHTML();
   else if(ui.screen==='settings') html = settingsHTML();
+  else if(ui.screen==='read') html = readHTML();
+  else if(ui.screen==='preview') html = previewHTML();
   app.innerHTML = html + (ui.sheet ? sheetHTML() : '');
   startFigure();
   if(ui.screen==='run'){ const r = ui.run; if(r && r.timer) paintTimer(r.steps[r.i], r.timer.paused ? r.timer.remaining : Math.max(0, r.timer.end-Date.now())); }
@@ -667,7 +684,7 @@ function todayHTML(){
   } else if(!p.trained){
     actions += `<button class="btn-g" data-a="start" data-code="${shortCode()}">Fancy ten minutes anyway? <small>${estMin(shortCode())} min</small></button>`;
   }
-  actions += `<button class="alt" data-a="choose">Something else</button>`;
+  actions += `<div style="display:flex;gap:18px;flex-wrap:wrap">${mainNext?`<button class="alt" data-a="preview" data-code="${mainNext}">See every exercise</button>`:''}<button class="alt" data-a="choose">Something else</button></div>`;
 
   const nudge = findNudge(p);
   const wk = p.wk, tk = dayKey(now);
@@ -700,7 +717,7 @@ function todayHTML(){
     ${items.map(x=>`<div class="it"><span class="tick ${x.done?'on':''}">${x.done?I.check:''}</span><span class="t">${esc(x.title)}</span><span class="m">${x.meta}</span></div>`).join('')}
   </div></section>
   <button class="card teaser" data-tab="realm" aria-label="Open the realm">
-    <div><h2 class="ct" style="margin-bottom:8px">Realm</h2><div class="rn">${dx(rg.name)}</div><div class="sub">${cnt} of ${tgt} stones · gate holds ${esc(prizeFor(mk).name.toLowerCase())}</div></div>
+    <div><h2 class="ct" style="margin-bottom:8px">Realm</h2><div class="rn">${dx(rg.name)}</div><div class="sub">${cnt} of ${tgt} stones · gate holds ${esc(prizeFor(mk).name.toLowerCase())}</div><div class="sub" style="color:var(--violet);font-weight:650">${unread()?`${unread()} new in The Long Carry`:`Next scene: ${esc((STORY.scenes[scenesOpen()]||{title:'coming soon'}).title)}`}</div></div>
     ${miniTrail(cnt,tgt)}
   </button>
   <section class="card"><h2 class="ct">Log <span class="aside">${sessions.length} logged</span></h2>
@@ -764,7 +781,7 @@ function ringHTML(s, label, small){
 function runHTML(){
   const r = ui.run, s = r.steps[r.i], def = SESS[r.code];
   const pct = (r.i/r.steps.length*100).toFixed(1);
-  const bar = `<div class="rbar"><div class="r1"><button class="round" data-a="exit" aria-label="Leave session">${I.x}</button><span class="ttl">${esc(def.title)}${r.trim?' · shorter':''}</span>
+  const bar = `<div class="rbar"><div class="r1"><button class="round" data-a="exit" aria-label="Leave session">${I.x}</button><button class="ttl ttlbtn" data-a="overview" aria-label="See every exercise in this session">${esc(def.title)}${r.trim?' · shorter':''} <span aria-hidden="true">▾</span></button>
     <button class="round" data-a="voice" aria-label="${S.voice?'Turn voice off':'Turn voice on'}" aria-pressed="${S.voice}">${S.voice?I.vol:I.mute}</button></div><div class="prog"><i style="width:${pct}%"></i></div></div>`;
   const watch = r.i===0 && TRAINING.has(def.type) ? `<p class="watchnote">Phone on silent? Voice may not play. The screen flashes at every change.</p>` : '';
   let body = '', dock = '';
@@ -826,6 +843,8 @@ function celebrateHTML(){
     </section>
     <div class="say"><q>${dx(said)}</q><span class="by">${esc(S.dragon)}, ${st.name.toLowerCase()}</span></div>
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
+    ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">The Long Carry · tap to read, about two minutes</span></button>` : ''}
+    ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">Kesh’s ledger</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">A new page, tap to read</span></button>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -880,6 +899,7 @@ function realmHTML(){
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
     <section class="gcard flat"><h1>${dx(rg.name)}</h1>
       <p class="meta">${now.toLocaleDateString('en-GB',{month:'long'})}, region ${rg.index+1}. ${Math.min(cnt,tgt)} of ${tgt} stones. ${open ? (claimed ? 'Gate opened, prize claimed.' : 'The gate is open.') : `${tgt-cnt} more to reach ${esc(rg.gate)}.`}</p></section>
+    ${storyCardHTML()}
     <section class="card map">${mapSVG(mk)}</section>
     <section class="card" style="display:grid;gap:12px"><p class="lore">${dx(rg.lore)}</p>
       <div class="prizerow"><span>At the gate: <b>${esc(prize.name)}</b></span>${claimed?'<span class="c-good" style="font-weight:700">Claimed</span>': open ? `<button class="claim ready" data-a="claimgate" data-mk="${mk}">Claim</button>` : `<button class="linkbtn" data-a="prizepick" data-mk="${mk}">Change prize</button>`}</div></section>
@@ -892,6 +912,73 @@ function realmHTML(){
       const label = new Date(+m.slice(0,4), +m.slice(5)-1, 1).toLocaleDateString('en-GB',{month:'short'});
       return `<li class="${!past&&!cur?'fog':''}"><span class="mo">${label}</span><span class="rn">${!past&&!cur?'Somewhere in the fog':dx(rr.name)}</span>${stt}</li>`; }).join('')}</ul></section>
   </div>`;
+}
+
+/* ---------- Story ---------- */
+function storyCardHTML(){
+  const so = scenesOpen(), no = notesOpen(), ch = STORY.chapters[0], all = !!ui.storyAll;
+  const lbl = i => i===0 ? 'Start' : String(i);
+  const open = STORY.scenes.slice(0, so).map((sc,i)=>({sc,i}));
+  const shown = all ? open : open.filter(x=>x.i >= so-3 || !S.read['s'+x.i]);
+  const rows = shown.map(({sc,i})=>`<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${lbl(i)}</span><span class="stt">${dx(sc.title)}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`).join('')
+    + (so < STORY.scenes.length ? `<div class="strow locked"><span class="sn">${lbl(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>` : '');
+  const excerpt = t => { const w = smart(t).split(/\s+/); return w.length>7 ? w.slice(0,7).join(' ').replace(/[.,;:—–-]+$/,'') + '…' : w.join(' '); };
+  const nOpen = STORY.notes.slice(0,no).map((n,i)=>({n,i}));
+  const nShown = all ? nOpen : nOpen.filter(x=>x.i >= no-2 || !S.read['n'+x.i]);
+  const notes = nShown.map(({n,i})=>`<button class="strow note" data-a="read" data-t="n" data-i="${i}"><span class="sn">p. ${i+1}</span><span class="stt">${esc(excerpt(n.text))}</span>${S.read['n'+i]?'':'<span class="new">New</span>'}</button>`).join('');
+  const hidden = (open.length - shown.length) + (nOpen.length - nShown.length);
+  return `<section class="card story"><h2 class="ct">${esc(STORY.title)} <span class="aside">Chapter ${ch.n}: ${esc(ch.title)}</span></h2>
+    <p class="muted" style="margin:0 0 6px;font-size:14px">Every session unlocks a scene. Hip and mobility days add pages from Kesh’s ledger.</p>
+    <div class="slist">${rows}</div>
+    ${no ? `<h3 class="ct" style="margin:16px 0 4px">Kesh’s ledger <span class="aside">${no} of ${STORY.notes.length}</span></h3><div class="slist">${notes}</div>` : `<p class="muted" style="margin:12px 0 0;font-size:14px">Kesh’s ledger opens with your next hip block.</p>`}
+    ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far (${so} scenes, ${no} pages)`}</button>` : ''}
+  </section>`;
+}
+function readHTML(){
+  const {t, i} = ui.read; const isScene = t==='s';
+  const item = isScene ? STORY.scenes[i] : STORY.notes[i];
+  S.read[t+i] = 1; saveLocal(); queueSync();
+  const openN = isScene ? scenesOpen() : notesOpen();
+  const prev = i>0 ? `<button class="btn" data-a="read" data-t="${t}" data-i="${i-1}">Previous</button>` : '';
+  const next = i+1 < openN ? `<button class="btn primary" data-a="read" data-t="${t}" data-i="${i+1}">Next</button>`
+    : `<button class="btn" data-a="realmtab">${isScene ? (i+1 < STORY.scenes.length ? 'Next scene unlocks after your next session' : 'Chapter two arrives soon') : 'Back to the realm'}</button>`;
+  const body = isScene ? item.text.map(p=>`<p>${esc(smart(p))}</p>`).join('') : `<p>${esc(smart(item.text))}</p>`;
+  return `<div class="enter reader" style="display:grid;gap:14px">
+    <button class="back" data-a="realmtab">${I.back}Realm</button>
+    <article class="page${isScene?'':' ledger'}"><h1 class="rt">${dx(item.title)}</h1>
+      <p class="rmeta">${isScene ? `${esc(STORY.title)} · ${i===0?'Prologue':'Scene '+i}` : 'From Kesh’s ledger'}</p>
+      <div class="rbody">${body}</div></article>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">${prev}${next}</div></div>`;
+}
+
+/* ---------- Session preview ---------- */
+function blocksFor(code, trim){
+  return SESS[code].items.map(it=>{
+    const o = typeof it==='string' ? {id:it} : it;
+    const ids = o.pair ? o.pair : [o.id];
+    const e0 = EX[ids[0]];
+    let sets = o.sets || e0.sets || (e0.kind==='hold' ? e0.holds : 1); if(trim) sets = Math.min(2, sets);
+    return {ids, pair:!!o.pair, sets, dur:o.dur};
+  });
+}
+function exLine(id, b){
+  const e = EX[id];
+  if(e.kind==='reps') return `${b.sets} × ${e.reps}${hasLoad(id) ? ' · '+fmtKg(loadOf(id)) : ''}`;
+  if(e.kind==='timed') return `${b.sets>1?b.sets+' × ':''}${fmt(b.dur||e.dur)}${(b.dur||e.dur)>=60?' min':' s'} · ${e.label}`;
+  if(e.kind==='iv') return `${e.rounds} rounds · ${e.on} s fast, ${e.off} s easy`;
+  if(e.kind==='hold') return `${e.holds} × ${e.dur} s each side`;
+  return '';
+}
+function previewHTML(){
+  const {code, trim} = ui.preview, def = SESS[code];
+  const list = blocksFor(code, trim).map(b=>`<div class="pblock">${b.pair?`<span class="ptag">Pair, ${b.sets} rounds</span>`:''}${b.ids.map(id=>{
+      const f = poseFor(id);
+      return `<button class="pex" data-a="guide" data-id="${id}" ${EX[id].how?'':'disabled'}><span class="pth">${f?FIG.svg(f.p.a, f.p):''}</span><span><span class="pnm">${esc(EX[id].name)}</span><span class="pln">${esc(exLine(id,b))}</span>${(MUSCLES[id]||[]).length?`<span class="pmu">${(MUSCLES[id]||[]).map(g=>GROUPS.find(x=>x[0]===g)[1]).join(' · ')}</span>`:''}</span></button>`; }).join('')}</div>`).join('');
+  return `<div class="enter" style="display:grid;gap:14px">
+    <button class="back" data-a="home">${I.back}Today</button>
+    <section class="gcard flat"><h1>${dx(def.title)}</h1><p class="meta">${esc(def.sub)} · about ${estMin(code,trim)} min. Tap any exercise to see how it’s done.</p></section>
+    <section class="card">${list}</section>
+  </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="${trim?'starttrim':'start'}" data-code="${code}">${I.play} Begin</button></div></div>`;
 }
 
 /* ---------- Treasury ---------- */
@@ -945,11 +1032,22 @@ function progressHTML(){
     <section class="card chart"><h2 class="ct">Sessions per week <span class="aside">dashed line is 3</span></h2>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Training sessions per week, last eight weeks"><defs><linearGradient id="pbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--g1)"/><stop offset="1" stop-color="var(--g4)"/></linearGradient></defs>
       <line class="gl" x1="20" x2="${W}" y1="${H-22}" y2="${H-22}"/><line class="tgt" x1="20" x2="${W}" y1="${tY.toFixed(1)}" y2="${tY.toFixed(1)}"/>${bars}</svg></section>
+    ${musclesHTML()}
     <section class="card"><h2 class="ct">Strength <span class="aside">current weight</span></h2>
       ${lifts.length ? lifts.map(l=>{ const first = l.hist[0], gain = +(l.cur-first).toFixed(1);
         return `<div class="lift"><span class="nm">${esc(EX[l.id].name)}</span>${spark(l.hist.concat(l.cur!==l.hist[l.hist.length-1]?[l.cur]:[]))}<span class="kg">${fmtKg(l.cur)}${gain>0?`<small>+${fmtKg(gain)}</small>`:''}</span></div>`; }).join('')
       : `<p class="empty">Your lifts appear here after your first strength session, with every step up the weights.</p>`}
     </section></div>`;
+}
+
+function musclesHTML(){
+  const since = Date.now() - 14*864e5, tot = {}; let all = 0;
+  sessions.filter(x=>x.ts>=since && x.sets).forEach(x=>Object.entries(x.sets).forEach(([id,n])=>(MUSCLES[id]||[]).forEach(g=>{ tot[g] = (tot[g]||0) + n; all += n; })));
+  const max = Math.max(1, ...Object.values(tot));
+  const rows = GROUPS.map(([k,label,col])=>`<div class="mrow"><span class="ml">${label}</span><span class="mb"><i style="width:${((tot[k]||0)/max*100).toFixed(0)}%;background:${col}"></i></span><span class="mn num">${tot[k]||0}</span></div>`).join('');
+  const top = Object.entries(tot).sort((a,b)=>b[1]-a[1])[0];
+  return `<section class="card"><h2 class="ct">Muscles worked <span class="aside">last 2 weeks, sets</span></h2>
+    ${all ? `<p style="margin:0 0 12px"><b class="num" style="font-size:26px">${all}</b> <span class="muted">sets · most worked: ${GROUPS.find(g=>g[0]===top[0])[1].toLowerCase()}</span></p>${rows}` : `<p class="empty">Your first session fills this in, set by set.</p>`}</section>`;
 }
 
 /* ---------- Settings ---------- */
@@ -1000,6 +1098,14 @@ function sheetHTML(){
       ${demoBox(ui.sheet.id)}<h3 style="margin-top:14px">${esc(e.name)}</h3>${sec('Set up', h.setup)}${sec('Do it', h.go)}${sec('Form tips', h.tips)}
       <button class="btn primary" data-a="close" style="margin-top:16px">Got it</button></div></div>`;
   }
+  if(ui.sheet==='overview' && ui.run){
+    const r = ui.run, cur = r.steps[r.i] && r.steps[r.i].ex, seen = [];
+    r.steps.forEach((st,i)=>{ if(st.ex && !seen.find(x=>x.id===st.ex)) seen.push({id:st.ex, first:i}); });
+    return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="Today’s exercises"><h3>${esc(SESS[r.code].title)}</h3>
+      ${seen.map(x=>{ const done = r.steps.slice(x.first).every((st,j)=>st.ex!==x.id || x.first+j < r.i); const now = x.id===cur;
+        return `<div class="ovr ${now?'now':''}"><span class="tick ${done&&!now?'on':''}">${done&&!now?I.check:''}</span><span>${esc(EX[x.id].name)}</span><span class="muted" style="font-size:13px">${now?'Now':''}</span></div>`; }).join('')}
+      <button class="btn primary" data-a="close" style="margin-top:14px">Back to it</button></div></div>`;
+  }
   if(ui.sheet && ui.sheet.type==='claim'){
     const r = S.rewards.find(x=>x.id===ui.sheet.id); const cost = SIZE_COST[r.size];
     return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="Claim reward">
@@ -1036,6 +1142,11 @@ document.addEventListener('click', e=>{
     case 'start': ui.sheet = null; startSession(b.dataset.code, false); break;
     case 'starttrim': startSession(b.dataset.code, true); break;
     case 'choose': ui.screen = 'choose'; render(); window.scrollTo(0,0); break;
+    case 'preview': ui.preview = {code:b.dataset.code, trim:false}; ui.screen = 'preview'; render(); window.scrollTo(0,0); break;
+    case 'read': ui.read = {t:b.dataset.t, i:+b.dataset.i}; ui.sheet = null; ui.screen = 'read'; render(); window.scrollTo(0,0); break;
+    case 'storyall': ui.storyAll = !ui.storyAll; render(); break;
+    case 'realmtab': ui.screen = 'tab'; ui.tab = 'realm'; render(); window.scrollTo(0,0); break;
+    case 'overview': ui.sheet = 'overview'; render(); break;
     case 'trainanyway': ui.trainAnyway = true; render(); break;
     case 'loc': S.loc = S.loc==='uk' ? 'paris' : 'uk'; ui.trainAnyway = false; touch(); render(); toast(S.loc==='uk'?'Back in London. Full kit.':'Paris mode. Light kit, slow tempo.'); break;
     case 'settings': ui.screen = 'settings'; render(); window.scrollTo(0,0); break;

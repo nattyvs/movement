@@ -1,6 +1,6 @@
 // Movement service worker: keeps the app working offline.
-const CACHE = 'movement-v3-4';
-const SHELL = ['./','index.html','figure.js','app.js','manifest.webmanifest','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','fonts/BodoniModa-Italic.woff'];
+const CACHE = 'movement-v3-5';
+const SHELL = ['./','index.html','figure.js','story.js','app.js','manifest.webmanifest','icons/icon-180.png','icons/icon-192.png','icons/icon-512.png','fonts/BodoniModa-Italic.woff'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));
