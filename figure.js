@@ -16,7 +16,19 @@ const FIG = (()=>{
       nearArm:arm(P.upper,P.fore), farArm:arm(P.upper2??P.upper,P.fore2??P.fore)};
   }
   const lerp = (a,b,t) => a+(b-a)*t;
-  function mix(A,B,t){ const o = {}; for(const k of new Set([...Object.keys(A),...Object.keys(B)])){ const a = A[k], b = B[k]; o[k] = (typeof a==='number' && typeof b==='number') ? lerp(a,b,t) : (t<.5?a:b); } return o; }
+  function norm(P){
+    const o = Object.assign({neck:0}, P);
+    if(o.foot===undefined) o.foot = o.shin - 90;
+    if(o.thigh2===undefined) o.thigh2 = o.thigh;
+    if(o.shin2===undefined) o.shin2 = o.shin;
+    if(o.foot2===undefined) o.foot2 = (P.shin2===undefined ? o.foot : o.shin2 - 90);
+    if(o.upper2===undefined) o.upper2 = o.upper;
+    if(o.fore2===undefined) o.fore2 = o.fore;
+    return o;
+  }
+  // shortest way round between two angles, so a joint never spins the long way
+  const angLerp = (a,b,t) => { let d = ((b - a) % 360 + 540) % 360 - 180; return a + d*t; };
+  function mix(A,B,t){ const o = {}; for(const k of new Set([...Object.keys(A),...Object.keys(B)])){ const a = A[k], b = B[k]; o[k] = (typeof a==='number' && typeof b==='number') ? (k==='weight'||k==='band'||k==='oneWeight' ? a : angLerp(a,b,t)) : (a!==undefined ? a : b); } return o; }
   const F = n => n.toFixed(1);
   // a tapered limb: capsule from a (width wa) to b (width wb)
   function limb(a, b, wa, wb, fill){
@@ -35,7 +47,7 @@ const FIG = (()=>{
     return `<g transform="translate(${F(h[0])} ${F(h[1])}) rotate(${F(ang||0)})"><rect x="-10" y="-2.5" width="20" height="5" rx="2" fill="var(--fig-iron-2)"/><rect x="-14" y="-7" width="7" height="14" rx="2.5" fill="var(--fig-iron)"/><rect x="7" y="-7" width="7" height="14" rx="2.5" fill="var(--fig-iron)"/></g>`;
   }
   function draw(P, opt){
-    const J = joints(P);
+    P = norm(P); const J = joints(P);
     const pick = {ankle:J.near.a, toe:J.near.toe, hip:J.hip, shoulder:J.sh, hand:J.nearArm.h, head:J.hd, knee:J.near.k, farknee:J.far.k, farankle:J.far.a};
     const an = pick[opt.anchor||'ankle']; const dx = opt.at[0]-an[0], dy = opt.at[1]-an[1];
     const T = p => [p[0]+dx, p[1]+dy];
@@ -48,8 +60,10 @@ const FIG = (()=>{
     out.push(limb(sh, T(fa.e), 8.5, 7.5, 'var(--fig-skin-far)'), limb(T(fa.e), T(fa.h), 7, 6, 'var(--fig-skin-far)'));
     if(P.weight && !P.oneWeight) out.push(dumbbell(T(fa.h), P.dbAng));
     // ponytail behind the head
-    const back = J.hAng + 180 + 25; const pb = step(hd, J.hAng + 205, L.head*.85);
-    const pt = step(pb, back + 25, 15), pc = step(pb, back - 10, 9);
+    const hn = ((J.hAng % 360) + 360) % 360, lying = hn > 225 && hn < 315;
+    const pb = step(hd, J.hAng + 255, L.head*.88);
+    const tail = lying ? 262 : (hn > 135 && hn < 225 ? 175 : 196);
+    const pt = step(pb, tail, 15), pc = step(pb, tail + (lying ? -12 : 18), 8);
     out.push(`<path d="M${F(pb[0])} ${F(pb[1])} Q${F(pc[0])} ${F(pc[1])} ${F(pt[0])} ${F(pt[1])}" stroke="var(--fig-hair)" stroke-width="7" stroke-linecap="round" fill="none"/>`);
     // neck, torso (tank top with a waistband), leggings on hips
     out.push(limb(nk, sh, 7, 8, 'var(--fig-skin)'));
@@ -74,7 +88,7 @@ const FIG = (()=>{
   const DEFS = `<defs><linearGradient id="figtop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g3)"/></linearGradient></defs>`;
   function bbox(opt){
     let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-    for(const P of [opt.a,opt.b,FIGMID(opt)]){ const J = joints(P);
+    for(const P0 of [opt.a,opt.b,FIGMID(opt)]){ const J = joints(norm(P0));
       const pick = {ankle:J.near.a, toe:J.near.toe, hip:J.hip, shoulder:J.sh, hand:J.nearArm.h, head:J.hd, knee:J.near.k, farknee:J.far.k, farankle:J.far.a};
       const an = pick[opt.anchor||'ankle']; const dx = opt.at[0]-an[0], dy = opt.at[1]-an[1];
       const pts = [J.hip,J.sh,J.hd,J.near.k,J.near.a,J.near.toe,J.far.k,J.far.a,J.far.toe,J.nearArm.e,J.nearArm.h,J.farArm.e,J.farArm.h];
@@ -93,18 +107,21 @@ const FIG = (()=>{
     if(raf) cancelAnimationFrame(raf), raf = null;
     const g = el && el.querySelector('.figbody'); if(!g) return;
     const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if(reduce){ g.innerHTML = draw(spec.b, spec); return; }
-    const dur = spec.dur || 3000, t0 = performance.now();
+    if(reduce){ g.innerHTML = draw(norm(spec.b), spec); return; }
+    const A = norm(spec.a), B = norm(spec.b), once = spec.mode==='once';
+    const dur = spec.dur || (once ? 1800 : 3400), t0 = performance.now();
     const tick = now => {
       if(!document.body.contains(el)){ raf = null; return; }
-      const p = ((now - t0) % dur) / dur;
-      const t = p<.12 ? 0 : p<.48 ? ease((p-.12)/.36) : p<.6 ? 1 : 1-ease((p-.6)/.4);
-      g.innerHTML = draw(mix(spec.a, spec.b, t), spec);
+      let t;
+      if(once){ t = ease(Math.min(1, (now - t0) / dur)); }
+      else { const p = ((now - t0) % dur) / dur; t = p<.1 ? 0 : p<.45 ? ease((p-.1)/.35) : p<.58 ? 1 : 1-ease((p-.58)/.42); }
+      g.innerHTML = draw(mix(A, B, t), spec);
+      if(once && now - t0 >= dur){ raf = null; return; }
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
   }
-  return {svg, animate, draw, joints};
+  return {svg, animate, draw, joints, norm};
 })();
 
 /* Poses. Floor at y = 146, figure faces right. a = start, b = end of the rep. */
@@ -139,11 +156,28 @@ const POSES = {
   bandrow:{anchor:'ankle', at:[96,140], prop:PROP.door, propBox:[60,60,234,146], bandTo:[222,96], a:{torso:0, thigh:184, shin:180, foot:90, upper:104, fore:96, band:1}, b:{torso:0, thigh:184, shin:180, foot:90, upper:214, fore:92, band:1}},
   hops:{anchor:'toe', at:[132,146], a:{torso:4, thigh:186, shin:174, foot:130, upper:196, fore:168}, b:{torso:0, thigh:181, shin:181, foot:160, upper:190, fore:176}},
   jacks:{anchor:'ankle', at:[118,140], a:{torso:0, thigh:181, shin:180, foot:90, upper:182, fore:181, upper2:182, fore2:181}, b:{torso:0, thigh:181, shin:180, foot:90, upper:4, fore:2, upper2:356, fore2:358}},
-  piri:{anchor:'shoulder', at:[56,131], prop:PROP.mat+PROP.wall, propBox:[14,10,228,146], a:{torso:270, neck:0, thigh:40, shin:118, foot:30, thigh2:52, shin2:160, foot2:70, upper:100, fore:92}, b:{torso:270, neck:0, thigh:26, shin:104, foot:16, thigh2:40, shin2:150, foot2:60, upper:100, fore:92}},
+  piri:{anchor:'ankle', at:[205,102], prop:PROP.mat+'<rect x="212" y="8" width="16" height="138" fill="var(--fig-prop)"/>', propBox:[60,40,228,146], a:{torso:270, neck:0, thigh:44, shin:90, foot:2, thigh2:22, shin2:120, foot2:150, upper:96, fore:92}, b:{torso:270, neck:0, thigh:30, shin:100, foot:4, thigh2:12, shin2:114, foot2:140, upper:96, fore:92}},
   piriseat:{anchor:'hip', at:[96,100], prop:PROP.chair, propBox:[60,56,126,146], a:{torso:0, thigh:92, shin:180, foot:90, thigh2:74, shin2:150, foot2:120, upper:158, fore:110}, b:{torso:34, neck:10, thigh:92, shin:180, foot:90, thigh2:74, shin2:150, foot2:120, upper:170, fore:126}},
   kneechest:{anchor:'shoulder', at:[56,135], prop:PROP.mat, a:{torso:270, neck:0, thigh:90, shin:90, foot:0, thigh2:90, shin2:90, foot2:0, upper:150, fore:100}, b:{torso:270, neck:0, thigh:90, shin:90, foot:0, thigh2:345, shin2:100, foot2:10, upper:40, fore:350}}
 };
+
+Object.assign(PROP, {
+  wallL:'<rect x="-6" y="8" width="16" height="138" fill="var(--fig-prop)"/>',
+  frameR:'<rect x="206" y="8" width="12" height="138" fill="var(--fig-prop)"/>'
+});
+Object.assign(POSES, {
+  catcow:{anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:78, neck:-30, thigh:180, shin:270, foot:270, upper:180, fore:180}, b:{torso:80, neck:56, thigh:180, shin:270, foot:270, upper:180, fore:180}},
+  thread:{anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:78, neck:-10, thigh:180, shin:270, foot:270, upper:4, fore:2, upper2:180, fore2:180}, b:{torso:92, neck:60, thigh:184, shin:270, foot:270, upper:226, fore:268, upper2:178, fore2:182}},
+  wallangel:{anchor:'ankle', at:[40,140], prop:PROP.wallL, propBox:[-6,8,10,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:262, fore:0, upper2:262, fore2:0}, b:{torso:0, thigh:181, shin:180, foot:90, upper:338, fore:350, upper2:338, fore2:350}},
+  doorway:{anchor:'ankle', at:[120,140], prop:PROP.wallL, propBox:[-6,8,10,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:268, fore:0, upper2:178, fore2:180}, b:{torso:12, neck:-8, thigh:172, shin:182, foot:90, upper:262, fore:352, upper2:178, fore2:180}},
+  hipflexor:{anchor:'farknee', at:[92,140], prop:PROP.mat, a:{torso:0, thigh:88, shin:182, foot:90, thigh2:182, shin2:270, foot2:270, upper:180, fore:150}, b:{torso:-6, thigh:68, shin:196, foot:90, thigh2:208, shin2:270, foot2:270, upper:4, fore:2, upper2:180, fore2:160}},
+  kneewall:{anchor:'ankle', at:[176,140], prop:PROP.mat+PROP.frameR, propBox:[60,8,218,146], a:{torso:4, thigh:88, shin:180, foot:90, thigh2:190, shin2:270, foot2:270, upper:96, fore:92}, b:{torso:10, thigh:74, shin:148, foot:90, thigh2:200, shin2:270, foot2:270, upper:92, fore:88}},
+  squathold:{anchor:'ankle', at:[130,140], prop:PROP.frameR, propBox:[60,8,218,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:120, fore:90}, b:{torso:24, thigh:58, shin:214, foot:90, upper:88, fore:88}},
+  hamfloss:{anchor:'shoulder', at:[56,131], prop:PROP.mat, a:{torso:270, neck:0, thigh:18, shin:104, foot:12, thigh2:90, shin2:90, foot2:0, upper:28, fore:52}, b:{torso:270, neck:0, thigh:6, shin:4, foot:96, thigh2:90, shin2:90, foot2:0, upper:22, fore:36}},
+  calfraise:{anchor:'toe', at:[132,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:182, fore:181}, b:{torso:0, thigh:181, shin:180, foot:128, upper:182, fore:181}}
+});
 const EX_POSE = {goblet_box:'boxsquat', goblet_heavy:'squat', tempo_goblet:'squat', knee_push:'kneepush', hip_thrust:'thrust', rdl:'rdl', rdl_heavy:'rdl', kick_rdl:'kickrdl',
   dead_bug:'deadbug', split_squat:'split', tempo_split:'split', row:'row', one_arm_row:'onearm', step_up:'stepup', db_press:'press', pallof:'pallof', hops:'hops', carry:'carry',
   band_row:'bandrow', pull_apart:'pullapart', face_pull:'facepull', pause_bridge:'bridge', piri_wall:'piri', piri_sit:'piriseat', glute_str:'kneechest', supine_flex:'kneechest',
-  march_warm:'march', pad_warm:'march', jacks:'jacks', jacks8:'jacks'};
+  march_warm:'march', pad_warm:'march', jacks:'jacks', jacks8:'jacks',
+  cat_cow:'catcow', thread_needle:'thread', wall_angel:'wallangel', doorway_pec:'doorway', hip_flexor:'hipflexor', knee_wall:'kneewall', squat_hold:'squathold', ham_floss:'hamfloss', calf_raise:'calfraise'};

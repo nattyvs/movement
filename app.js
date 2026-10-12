@@ -81,6 +81,33 @@ const EX = {
     cue:'Jumping jacks if your hip is happy. A fast march works just as well.'},
   jacks8:{name:'Jacks and march',kind:'iv',rounds:8,on:30,off:30,onLabel:'Fast · jacks or quick march',offLabel:'Easy · slow march',
     cue:'Eight rounds. Jacks if your hip is happy, a fast march if not.'},
+  cat_cow:{name:'Cat–cow',kind:'timed',dur:45,label:'Slow, with your breath',
+    cue:'On hands and knees. Breathe in, chest forward and tail up. Breathe out, round your back like a cat.',
+    how:{setup:['Hands under shoulders, knees under hips, on a mat.'],go:['Breathe in: drop your belly, lift your chest and gaze.','Breathe out: round your spine, tuck your chin and tail.'],tips:['Move one vertebra at a time. Slow is the point.']}},
+  thread_needle:{name:'Thread the needle',kind:'hold',holds:1,dur:30,
+    cue:'On hands and knees, reach one arm to the ceiling, then thread it under your body and rest your shoulder down.',
+    how:{setup:['Hands and knees, hips over knees.'],go:['Open one arm to the ceiling, eyes following your hand.','Thread it under the other arm and let your shoulder sink. Hold.'],tips:['Keep your hips still. The twist comes from your upper back.']}},
+  wall_angel:{name:'Wall angel',kind:'reps',sets:1,reps:'10 slow reps',bw:true,rest:20,est:50,
+    cue:'Back, head and bottom against the wall. Slide your arms from a W up to a Y and back down.',
+    how:{setup:['Stand with heels a small step from the wall, back flat against it.','Arms in a W shape, elbows and wrists touching the wall if you can.'],go:['Slide your arms up into a Y.','Slide back down to the W.'],tips:['Ribs down. If your back arches, make the movement smaller.']}},
+  doorway_pec:{name:'Doorway chest stretch',kind:'hold',holds:1,dur:30,
+    cue:'Forearm on the door frame at shoulder height. Step through gently until you feel the front of your shoulder open.',
+    how:{setup:['Forearm flat on the door frame, elbow at shoulder height.'],go:['Step the same-side foot forward and lean gently through.','Breathe and hold.'],tips:['A stretch, not a pinch. Ease off if your shoulder complains.']}},
+  hip_flexor:{name:'Half-kneeling hip flexor stretch',kind:'hold',holds:1,dur:30,
+    cue:'One knee down on a cushion. Tuck your tail under, squeeze that glute and shift your hips forward a little.',note:'Keep the front knee in line with your foot, never drifting inwards.',
+    how:{setup:['Kneel on one knee on a cushion, other foot flat in front.'],go:['Tuck your tail under and squeeze the glute of the kneeling leg.','Shift forward a few centimetres. Reach the same-side arm up to deepen.'],tips:['Small movement, big squeeze. Your lower back stays neutral.']}},
+  knee_wall:{name:'Knee to wall',kind:'reps',sets:1,reps:'10 each side',bw:true,rest:20,est:60,
+    cue:'Front foot a hand-width from the wall. Drive your knee forward to touch the wall, heel stays down.',
+    how:{setup:['Half kneel facing a wall, front toes a hand-width away.'],go:['Push your knee forward over your toes to touch the wall.','Come back and repeat.'],tips:['Heel glued to the floor. Move the foot back as you get better.']}},
+  squat_hold:{name:'Supported deep squat',kind:'timed',sets:2,dur:40,rest:20,label:'Hold the door frame',
+    cue:'Hold the door frame, sit down into a deep squat and let your hips and ankles settle.',
+    how:{setup:['Hold a door frame or sturdy handle at chest height, feet a bit wider than hips.'],go:['Sit down as deep as is comfortable, using your arms for balance.','Breathe and let your weight settle.'],tips:['Heels down if you can. A folded towel under them is fine.']}},
+  ham_floss:{name:'Hamstring floss',kind:'reps',sets:1,reps:'10 each side',bw:true,rest:20,est:60,
+    cue:'On your back, hold behind one thigh. Straighten and bend the knee slowly.',
+    how:{setup:['Lie on your back, other leg long on the floor.','Hold behind one thigh with both hands, knee bent.'],go:['Slowly straighten the knee towards the ceiling.','Bend it again. Smooth, no bouncing.'],tips:['Straight is not the goal. Comfortable tension is.']}},
+  calf_raise:{name:'Slow calf raise',kind:'reps',sets:2,reps:'12 reps',bw:true,rest:20,est:40,
+    cue:'Rise onto the balls of your feet for two seconds, lower for three. Hold a wall for balance.',
+    how:{setup:['Stand tall, fingertips on a wall.'],go:['Rise up for a count of two.','Lower for a count of three.'],tips:['Strong ankles help your knees. Go slow.']}},
   pad_walk:{name:'Easy pad walk',kind:'timed',dur:1200,label:'4.5–5 km/h',cue:'Conversational pace. A podcast helps.'},
   walk_out:{name:'Easy walk outside',kind:'timed',dur:1200,label:'Conversational pace',cue:'Out the door and round the block. Twenty minutes counts.'},
   piri_wall:{name:'Piriformis stretch against wall',kind:'hold',holds:2,dur:15,demo:'Ankle_On_The_Knee',demoNote:'Same stretch, wall optional.',
@@ -107,13 +134,14 @@ const SESS = {
   shortParis:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'paris',legs:true,items:[{id:'march_warm',dur:120},{pair:['tempo_goblet','band_row'],sets:2,rest:45},{id:'pause_bridge',sets:2},{id:'dead_bug',sets:1}]},
   padIV:{title:'Pad intervals',sub:'Your little runs, eight rounds',type:'cardio',loc:'uk',items:['pad_warm','pad_iv8','pad_cool']},
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
+  mobility:{title:'Mobility flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
   walkUK:{title:'Easy walk',sub:'Twenty minutes on the pad',type:'walk',items:['pad_walk']},
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
-const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10};
+const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15};
 const ORDER = {uk:['A','B','C'], paris:['P1','P2']};
 const TRAINING = new Set(['full','short','cardio']);
 
@@ -287,11 +315,11 @@ function plan_(){
   const todays = sessions.filter(s=>s.day===t);
   const hipDone = todays.some(s=>s.kind==='hip');
   const trained = todays.find(isTraining);
-  const walked = todays.find(s=>s.kind==='walk');
+  const walked = todays.find(s=>s.kind==='walk' || s.kind==='mobility');
   const trainedY = sessions.some(s=>s.day===y && isTraining(s));
   const recovery = !trained && trainedY && !ui.trainAnyway;
   let main = null;
-  if(!trained){ main = recovery ? (walked ? null : walkCode()) : nextFull(); }
+  if(!trained){ main = recovery ? (walked ? null : 'mobility') : nextFull(); }
   return {hipDone, trained, walked, recovery, main, wk:weekInfo(now,true)};
 }
 
@@ -621,13 +649,13 @@ function todayHTML(){
   const items = [{code:'hip', title:'Hip block', meta:estMin('hip')+' min', done:p.hipDone}];
   if(p.main) items.push({code:p.main, title:SESS[p.main].title, meta:estMin(p.main)+' min', done:false});
   else if(p.trained) items.push({title:p.trained.title, meta:'Done', done:true});
-  else if(p.walked) items.push({title:'Easy walk', meta:'Done', done:true});
+  else if(p.walked) items.push({title:p.walked.title, meta:'Done', done:true});
   const next = items.find(x=>!x.done && x.code);
   const mainNext = p.main;
   let head, meta;
   if(!next){ head = 'Done for today'; meta = p.wk.count>=p.wk.target ? 'Week target reached. Rest is part of the plan.' : 'Rest is part of the plan. Back tomorrow.'; }
   else if(!mainNext){ head = 'Stretch, then rest'; meta = 'You’ve trained today. Five minutes of hip work closes it.'; }
-  else if(p.recovery){ head = 'Recovery day'; meta = 'You trained yesterday. Stretch, walk easy, come back stronger.'; }
+  else if(p.recovery){ head = 'Recovery day'; meta = 'You trained yesterday. A mobility flow today, then a walk if you fancy it.'; }
   else { head = SESS[mainNext].title; meta = `${SESS[mainNext].sub} · about ${estMin(mainNext)} min`; }
 
   let actions = '';
@@ -644,7 +672,7 @@ function todayHTML(){
   const nudge = findNudge(p);
   const wk = p.wk, tk = dayKey(now);
   const bars = wk.days.map((d,i)=>{
-    const k = d.list.some(s=>s.kind==='full')?'full':d.list.some(s=>s.kind==='short')?'short':d.list.some(s=>s.kind==='cardio')?'cardio':d.list.some(s=>s.kind==='walk')?'walk':d.list.some(s=>s.kind==='hip')?'hip':'';
+    const k = d.list.some(s=>s.kind==='full')?'full':d.list.some(s=>s.kind==='short')?'short':d.list.some(s=>s.kind==='cardio')?'cardio':d.list.some(s=>s.kind==='walk'||s.kind==='mobility')?'walk':d.list.some(s=>s.kind==='hip')?'hip':'';
     return `<div class="day ${d.key===tk?'now':''}"><div class="bar ${k}"></div><div class="d">${'MTWTFSS'[i]}</div></div>`;
   }).join('');
   const mk = monthKey(now), rg = region(mk), cnt = Math.min(monthCount(mk), monthTarget(mk)), tgt = monthTarget(mk);
@@ -661,7 +689,7 @@ function todayHTML(){
   <div class="say"><q>${dx(dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}</span></div>
   <section class="card"><h2 class="ct">This week${wk.all.length?` <span class="aside">${wk.count} of ${wk.target} sessions</span>`:''}</h2>
     ${wk.all.length ? `<div class="week">${bars}</div>` : `<div class="slots">${Array.from({length:wk.target},(_,i)=>`<div class="slot">Session ${i+1}</div>`).join('')}</div>`}
-    ${wk.all.length?`<div class="legend"><span><i style="background:var(--g4)"></i>Session</span><span><i style="background:var(--g2)"></i>Short or cardio</span><span><i style="background:var(--teal)"></i>Walk</span><span><i style="background:var(--violet);opacity:.6"></i>Hip block</span></div>`:''}
+    ${wk.all.length?`<div class="legend"><span><i style="background:var(--g4)"></i>Session</span><span><i style="background:var(--g2)"></i>Short or cardio</span><span><i style="background:var(--teal)"></i>Mobility or walk</span><span><i style="background:var(--violet);opacity:.6"></i>Hip block</span></div>`:''}
     <div class="stats">
       <div class="stat"><div class="n c-coral">${wk.count}<span class="muted" style="font-size:18px">/${wk.target}</span></div><div class="k">Sessions</div></div>
       <div class="stat"><div class="n c-amber">${balance().toLocaleString('en-GB')}</div><div class="k">Points to spend</div></div>
@@ -703,7 +731,8 @@ function chooseHTML(){
   const full = nextFull();
   const opts = [
     {nm:'Strength', ds:`${SESS[full].title}: ${SESS[full].sub.toLowerCase()}`, times:[[10,'short'],[20,'trim'],[30,'full']]},
-    {nm:'Hip and mobility', ds:'Your physio’s four stretches', code:'hip'},
+    {nm:'Mobility flow', ds:'Spine, shoulders, hips and ankles', code:'mobility'},
+    {nm:'Hip block', ds:'Your physio’s four stretches', code:'hip'},
     {nm:S.loc==='uk'?'Pad intervals':'Cardio intervals', ds:SESS[cardioCode()].sub, code:cardioCode()},
     {nm:'Easy walk', ds:SESS[walkCode()].sub, code:walkCode()}
   ];
@@ -720,12 +749,13 @@ function chooseHTML(){
 function poseFor(id){ const k = EX_POSE[id]; return k && POSES[k] ? {k, p:POSES[k]} : null; }
 function demoBox(id, small){
   const e = EX[id], f = poseFor(id); if(!e || !f) return '';
-  return `<div class="demo fig" data-pose="${f.k}">${FIG.svg(f.p.a, Object.assign({label:`${esc(e.name)}, demonstrated`}, f.p))}</div>`;
+  const still = e.kind==='hold' || id==='squat_hold';
+  return `<div class="demo fig" data-pose="${f.k}"${still?' data-mode="once"':''}>${FIG.svg(f.p.a, Object.assign({label:`${esc(e.name)}, demonstrated`}, f.p))}</div>`;
 }
-function startFigure(){ const el = document.querySelector('.sheet .demo.fig') || document.querySelector('.demo.fig'); if(el) FIG.animate(el, POSES[el.dataset.pose]); }
-function ringHTML(s, label){
+function startFigure(){ const el = document.querySelector('.sheet .demo.fig') || document.querySelector('.demo.fig'); if(!el) return; const p = POSES[el.dataset.pose]; FIG.animate(el, Object.assign({}, p, {mode: el.dataset.mode || p.mode})); }
+function ringHTML(s, label, small){
   const C = 2*Math.PI*46;
-  return `<div class="ringwrap"><div class="ringbox" id="ring"><svg viewBox="0 0 100 100" aria-hidden="true">
+  return `<div class="ringwrap"><div class="ringbox${small?' sm':''}" id="ring"><svg viewBox="0 0 100 100" aria-hidden="true">
     <defs><linearGradient id="rg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--g1)"/><stop offset=".5" stop-color="var(--g3)"/><stop offset="1" stop-color="var(--g4)"/></linearGradient></defs>
     <circle class="trk" cx="50" cy="50" r="46" fill="none" stroke-width="5"/>
     <circle class="arc" id="arc" cx="50" cy="50" r="46" fill="none" stroke="url(#rg)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${C.toFixed(2)}" stroke-dashoffset="0"/></svg>
@@ -762,7 +792,7 @@ function runHTML(){
     const sub = s.t==='iv' ? `Round ${s.set} of ${s.of}` : s.t==='hold' ? `Hold ${s.set} of ${s.of}` : '';
     body = `<div><h1 class="exname">${dx(e.name)}</h1></div>
       <div class="phase">${esc(phase)}<small>${esc(sub)}</small></div>
-      ${ringHTML(s,label)}
+      ${ringHTML(s,label,!!poseFor(s.ex))}
       ${demoBox(s.ex,true)}${loadRow(s.ex)}
       <section class="card" style="display:grid;gap:4px"><p class="cue">${esc(e.cue)}</p>${e.note?`<div class="hipnote">${I.hip}<span>${esc(e.note)}</span></div>`:''}${guideBtn(s.ex)}</section>${watch}`;
     dock = !running ? `<button class="btn primary xl" data-a="tstart">${I.play} Start</button><button class="btn sm" data-a="skip">Skip</button>`
@@ -948,7 +978,7 @@ function settingsHTML(){
     </section>
     <section class="card"><h2 class="ct">How points work</h2>
       <ul class="steps" style="padding-left:18px;margin:0">
-        <li>Full session 30, short or cardio 15–20, hip block or walk 10.</li>
+        <li>Full session 30, cardio 20, short or mobility 15, hip block or walk 10.</li>
         <li>Plus 5 when a weight goes up, plus 25 for hitting your week.</li>
         <li>Three sessions a week in London, two in a Paris week. Ten minutes counts.</li>
         <li>Each month is a region. Reach its gate and its prize is free.</li></ul></section>

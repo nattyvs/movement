@@ -200,6 +200,10 @@ a{color:var(--violet);text-underline-offset:3px}
 .hipnote .ic{color:var(--violet);margin-top:1px}
 .ringwrap{display:grid;justify-items:center;gap:8px;padding:6px 0}
 .ringbox{position:relative;width:min(72vw,290px);aspect-ratio:1}
+.ringbox.sm{width:min(46vw,190px)}
+.ringbox.sm + * {}
+.ringwrap:has(.ringbox.sm) ~ .demo.fig{max-height:30vh}
+.ringbox.sm .big{font-size:clamp(56px,17vw,80px)}
 .ringbox svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
 .ringbox .trk{stroke:var(--line)}
 .ringbox .arc{transition:stroke-dashoffset .25s linear}
