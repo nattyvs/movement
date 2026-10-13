@@ -175,7 +175,11 @@ a{color:var(--violet);text-underline-offset:3px}
 /* run */
 .rbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;background:var(--bg);padding:8px 0 10px;display:grid;gap:10px}
 .rbar .r1{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.rbar .ttl{font-weight:650;font-size:15px;color:var(--muted);text-align:center;flex:1;min-width:0}
+.rbar .ttl{font-weight:650;font-size:15px;color:var(--muted);text-align:center;flex:1;min-width:0;display:grid;justify-items:center;line-height:1.2}
+.rbar .clk{font-size:13px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+.rbar .round[disabled]{opacity:.35}
+.stepper.reps .v{display:inline-flex;align-items:baseline;gap:5px;justify-content:center}
+.stepper.reps .v small{font-size:13px;font-weight:600;color:var(--muted)}
 .prog{height:6px;border-radius:6px;background:var(--line);overflow:hidden}
 .prog i{display:block;height:100%;background:var(--grad);border-radius:6px;transition:width .35s cubic-bezier(.2,.8,.2,1)}
 .setno{font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:650;color:var(--label)}
@@ -195,7 +199,9 @@ a{color:var(--violet);text-underline-offset:3px}
 .demo .b{opacity:0;animation:swap 3.4s ease-in-out infinite}
 @keyframes swap{0%,40%{opacity:0}52%,88%{opacity:1}100%{opacity:0}}
 .demo .cap{position:absolute;left:10px;bottom:10px;z-index:1;background:rgba(20,16,36,.62);color:#fff;font-size:12px;font-weight:600;padding:4px 9px;border-radius:999px}
-.loadrow{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.loadrow{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.loadrow .stepper button{width:46px}
+.loadrow .stepper .v{min-width:74px}
 .stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:14px;background:var(--card-2)}
 .stepper button{width:52px;height:52px;border:0;background:transparent;display:grid;place-items:center}
 .stepper .v{min-width:82px;text-align:center;font-weight:750;font-size:20px;font-variant-numeric:tabular-nums}

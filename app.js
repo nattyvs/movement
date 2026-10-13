@@ -527,7 +527,7 @@ function startSession(code, trim){
   audioOn(); lockScreen();
   const steps = build(code, trim), loads = {};
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = loadOf(s.ex); });
-  ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, lastSec:null};
+  ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, repsBy:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null;
   if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(false)); // inside the tap, so the phone allows playback
   enterStep(true); window.scrollTo(0,0);
@@ -543,15 +543,27 @@ function spokenFor(s){
 }
 function enterStep(first){
   const r = ui.run, s = r.steps[r.i]; r.timer = null; r.lastSec = null;
+  if(s.t==='work'){ const last = (S.lastReps||{})[s.ex]; r.repNow = (r.repsBy[s.ex]||[])[s.set-1] ?? (last && last[s.set-1]) ?? repRange(EX[s.ex])[1]; }
   if(s.t==='rest' || s.auto) startTimer(s.dur + (s.lead||0));
   say(spokenFor(s));
   render(); if(!first) window.scrollTo({top:0, behavior:'smooth'});
+}
+// back to the previous exercise step (skipping rests), undoing what that step had logged
+function goBack(){
+  const r = ui.run; if(!r || r.i===0) return;
+  let j = r.i - 1; while(j>0 && r.steps[j].t==='rest') j--;
+  for(let k=j; k<r.i; k++){ const st = r.steps[k]; if(st.t==='rest') continue; r.done = Math.max(0, r.done-1);
+    if(st.ex && r.sets[st.ex]) r.sets[st.ex]--; if(st.t==='work' && r.repsBy[st.ex]) r.repNow = r.repsBy[st.ex][st.set-1] ?? r.repNow; }
+  r.i = j; tone(660,.15); enterStep(false);
+  const s = r.steps[r.i]; if(s.t==='work' && r.repsBy[s.ex] && r.repsBy[s.ex][s.set-1]!==undefined) r.repNow = r.repsBy[s.ex][s.set-1];
+  render();
 }
 function startTimer(sec){ ui.run.timer = {end:Date.now()+sec*1000, total:sec, paused:false, remaining:0}; }
 function advance(){
   const r = ui.run, s = r.steps[r.i];
   if(s.t!=='rest') r.done++;
   if(s.ex && (s.t==='work' || s.t==='time' || (s.t==='hold'))) r.sets[s.ex] = (r.sets[s.ex]||0) + 1;
+  if(s.t==='work'){ (r.repsBy[s.ex] = r.repsBy[s.ex]||[])[s.set-1] = r.repNow; }
   r.i++;
   if(r.i >= r.steps.length){ chime(); flash('Done'); say('Done. Lovely work.'); finishRun(false); return; }
   const n = r.steps[r.i];
@@ -562,6 +574,7 @@ function advance(){
   else { tone(880,.22); }
   enterStep(false);
 }
+setInterval(()=>{ const c = document.getElementById('clk'); if(c && ui.run) c.textContent = fmtClock(Date.now()-ui.run.started); }, 1000);
 setInterval(()=>{
   const r = ui.run; if(ui.screen!=='run' || !r || !r.timer || r.timer.paused) return;
   const s = r.steps[r.i]; const left = Math.max(0, r.timer.end - Date.now());
@@ -596,7 +609,11 @@ function save(){
   const ups = [];
   (r.loaded||[]).forEach(id=>{
     const used = r.loads[id]; let next = used;
-    if(r.efforts[id]==='easy' && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){ next = Math.min(25, +(used + S.step).toFixed(2)); if(next>used) ups.push({id,next}); }
+    const reps = r.repsBy[id] || [], top = repRange(EX[id])[1];
+    const topped = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top) && r.efforts[id]!=='max';
+    if((r.efforts[id]==='easy' || topped) && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
+      const inc = EX[id].legs ? S.step : Math.max(.5, S.step/2); // upper body moves in smaller jumps
+      next = Math.min(25, +(used + inc).toFixed(2)); if(next>used) ups.push({id,next}); }
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
@@ -605,7 +622,8 @@ function save(){
   if(TRAINING.has(kind) && wkBefore.count+1 === wkBefore.target){ points += 25; bonus = true; }
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
-    legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets};
+    legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
+  S.lastReps = Object.assign(S.lastReps||{}, r.repsBy);
   if(r.feel) doc.feel = r.feel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
@@ -693,6 +711,9 @@ const $ = id => document.getElementById(id);
 const smart = s => String(s).replace(/(^|[\s(\[—–])"/g,'$1“').replace(/"/g,'”').replace(/(^|[\s(\[—–])'/g,'$1‘').replace(/'/g,'’');
 const esc = s => String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const dx = t => esc(t).replace(/([WVY])(?=[a-z\u00e0-\u00ff])/g,'<span class="kw">$1</span>');
+const fmtClock = ms => { const t = Math.max(0, Math.floor(ms/1000)), h = Math.floor(t/3600), m = Math.floor(t/60)%60, x = t%60; return (h ? h+':'+pad2(m) : m) + ':' + pad2(x); };
+// '8–12 reps' -> [8,12]; '10 each side' -> [10,10]
+const repRange = e => { const m = /(\d+)\s*[–-]\s*(\d+)/.exec(e.reps||''); if(m) return [+m[1], +m[2]]; const n = /(\d+)/.exec(e.reps||''); return n ? [+n[1], +n[1]] : [10,10]; };
 const fmtKg = n => (Math.round(n*10)/10).toString().replace(/\.0$/,'')+' kg';
 const I = {
   check:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -911,7 +932,7 @@ function ringHTML(s, label, small){
 function runHTML(){
   const r = ui.run, s = r.steps[r.i], def = SESS[r.code];
   const pct = (r.i/r.steps.length*100).toFixed(1);
-  const bar = `<div class="rbar"><div class="r1"><button class="round" data-a="exit" aria-label="Leave session">${I.x}</button><button class="ttl ttlbtn" data-a="overview" aria-label="See every exercise in this session">${esc(def.title)}${r.trim?' · shorter':''} <span aria-hidden="true">▾</span></button>
+  const bar = `<div class="rbar"><div class="r1"><button class="round" data-a="exit" aria-label="Leave session">${I.x}</button><button class="round" data-a="prev" aria-label="Back to the previous exercise" ${r.i===0?'disabled':''}>${I.back}</button><button class="ttl ttlbtn" data-a="overview" aria-label="See every exercise in this session"><span class="tt">${esc(def.title)}${r.trim?' · shorter':''} <span aria-hidden="true">▾</span></span><span class="clk num" id="clk">${fmtClock(Date.now()-r.started)}</span></button>
     <button class="round" data-a="voice" aria-label="${S.voice?'Turn voice off':'Turn voice on'}" aria-pressed="${S.voice}">${S.voice?I.vol:I.mute}</button></div><div class="prog"><i style="width:${pct}%"></i></div></div>`;
   const watch = r.i===0 && TRAINING.has(def.type) ? `<p class="watchnote">${S.overMusic===false ? 'Cues pause your music. ' : 'Cues play over your music. Take the phone off silent or they’re muted. '}The screen flashes at every change.</p>` : '';
   let body = '', dock = '';
@@ -922,7 +943,9 @@ function runHTML(){
     const e = EX[s.ex];
     body = `${demoBox(s.ex)}
       <div><h1 class="exname">${dx(e.name)}</h1><div class="presc">${esc(e.reps)}<small>Set ${s.set} of ${s.of}</small></div></div>
-      ${loadRow(s.ex)}
+      <div class="loadrow">${hasLoad(s.ex) ? `<div class="stepper"><button data-a="load" data-d="-1" aria-label="Less weight">${I.minus}</button><span class="v">${fmtKg(r.loads[s.ex])}</span><button data-a="load" data-d="1" aria-label="More weight">${I.plus}</button></div>` : ''}
+        <div class="stepper reps"><button data-a="reps" data-d="-1" aria-label="One rep fewer">${I.minus}</button><span class="v"><b class="num">${r.repNow}</b><small>reps</small></span><button data-a="reps" data-d="1" aria-label="One rep more">${I.plus}</button></div></div>
+      <p class="hint" style="margin:-6px 0 0">${hasLoad(s.ex) ? esc(e.unit.charAt(0).toUpperCase()+e.unit.slice(1))+'. ' : ''}Set the reps you actually did before tapping done.</p>
       <section class="card" style="display:grid;gap:4px"><p class="cue">${esc(e.cue)}</p>${e.note?`<div class="hipnote">${I.hip}<span>${esc(e.note)}</span></div>`:''}${guideBtn(s.ex)}</section>${watch}`;
     dock = `<button class="btn primary xl" data-a="done">${I.check} Set done</button>`;
   } else if(s.t==='rest'){
@@ -1235,7 +1258,8 @@ function settingsHTML(){
       <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? 'Cues play on top of Spotify or SoundCloud. iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.' : 'Cues pause your music and play even in silent mode.'}</p>
       <div class="srow"><span>Test sound and voice</span><button class="btn-ink" data-a="testsound">Play</button></div>
       <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p>
-      <div class="srow"><label for="step">Dumbbell step</label><select id="step" style="width:auto">${[1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
+      <div class="srow"><label for="step">Weights go up by</label><select id="step" style="width:auto">${[.5,1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
+      <p class="hint" style="margin-top:-4px">For leg lifts when a set feels easy or you hit the top of the rep range. Upper-body lifts go up by half. In a session, the + and − buttons move by 0.5 kg.</p>
     </section>
     <section class="card"><h2 class="ct">Story narrator</h2>
       ${typeof AUDIO!=='undefined' ? `<div class="srow"><span>Narration</span><div class="seg"><button data-a="narrmode" data-v="rec" aria-pressed="${S.narrMode!=='voice'}">Recorded</button><button data-a="narrmode" data-v="voice" aria-pressed="${S.narrMode==='voice'}">Phone voice</button></div></div>
@@ -1342,7 +1366,9 @@ document.addEventListener('click', e=>{
     case 'tpause': { const t = r.timer; if(t.paused){ t.end = Date.now()+t.remaining; t.paused = false; } else { t.remaining = Math.max(0,t.end-Date.now()); t.paused = true; } render(); break; }
     case 'skip': advance(); break;
     case 'plus15': if(r.timer){ r.timer.end += 15000; r.timer.total += 15; } break;
-    case 'load': { const s = r.steps[r.i]; const step = EX[s.ex].fixed ? 1 : S.step; r.loads[s.ex] = Math.min(25, Math.max(0, +(r.loads[s.ex] + (+b.dataset.d)*step).toFixed(2))); render(); break; }
+    case 'reps': { r.repNow = Math.max(0, Math.min(60, r.repNow + (+b.dataset.d))); render(); break; }
+    case 'prev': goBack(); break;
+    case 'load': { const s = r.steps[r.i]; const step = EX[s.ex].fixed ? 1 : .5; r.loads[s.ex] = Math.min(25, Math.max(0, +(r.loads[s.ex] + (+b.dataset.d)*step).toFixed(2))); render(); break; }
     case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'effort': r.efforts[b.dataset.id] = b.dataset.v; render(); break;
