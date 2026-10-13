@@ -330,6 +330,13 @@ Object.assign(EX_POSE, {tr_squat:'chairsquat', tr_split:'bwsplit', tr_hinge:'bwr
 POSES.stepupdb = {anchor:'ankle', at:POSES.stepup.at, prop:POSES.stepup.prop, propBox:POSES.stepup.propBox,
   a:Object.assign({}, POSES.stepup.a, {upper:184, fore:183, upper2:176, fore2:178, weight:1, dbAng:0}), b:Object.assign({}, POSES.stepup.b, {upper:182, fore:181, upper2:178, fore2:180, weight:1, dbAng:0})};
 // ladder rungs and block exercises
+// mobility flows two to four
+POSES.inchworm = {anchor:'toe', at:[44,141], prop:PROP.mat, a:{torso:125.7, neck:30, thigh:168, shin:192, foot:90, upper:180, fore:180}, b:{torso:75.7, neck:12, thigh:255.7, shin:255.7, foot:165.7, upper:180, fore:180}};
+POSES.rockback = {anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:80, neck:0, thigh:180, shin:270, foot:270, upper:180, fore:180}, b:{torso:100, neck:10, thigh:120, shin:270, foot:270, upper:100, fore:100}};
+POSES.childpose = {anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:100, neck:10, thigh:120, shin:270, foot:270, upper:100, fore:100}, b:{torso:103, neck:14, thigh:118, shin:270, foot:270, upper:98, fore:98}};
+POSES.calfwall = {anchor:'ankle', at:[117,140], prop:PROP.wall, propBox:[214,10,228,146], a:{torso:20, thigh:202, shin:202, foot:90, thigh2:150, shin2:192, foot2:90, upper:85, fore:92}, b:{torso:25, thigh:205, shin:205, foot:90, thigh2:148, shin2:194, foot2:90, upper:60, fore:120}};
+POSES.passthrough = {view:'front', at:[120,146], a:{view:'front', thigh:178, shin:180, upper:158, fore:158, band:1}, b:{view:'front', thigh:178, shin:180, upper:18, fore:18, band:1}};
+Object.assign(EX_POSE, {inchworm:'inchworm', elbow_sky:'thread', lunge_reach:'hipflexor', hip_circles:'march', squat_stand:'bwrdl', child_reach:'childpose', band_pass:'passthrough', rock_back:'rockback', calf_wall:'calfwall'});
 Object.assign(EX_POSE, {incline_push:'inclinepush', push_up:'pushup', step_up_db:'stepupdb', dead_bug_long:'deadbug', dead_bug_db:'deadbug', hops15:'hops', hops20:'hops', sl_bridge:'slbridge',
   heel_goblet:'squat', bstance_thrust:'thrust', kick_rdl_db:'kickrdl', rev_lunge:'split', alt_press:'press', slow_goblet:'squat', pause_thrust:'thrust', slow_rdl:'rdl', slow_split:'split'});
 

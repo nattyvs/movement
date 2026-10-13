@@ -134,6 +134,34 @@ const EX = {
   supine_flex:{name:'Supine passive hip flexion',kind:'hold',holds:2,dur:15,demo:'One_Knee_To_Chest',
     cue:'On your back, hug one knee gently towards your chest. The other leg stays long.',
     how:{setup:['On your back, both legs long.'],go:['Hug one knee gently to your chest.','Hold, then swap.'],tips:['Let the long leg relax into the floor.']}},
+  /* ---- mobility flows two to four ---- */
+  inchworm:{name:'Inchworm',kind:'reps',sets:1,reps:'5 slow reps',bw:true,rest:20,est:70,
+    cue:'Fold forward, walk your hands out to a plank, then walk them back and roll up.',
+    how:{setup:['Stand tall, feet hip-width.'],go:['Fold forward and put your hands on the floor, bending your knees as much as you need.','Walk your hands out to a plank, pause, then walk them back and roll up slowly.'],tips:['Bent knees are fine. The stretch belongs in the backs of your legs, so keep your lower back long.']}},
+  elbow_sky:{name:'Elbow to the sky',kind:'reps',sets:1,reps:'8 each side',bw:true,rest:20,est:70,
+    cue:'On hands and knees, one hand behind your head. Turn your elbow down to the other wrist, then up to the ceiling.',
+    how:{setup:['Hands and knees, hips over knees.','Put one hand behind your head.'],go:['Turn your elbow down towards the other wrist.','Then open it up to the ceiling, eyes following.'],tips:['Hips stay still. The turn comes from your upper back.']}},
+  lunge_reach:{name:'Lunge with a reach',kind:'reps',sets:1,reps:'5 each side',bw:true,rest:20,est:80,
+    cue:'Half-kneeling lunge, one hand on the floor beside your front foot, the other arm reaching to the ceiling.',note:'Keep the front knee in line with your foot, never drifting inwards.',
+    how:{setup:['Kneel on one knee on a cushion, the other foot well in front.'],go:['Put one hand on the floor beside your front foot.','Reach the other arm up to the ceiling and follow it with your eyes. One breath, then back down.'],tips:['Squeeze the glute of the kneeling leg.','Swap legs after five.']}},
+  hip_circles:{name:'Standing hip circles',kind:'reps',sets:1,reps:'5 each way, each leg',bw:true,rest:20,est:70,
+    cue:'Hand on a wall. Lift one knee and draw slow, big circles with it.',note:'Keep the circles comfortable. Make them smaller if your hip complains.',
+    how:{setup:['Stand side-on to a wall, one hand on it.'],go:['Lift the outside knee towards hip height.','Draw slow circles with it, five one way and five the other.'],tips:['Standing leg tall. Move only as far as feels smooth.']}},
+  squat_stand:{name:'Squat to stand',kind:'reps',sets:1,reps:'8 slow reps',bw:true,rest:20,est:50,
+    cue:'Fold and hold your toes, sit down into a squat, then straighten your legs while still holding on.',
+    how:{setup:['Feet a bit wider than hips, toes slightly out.'],go:['Fold forward and hold your toes or shins.','Sit your hips down into a squat, chest up between your knees.','Lift your hips and straighten your legs, still holding on.'],tips:['Bend your knees as much as you need to reach.']}},
+  child_reach:{name:'Child’s pose side reach',kind:'hold',holds:1,dur:30,
+    cue:'Sit back towards your heels, arms long, then walk both hands to one side to stretch along your ribs.',
+    how:{setup:['Kneel with knees a little apart and sit back towards your heels.'],go:['Reach your arms long in front of you.','Walk both hands to one side and breathe into the opposite ribs. Hold.'],tips:['A cushion between bottom and heels helps tight knees.']}},
+  band_pass:{name:'Band pass-through',kind:'reps',sets:1,reps:'10 slow reps',bw:true,rest:20,est:45,
+    cue:'Hold a band wide in both hands, arms straight. Lift it up over your head and back, then return.',
+    how:{setup:['Hold the band wide, hands much further apart than your shoulders.'],go:['Keep your arms straight and lift the band up over your head.','Take it back only as far as is comfortable, then return.'],tips:['Wider hands make it easier. Ribs down.']}},
+  rock_back:{name:'Rock back',kind:'reps',sets:1,reps:'10 slow reps',bw:true,rest:20,est:45,
+    cue:'On hands and knees, rock your hips back towards your heels, then forward again.',
+    how:{setup:['Hands under shoulders, knees under hips.'],go:['Keep your back long and rock your hips back towards your heels.','Rock forward to the start.'],tips:['Go only as far as your back stays flat.']}},
+  calf_wall:{name:'Wall calf stretch',kind:'hold',holds:1,dur:30,
+    cue:'Hands on the wall, one leg back with the heel down and knee straight. Lean in.',
+    how:{setup:['Face a wall, hands on it at shoulder height.','Step one foot well back, heel down, knee straight.'],go:['Lean your hips towards the wall until you feel the calf stretch.','Hold and breathe.'],tips:['Back foot points straight at the wall.']}},
   /* ---- ladder rungs: harder versions that swap in as she masters each one ---- */
   incline_push:{name:'Push-up, hands on a step',kind:'reps',sets:3,reps:'8–12 reps',bw:true,rest:60,
     cue:'Hands on the bottom stair, one straight line from heels to head.',
@@ -203,7 +231,10 @@ const SESS = {
   T1:{title:'Travel one',sub:'Squat, pull and core. Band and a chair',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_squat','band_row']},{pair:['tr_split','pull_apart']},'pause_bridge','dead_bug']},
   T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'pallof','jacks']},
   shortAway:{title:'Ten-minute version',sub:'Anywhere, no kit',type:'short',loc:'away',legs:true,items:[{id:'march_warm',dur:120},{pair:['tr_squat','knee_push'],sets:2,rest:45},{id:'pause_bridge',sets:2},'dead_bug']},
-  mobility:{title:'Mobility flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
+  mobility:{title:'Full body flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
+  mobHips:{title:'Hips and ankles flow',sub:'Hip circles, lunges, deep squat and calves',type:'mobility',items:['hip_circles','rock_back','hip_flexor','lunge_reach','knee_wall','squat_hold','calf_wall','calf_raise']},
+  mobility2:{title:'Full body flow two',sub:'Hamstrings, upper back, hips and shoulders',type:'mobility',items:['inchworm','elbow_sky','lunge_reach','hip_circles','squat_stand','child_reach','band_pass','calf_wall']},
+  mobSpine:{title:'Spine and shoulders flow',sub:'Upper back, ribs and shoulders',type:'mobility',items:['cat_cow','elbow_sky','thread_needle','rock_back','child_reach','wall_angel','band_pass','doorway_pec','inchworm']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
   coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
   coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
@@ -216,6 +247,7 @@ const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hing
   hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
   piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
   hip_flexor:['mobility'], knee_wall:['mobility'], squat_hold:['mobility'], ham_floss:['mobility'], calf_raise:['legs','mobility'],
+  inchworm:['mobility'], elbow_sky:['mobility'], lunge_reach:['mobility'], hip_circles:['mobility'], squat_stand:['mobility'], child_reach:['mobility'], band_pass:['mobility','shoulders'], rock_back:['mobility'], calf_wall:['mobility'],
   incline_push:['chest'], push_up:['chest','core'], step_up_db:['legs','glutes'], dead_bug_long:['core'], dead_bug_db:['core'], hops15:['legs'], hops20:['legs'], sl_bridge:['glutes'],
   heel_goblet:['legs','glutes'], bstance_thrust:['glutes'], kick_rdl_db:['glutes','legs'], rev_lunge:['legs','glutes'], alt_press:['shoulders'],
   slow_goblet:['legs','glutes'], pause_thrust:['glutes'], slow_rdl:['glutes','legs'], slow_split:['legs','glutes']};
@@ -502,6 +534,9 @@ function nextFull(){
 const shortCode = () => ({uk:'shortUK', paris:'shortParis', away:'shortAway'})[S.loc] || 'shortUK';
 const walkCode = () => S.loc==='uk' ? 'walkUK' : 'walkParis';
 const cardioCode = () => S.loc==='uk' ? 'padIV' : 'parisIV';
+// mobility flows take turns: full body, hips and ankles, full body two, spine and shoulders
+const MOB = ['mobility','mobHips','mobility2','mobSpine'];
+function mobilityCode(){ const last = sorted().find(s=>s.kind==='mobility' && MOB.includes(s.code)); return last ? MOB[(MOB.indexOf(last.code)+1) % MOB.length] : MOB[0]; }
 const coolCode = () => S.loc==='uk' ? 'coolUK' : 'coolParis';
 const LOCNAME = {uk:'London', paris:'Paris', away:'Travelling'};
 function plan_(){
@@ -513,7 +548,7 @@ function plan_(){
   const trainedY = sessions.some(s=>s.day===y && isTraining(s));
   const recovery = !trained && trainedY && !ui.trainAnyway;
   let main = null;
-  if(!trained){ main = recovery ? (walked ? null : 'mobility') : nextFull(); }
+  if(!trained){ main = recovery ? (walked ? null : mobilityCode()) : nextFull(); }
   return {hipDone, trained, walked, recovery, main, wk:weekInfo(now,true)};
 }
 
@@ -1113,7 +1148,7 @@ function chooseHTML(){
   const full = nextFull();
   const opts = [
     {nm:'Strength', ds:`${SESS[full].title}: ${SESS[full].sub.toLowerCase()}`, times:[[10,'short'],[20,'trim'],[30,'full']]},
-    {nm:'Mobility flow', ds:'Spine, shoulders, hips and ankles', code:'mobility'},
+    {nm:'Mobility flow', ds:`${SESS[mobilityCode()].title}: ${SESS[mobilityCode()].sub.toLowerCase()}`, code:mobilityCode()},
     {nm:'Hip block', ds:'Your physio’s four stretches', code:'hip'},
     {nm:S.loc==='uk'?'Pad run':'Cardio intervals', ds:SESS[cardioCode()].sub, code:cardioCode()},
     {nm:'Easy walk', ds:SESS[walkCode()].sub, code:walkCode()}
