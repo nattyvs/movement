@@ -1484,7 +1484,7 @@ function progressHTML(){
     return `<svg viewBox="0 0 92 30" aria-hidden="true"><path class="sp" d="M${pts.map(p=>p.map(n=>n.toFixed(1)).join(' ')).join(' L')}"/><circle class="spdot" cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="3"/></svg>`; };
   const mins = sessions.reduce((a,s)=>a+(s.minutes||0),0);
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
-    <section class="gcard flat"><h1>${trainingTotal()} sessions</h1><p class="meta">Since you started. ${mins.toLocaleString('en-GB')} minutes moving · ${sessions.filter(s=>s.kind==='hip').length} hip blocks${weeksOnTarget() ? ` · ${weeksOnTarget()} ${weeksOnTarget()===1?'week':'weeks'} on target` : ''}</p></section>
+    <section class="gcard flat"><h1>${trainingTotal()} ${trainingTotal()===1?'session':'sessions'}</h1><p class="meta">Since you started. ${mins.toLocaleString('en-GB')} minutes moving · ${sessions.filter(s=>s.kind==='hip').length} hip blocks${weeksOnTarget() ? ` · ${weeksOnTarget()} ${weeksOnTarget()===1?'week':'weeks'} on target` : ''}</p></section>
     <section class="card chart"><h2 class="ct">Sessions per week <span class="aside">dashed: target</span></h2>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Training sessions per week, last eight weeks"><defs><linearGradient id="pbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--g1)"/><stop offset="1" stop-color="var(--g4)"/></linearGradient></defs>
       <line class="gl" x1="20" x2="${W}" y1="${H-22}" y2="${H-22}"/><line class="tgt" x1="20" x2="${W}" y1="${tY.toFixed(1)}" y2="${tY.toFixed(1)}"/>${bars}</svg></section>
