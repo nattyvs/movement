@@ -311,14 +311,23 @@ function nextStage(){ const st = stage(); return STAGES[st.index+1] || null; }
 function mood(){ const d = daysSinceTraining(); if(d===null) return 'new'; if(d<=1) return 'smug'; if(d<=3) return 'peckish'; return 'sulk'; }
 
 /* ================= Story ================= */
-const scenesOpen = () => Math.min(STORY.scenes.length, 1 + trainingTotal());
+// longer sessions carry the story further, matching the 10, 20 and 30 minute choices on Today:
+// under 15 planned minutes earns one scene, 15 to 21 earns two, 22 or more earns three. Stopping early earns one.
+// The number is saved on the session, so later plan changes never move the story backwards.
+function earnFor(code, trim, early){ if(!SESS[code] || !TRAINING.has(SESS[code].type)) return 0; if(early) return 1;
+  const m = estMin(code, trim); return m < 15 ? 1 : m < 22 ? 2 : 3; }
+const sceneEarn = s => !isTraining(s) ? 0 : (s.story ?? (s.kind==='short' || s.partial ? 1 : (s.trim || s.kind==='cardio') ? 2 : 3));
+const runEarn = r => earnFor(r.code, r.trim, false);
+const scenesOpen = () => Math.min(STORY.scenes.length, 1 + sessions.reduce((a,s)=>a+sceneEarn(s),0));
 const chapterOf = i => STORY.chapters.find(c=>i>=c.from && i<=c.to) || STORY.chapters[STORY.chapters.length-1];
 const sceneLabel = i => { const c = chapterOf(i); return i===0 ? 'Start' : String(c.from===0 ? i : i - c.from + 1); };
 const NUMW = ['one','two','three','four','five','six','seven','eight','nine','ten','eleven','twelve'];
 const BOOKS = () => STORY.books || [{title:STORY.title, notebook:'Kesh’s ledger', from:0, to:1e9}];
 const bookOf = i => BOOKS().find(b=>i>=b.from && i<=b.to) || BOOKS()[BOOKS().length-1];
-// when did chapter c open? scene i opens after the i-th training session
-function chapterStart(c){ if(c.from===0) return 0; const tr = sessions.filter(x=>TRAINING.has(x.kind)).sort((a,b)=>a.ts-b.ts); return tr[c.from-1] ? tr[c.from-1].ts : Infinity; }
+// when did chapter c open? the session that brought the earned scene count up to its first scene
+function chapterStart(c){ if(c.from===0) return 0; let n = 0;
+  for(const x of sessions.filter(isTraining).sort((a,b)=>a.ts-b.ts)){ n += sceneEarn(x); if(n >= c.from) return x.ts; }
+  return Infinity; }
 function openNotes(){
   const so = scenesOpen(), care = sessions.filter(x=>x.kind==='hip'||x.kind==='mobility'||x.kind==='cool'), out = [];
   STORY.chapters.forEach(c=>{ if(!c.notes || c.from >= so) return; const st = chapterStart(c);
@@ -545,15 +554,30 @@ function narrStop(){
   try{ navigator.mediaSession.metadata = null; }catch(e){}
   if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render();
 }
-// what to play while stretching: unread scenes first, then the scene this session is about to earn, then unread satchel finds
-function storyQueue(earning){
-  const so = scenesOpen(), q = [];
-  for(let i=0;i<so;i++) if(!S.read['s'+i]) q.push({t:'s', i});
-  if(earning && so < STORY.scenes.length && bookOf(so) === bookOf(Math.max(0, so-1)) && !S.read['s'+so]) q.push({t:'s', i:so});
-  openNotes().forEach(i=>{ if(!S.read['n'+i]) q.push({t:'n', i}); });
-  if(!q.length && so) q.push({t:'s', i:so-1});
-  return q.slice(0, 4);
+// how long an item takes to hear: the recording if there is one, otherwise a reading-pace estimate
+function itemSecs(q){ const a = typeof AUDIO !== 'undefined' && AUDIO.items[q.t+q.i]; if(a && a.dur) return a.dur;
+  const it = itemOf(q); return [].concat(it.text).join(' ').split(/\s+/).length / 2.6 + 3; }
+// what to play while stretching, sized to the stretching time (budget, in seconds):
+// unread scenes in order (plus any this session is about to earn), each followed by the satchel finds that belong to it.
+// If that leaves the cool-down half empty, it opens with the last scene she heard, as a "last time".
+function storyQueue(earn, budget){
+  budget = budget || 420;
+  const so = scenesOpen(), book = bookOf(Math.max(0, so-1)), top = Math.min(STORY.scenes.length, so + (earn||0));
+  const scenes = []; for(let i=0;i<top;i++){ if(i>=so && bookOf(i)!==book) break; if(!S.read['s'+i]) scenes.push(i); }
+  const notes = openNotes().filter(i=>!S.read['n'+i]), used = new Set(), cand = [];
+  const notesUpTo = i => notes.forEach(j=>{ if(!used.has(j) && (STORY.notes[j].after||0) <= i){ used.add(j); cand.push({t:'n', i:j}); } });
+  if(scenes.length) notesUpTo(scenes[0]-1);
+  scenes.forEach(i=>{ cand.push({t:'s', i}); notesUpTo(i); });
+  notesUpTo(1e9);
+  if(!cand.length){ return so ? [{t:'s', i:so-1}] : []; }
+  const total = cand.reduce((a,q)=>a+itemSecs(q),0), first = scenes[0];
+  if(first > 0 && total < budget*.7 && bookOf(first-1)===bookOf(first)) cand.unshift({t:'s', i:first-1, recap:true});
+  const q = []; let t = 0;
+  for(const x of cand){ if(q.length && t >= budget) break; q.push(x); t += itemSecs(x); }
+  return q.slice(0, 12);
 }
+// seconds left in the session from step k on, on the same estimate the session preview uses
+const secsLeft = (steps, k) => steps.slice(k).reduce((a,s)=>a+(s.t==='work' ? (EX[s.ex].est||40) : ((s.dur||0)+(s.lead||0))),0);
 function paintNP(light){
   const el = document.getElementById('np'); if(!el) return;
   if(!NARR.active){ el.hidden = true; document.body.classList.remove('np-on'); document.querySelectorAll('.rbody p.speaking').forEach(p=>p.classList.remove('speaking')); return; }
@@ -563,7 +587,7 @@ function paintNP(light){
   if(light && bar && el.dataset.k === String(NARR.k) && el.dataset.pl === String(NARR.playing)){ bar.style.width = pct.toFixed(1)+'%'; }
   else {
     el.hidden = false; document.body.classList.add('np-on'); el.dataset.k = NARR.k; el.dataset.pl = NARR.playing;
-    el.innerHTML = `<div class="in"><span class="npk">${NARR.playing ? (NARR.rec ? `Read by ${esc(q.t==='s' ? AUDIO.voices.s : AUDIO.voices.n)}` : 'Reading') : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
+    el.innerHTML = `<div class="in"><span class="npk">${q.recap ? 'Last time · ' : ''}${NARR.playing ? (NARR.rec ? `Read by ${esc(q.t==='s' ? AUDIO.voices.s : AUDIO.voices.n)}` : 'Reading') : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
       <button class="npb" data-a="${NARR.playing?'narrpause':'narrplay'}" aria-label="${NARR.playing?'Pause the story':'Play the story'}">${NARR.playing?I.pause:I.play}</button>
       <button class="npb ghost" data-a="narrstop" aria-label="Stop the story">${I.x}</button><i style="width:${pct.toFixed(1)}%"></i></div>`;
   }
@@ -582,7 +606,7 @@ function startSession(code, trim){
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = EX[s.ex].fixed ? loadOf(s.ex) : snapKg(loadOf(s.ex)); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, repsBy:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null;
-  if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(false)); // inside the tap, so the phone allows playback
+  if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(0, secsLeft(steps, 0))); // inside the tap, so the phone allows playback
   enterStep(true); window.scrollTo(0,0);
 }
 function spokenFor(s){
@@ -677,7 +701,7 @@ function save(){
   if(TRAINING.has(kind) && wkBefore.count+1 === wkBefore.target){ points += 25; bonus = true; }
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
-    legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
+    story: earnFor(r.code, r.trim, r.early), legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
   S.lastReps = Object.assign(S.lastReps||{}, r.repsBy);
   if(r.feel) doc.feel = r.feel; if(r.runFeel) doc.runFeel = r.runFeel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
@@ -689,7 +713,7 @@ function save(){
   if(ranRun && runFeel){ const was = runLevel(); let now = was;
     if(runFeel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(runFeel!=='hard') now = Math.min(RUNS.length, was+1);
     S.runLevel = now; doc.runLevel = was; run = {was, now}; }
-  ui.last = {run, points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
+  ui.last = {run, points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScenes: Array.from({length: scenesOpen()-scBefore}, (_,k)=>scBefore+k), newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
   touch(); render(); window.scrollTo(0,0);
 }
@@ -971,7 +995,7 @@ function chooseHTML(){
   ];
   return `<div class="enter" style="display:grid;gap:14px">
     <button class="back" data-a="home">${I.back}Today</button>
-    <section class="gcard flat"><h1>Pick your own</h1><p class="meta">${({uk:'London kit', paris:'Paris kit', away:'Travel kit: band, chair, stairs, backpack'})[S.loc]}. Choose a style. For strength, choose how long you’ve got.</p></section>
+    <section class="gcard flat"><h1>Pick your own</h1><p class="meta">${({uk:'London kit', paris:'Paris kit', away:'Travel kit: band, chair, stairs, backpack'})[S.loc]}. Choose a style. For strength, choose how long you’ve got: the longer you go, the more of the story you unlock.</p></section>
     <section class="card">${opts.map(o=> o.times ?
       `<div class="opt str" style="cursor:default"><span class="nm">${o.nm}</span><span class="ds">${esc(o.ds)}</span><div class="times">${o.times.map(([m,k])=>`<button class="time" data-a="${k==='trim'?'starttrim':'start'}" data-code="${k==='short'?shortCode():full}" data-trim="${k==='trim'?1:''}">${k==='short'?estMin(shortCode()):k==='trim'?estMin(full,true):estMin(full)} min</button>`).join('')}</div></div>` :
       `<button class="opt" data-a="start" data-code="${o.code}"><span class="nm">${o.nm}</span><span class="ds">${esc(o.ds)}</span><span class="go">${estMin(o.code)} min</span></button>`).join('')}
@@ -1034,7 +1058,7 @@ function runHTML(){
                     : `<button class="btn" data-a="tpause">${paused?'Resume':'Pause'}</button><button class="btn sm" data-a="skip">Skip</button>`;
   }
   const calm = ['hip','mobility','walk','cool'].includes(def.type) || s.t==='hold' || /_cool$/.test(s.ex||'');
-  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(TRAINING.has(def.type)); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · the coach goes quiet, beeps still mark each change</span></span></button>`; }
+  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(runEarn(r), Math.max(240, secsLeft(r.steps, r.i))); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · the coach goes quiet, beeps still mark each change</span></span></button>`; }
   return bar + `<div class="enter" style="display:grid;gap:14px" data-step="${r.i}">${body}</div><div class="dock"><div class="in">${dock}</div></div>`;
 }
 
@@ -1072,9 +1096,9 @@ function celebrateHTML(){
     </section>
     <div class="say"><q>${dx(said)}</q><span class="by">${esc(S.dragon)}, ${st.name.toLowerCase()}</span></div>
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
-    ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
+    ${L.newScenes.length ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScenes[0]}"><span class="ct" style="margin:0">${L.newScenes.length>1 ? `${NUMW[L.newScenes.length-1].replace(/^./,c=>c.toUpperCase())} new scenes unlocked` : 'New scene unlocked'}</span><span class="ut">${L.newScenes.map(i=>dx(STORY.scenes[i].title)).join(' · ')}</span><span class="muted">${esc(bookOf(L.newScenes[0]).title)} · tap to read, about ${Math.max(1, Math.round(L.newScenes.reduce((a,i)=>a+itemSecs({t:'s',i}),0)/60))} min${L.newScenes.length>1 ? ' together' : ''}</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
-    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
+    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About ${estMin(coolCode())} minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScenes.length && n<=L.newScenes.length ? (n>1 ? 'your new scenes' : 'your new scene') : 'the story'; })()} plays.</span></span></button>` : (L.newScenes.length || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
     ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now, true))}</b> at the end of A and B, or <b>${esc(runDesc(L.run.now))}</b> as a pad run on its own.</p></section>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
@@ -1192,7 +1216,7 @@ function readHTML(){
   const isEnd = isScene && i === bookOf(i).to;
   const prev = prevI>=0 ? `<button class="btn" data-a="read" data-t="${t}" data-i="${prevI}">Previous</button>` : '';
   const next = nextI>=0 ? `<button class="btn primary" data-a="read" data-t="${t}" data-i="${nextI}">Next</button>`
-    : `<button class="btn" data-a="realmtab">${!isScene ? 'Back to the realm' : isEnd ? 'Back to the realm' : i+1 < STORY.scenes.length && i+1 <= bookOf(i).to ? 'Next scene unlocks after your next session' : 'The next chapter is being written'}</button>`;
+    : `<button class="btn" data-a="realmtab">${!isScene ? 'Back to the realm' : isEnd ? 'Back to the realm' : i+1 < STORY.scenes.length && i+1 <= bookOf(i).to ? 'More unlocks after your next workout' : 'The next chapter is being written'}</button>`;
   const doc = !isScene && (item.kind||'ledger')!=='ledger';
   const body = [].concat(item.text).map(p=>{ let h = esc(smart(p)); if(doc) h = h.replace(/^([A-Z][A-Za-z’ ]{1,18}):/, '<b>$1:</b>'); return `<p>${h}</p>`; }).join('');
   const c = isScene ? chapterOf(i) : null;
@@ -1412,7 +1436,7 @@ document.addEventListener('click', e=>{
     case 'preview': ui.preview = {code:b.dataset.code, trim:false}; ui.screen = 'preview'; render(); window.scrollTo(0,0); break;
     case 'read': ui.read = {t:b.dataset.t, i:+b.dataset.i}; ui.sheet = null; ui.screen = 'read'; render(); window.scrollTo(0,0); break;
     case 'listen': narrStart([{t:b.dataset.t, i:+b.dataset.i}]); render(); break;
-    case 'storyrun': { const r2 = ui.run; narrStart(storyQueue(!!(r2 && TRAINING.has(SESS[r2.code].type)))); render(); break; }
+    case 'storyrun': { const r2 = ui.run; narrStart(r2 ? storyQueue(runEarn(r2), Math.max(240, secsLeft(r2.steps, r2.i))) : storyQueue(0)); render(); break; }
     case 'narrpause': narrPause(); if(ui.screen==='read') render(); break;
     case 'narrplay': narrResume(); if(ui.screen==='read') render(); break;
     case 'narrstop': narrStop(); break;
