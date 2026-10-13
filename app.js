@@ -137,8 +137,8 @@ const EX = {
 };
 
 const SESS = {
-  A:{title:'Session A',sub:'Squat, hinge and push',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},'dead_bug','pad_intervals']},
-  B:{title:'Session B',sub:'Single leg and pull',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']},
+  A:{title:'Session A',sub:'Squat, hinge and push, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},'dead_bug','pad_intervals']},
+  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']},
   C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_heavy','one_arm_row']},'rdl_heavy','hops','carry']},
   P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
   P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
@@ -168,9 +168,11 @@ const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool
 /* Pad runs: seven levels from short bursts to a steady 20 minutes at 6 km/h (her pad's top speed).
    Up a level after a run that felt about right or easy; same again if hard; down if too much or the hip was sore. */
 const RUNS = [
-  {rounds:8, on:45, off:45}, {rounds:6, on:60, off:60}, {rounds:5, on:120, off:60}, {rounds:4, on:180, off:60},
-  {rounds:3, on:300, off:60}, {rounds:2, on:480, off:60}, {steady:1200}];
-const runDesc = n => { const x = RUNS[n-1]; if(x.steady) return '20 minutes steady at 6 km/h';
+  {rounds:8, on:45, off:45, fin:{rounds:3, on:45, off:45}}, {rounds:6, on:60, off:60, fin:{rounds:4, on:45, off:45}},
+  {rounds:5, on:120, off:60, fin:{rounds:3, on:60, off:60}}, {rounds:4, on:180, off:60, fin:{rounds:3, on:90, off:45}},
+  {rounds:3, on:300, off:60, fin:{rounds:3, on:120, off:60}}, {rounds:2, on:480, off:60, fin:{rounds:2, on:180, off:45}},
+  {steady:1200, fin:{steady:360}}];
+const runDesc = (n, fin) => { const x = fin ? RUNS[n-1].fin : RUNS[n-1]; if(x.steady) return `${x.steady/60} minutes steady at 6 km/h`;
   const t = v => v>=60 ? (v/60)+' min' : v+' s'; return `${x.rounds} × ${t(x.on)} at 6, ${t(x.off)} easy`; };
 function installRuns(){ // re-run after every plan apply, which rebuilds EX and SESS
 RUNS.forEach((x,i)=>{ const n = i+1;
@@ -179,7 +181,15 @@ RUNS.forEach((x,i)=>{ const n = i+1;
     : {name:`Pad run, level ${n}`, kind:'iv', rounds:x.rounds, on:x.on, off:x.off, onLabel:'Run · 6 km/h', offLabel:'Easy · 4.5 km/h',
        cue:`${runDesc(n)}. Push the pad to 6 for the run, back to 4.5 to recover.`};
   MUSCLES['run'+n] = ['legs'];
+  const f = x.fin;
+  EX['fin'+n] = f.steady
+    ? {name:'Pad run finisher', kind:'timed', dur:f.steady, label:'Steady · 6 km/h', cue:`${f.steady/60} minutes at 6 to finish. Steady, chatty pace.`}
+    : {name:'Pad run finisher', kind:'iv', rounds:f.rounds, on:f.on, off:f.off, onLabel:'Run · 6 km/h', offLabel:'Easy · 4.5 km/h', cue:`${runDesc(n,true)}. Your little runs, growing.`};
+  MUSCLES['fin'+n] = ['legs'];
 });
+// A and B finish with the run at her current level
+for(const code of ['A','B']){ const sess = SESS[code]; if(!sess) continue; const base = sess.items.slice();
+  Object.defineProperty(sess, 'items', {get(){ return base.map(it => it==='pad_intervals' || /^fin\d$/.test(it) ? 'fin'+runLevel() : it); }, configurable:true}); }
 if(SESS.padIV){
   Object.defineProperty(SESS.padIV, 'items', {get(){ return ['pad_warm', 'run'+runLevel(), 'pad_cool']; }, configurable:true});
   Object.defineProperty(SESS.padIV, 'sub', {get(){ return `Level ${runLevel()} of ${RUNS.length}: ${runDesc(runLevel())}`; }, configurable:true});
@@ -669,13 +679,15 @@ function save(){
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
     legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
   S.lastReps = Object.assign(S.lastReps||{}, r.repsBy);
-  if(r.feel) doc.feel = r.feel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
+  if(r.feel) doc.feel = r.feel; if(r.runFeel) doc.runFeel = r.runFeel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
   let run = null;
-  if(r.code==='padIV' && !r.early){ const was = runLevel(); let now = was;
-    if(r.feel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(r.feel!=='hard') now = Math.min(RUNS.length, was+1);
+  const ranRun = r.steps.some((st,k)=>/^(run|fin)\d$/.test(st.ex||'') && k < r.i);
+  const runFeel = r.runFeel || (r.code==='padIV' ? r.feel : null);
+  if(ranRun && runFeel){ const was = runLevel(); let now = was;
+    if(runFeel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(runFeel!=='hard') now = Math.min(RUNS.length, was+1);
     S.runLevel = now; doc.runLevel = was; run = {was, now}; }
   ui.last = {run, points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
@@ -1034,10 +1046,11 @@ function reviewHTML(){
   const hip = [['fine','Fine'],['niggly','Niggly'],['sore','Sore']];
   const weights = (r.loaded||[]).length ? `<section class="card"><h2 class="ct">Weights <span class="aside">reps left on the last set</span></h2>${r.loaded.map(id=>{ const e = EX[id], v = r.efforts[id];
       return `<div class="eff"><div class="nm">${esc(e.name)}</div><div class="ld">${fmtKg(r.loads[id])} · ${esc(e.unit)}${e.fixed?' · Paris weights':''}</div><div class="chips">${pick('effort',v,'easy','Easy','3+ left',id)}${pick('effort',v,'right','Right','1–2 left',id)}${pick('effort',v,'max','Max','0 left',id)}</div></div>`; }).join('')}
-      <p class="hint" style="margin-top:10px">Easy means that lift goes up next time.</p></section>` : '';
+      <p class="hint" style="margin-top:10px">Easy, or two sessions in a row at the top of the rep range, moves that lift up one notch on your dial.</p></section>` : '';
   return `<div class="enter" style="display:grid;gap:14px">
     <section class="gcard flat"><h1>How did that feel?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. All optional. It’s what your coach reads at review time.</p></section>
     <section class="card"><h2 class="ct">Overall</h2><div class="chips">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
+      ${r.code!=='padIV' && r.steps.some((st,k)=>/^fin\d$/.test(st.ex||'') && k < r.i) ? `<h2 class="ct" style="margin-top:18px">The pad run at the end</h2><div class="chips">${feel.map(([v,l,h])=>pick('runfeel',r.runFeel,v,l,h)).join('')}</div>` : ''}
       <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
       <label class="ct" for="snote" style="display:block;margin:18px 0 8px">Anything to add</label>
       <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea></section>
@@ -1062,7 +1075,7 @@ function celebrateHTML(){
     ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
     ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
-    ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now))}</b>.</p></section>` : ''}
+    ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now, true))}</b> at the end of A and B, or <b>${esc(runDesc(L.run.now))}</b> as a pad run on its own.</p></section>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -1427,6 +1440,7 @@ document.addEventListener('click', e=>{
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'effort': r.efforts[b.dataset.id] = b.dataset.v; render(); break;
     case 'feel': r.feel = r.feel===b.dataset.v ? null : b.dataset.v; render(); break;
+    case 'runfeel': r.runFeel = r.runFeel===b.dataset.v ? null : b.dataset.v; render(); break;
     case 'hipfeel': r.hip = r.hip===b.dataset.v ? null : b.dataset.v; render(); break;
     case 'save': save(); break;
     case 'exit': ui.sheet = 'exit'; render(); break;
