@@ -406,17 +406,22 @@ const chime = () => { tone(784,.16); setTimeout(()=>tone(1046,.26),140); };
 function say(text){
   if(!S.voice || !window.speechSynthesis) return;
   try{
-    const resume = NARR.playing; if(resume) NARR.tok++;
+    const resume = NARR.playing; if(resume && !NARR.rec) NARR.tok++;
     speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02;
-    if(resume){ const tok = NARR.tok; u.onend = u.onerror = ()=>{ if(tok===NARR.tok && NARR.playing) setTimeout(()=>{ if(tok===NARR.tok) narrSpeak(); }, 300); }; }
+    if(resume) cueOver(text, u);
     speechSynthesis.speak(u); }catch(e){}
 }
 function flash(word, rest){
   const f = document.getElementById('flash'); f.textContent = word; f.classList.toggle('rest', !!rest);
   f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
 }
-/* ================= Story narrator (the phone's own voice) ================= */
-const NARR = {active:false, playing:false, queue:[], k:0, chunks:[], c:0, tok:0};
+/* ================= Story narrator =================
+   Recorded narration (audio.js, made by movement-data/tools/voice) when an item has it,
+   otherwise the phone's own voice. One queue, one mini player. */
+const NARR = {active:false, playing:false, queue:[], k:0, chunks:[], c:0, tok:0, rec:null, p:-1};
+const aud = new Audio(); aud.preload = 'auto';
+const recFor = q => (S.narrMode !== 'voice' && typeof AUDIO !== 'undefined' && AUDIO.items[q.t+q.i]) || null;
+const recRate = () => ({.85:.9, .95:1, 1.05:1.1})[S.narrRate || .95] || 1;
 function storyVoices(){ try{ const vs = speechSynthesis.getVoices() || []; return vs.filter(v=>/^en[-_]/i.test(v.lang)); }catch(e){ return []; } }
 function storyVoice(){
   const vs = storyVoices(); if(S.narrator){ const v = vs.find(v=>v.voiceURI===S.narrator); if(v) return v; }
@@ -433,31 +438,69 @@ function chunksFor(q){
   });
   return out;
 }
+function narrNext(){
+  const q = NARR.queue[NARR.k]; if(q){ S.read[q.t+q.i] = 1; touch(); }
+  NARR.k++; if(NARR.k >= NARR.queue.length){ narrStop(); return; }
+  narrItem(NARR.rec ? 0 : 1200);
+}
+// start the current queue item, recorded if we have it
+function narrItem(delay){
+  const q = NARR.queue[NARR.k], rec = recFor(q); const tok = ++NARR.tok;
+  NARR.rec = rec; NARR.p = -1; NARR.chunks = rec ? [] : chunksFor(q); NARR.c = 0;
+  if(rec){
+    aud.src = rec.src; aud.playbackRate = recRate(); aud.defaultPlaybackRate = recRate();
+    mediaMeta(q, rec); NARR.switching = true; const pr = aud.play(); if(pr && pr.catch) pr.catch(e=>{ if(e && e.name==='NotAllowedError'){ NARR.playing = false; paintNP(); } });
+  } else { try{ aud.pause(); }catch(e){} setTimeout(()=>{ if(tok===NARR.tok) narrSpeak(); }, delay||0); }
+  paintNP();
+}
 function narrSpeak(){
-  if(!NARR.playing || !window.speechSynthesis) return;
+  if(!NARR.playing || NARR.rec || !window.speechSynthesis) return;
   const ch = NARR.chunks[NARR.c];
-  if(!ch){
-    const q = NARR.queue[NARR.k]; S.read[q.t+q.i] = 1; touch();
-    NARR.k++; if(NARR.k >= NARR.queue.length){ narrStop(); return; }
-    NARR.chunks = chunksFor(NARR.queue[NARR.k]); NARR.c = 0; paintNP(); const tok = ++NARR.tok;
-    setTimeout(()=>{ if(tok===NARR.tok) narrSpeak(); }, 1400); return;
-  }
-  const tok = ++NARR.tok;
+  if(!ch){ narrNext(); return; }
+  NARR.p = ch.p; const tok = ++NARR.tok;
   try{ const u = new SpeechSynthesisUtterance(ch.text); u.lang = 'en-GB'; const v = storyVoice(); if(v){ u.voice = v; u.lang = v.lang; } u.rate = S.narrRate || .95;
     u.onend = ()=>{ if(tok!==NARR.tok || !NARR.playing) return; NARR.c++; paintNP(); narrSpeak(); };
     u.onerror = ()=>{ if(tok!==NARR.tok || !NARR.playing) return; NARR.c++; narrSpeak(); };
     speechSynthesis.speak(u); }catch(e){}
   paintNP();
 }
-function narrStart(queue){
-  if(!queue.length || !window.speechSynthesis) return;
-  audioOn(); NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){}
-  Object.assign(NARR, {active:true, playing:true, queue, k:0, chunks:chunksFor(queue[0]), c:0});
-  lockScreen(); narrSpeak();
+aud.addEventListener('ended', ()=>{ if(NARR.active && NARR.rec) narrNext(); });
+aud.addEventListener('timeupdate', ()=>{ if(!NARR.rec) return; const m = NARR.rec.marks || []; let j = 0; for(let x=0;x<m.length;x++) if(aud.currentTime >= m[x]) j = x; if(j-1 !== NARR.p){ NARR.p = j-1; } paintNP(true); });
+aud.addEventListener('playing', ()=>{ NARR.switching = false; });
+aud.addEventListener('pause', ()=>{ if(NARR.rec && NARR.playing && !NARR.cue && !NARR.switching && !aud.ended){ NARR.playing = false; paintNP(); } });
+aud.addEventListener('play', ()=>{ if(NARR.rec && !NARR.playing){ NARR.playing = true; paintNP(); } });
+function mediaMeta(q, rec){
+  try{ if(!('mediaSession' in navigator)) return; const it = itemOf(q);
+    navigator.mediaSession.metadata = new MediaMetadata({title: it.title, artist: q.t==='s' ? `Read by ${AUDIO.voices.s}` : `${kindOf(it)} · read by ${AUDIO.voices.n}`, album: bookOf(q.t==='s' ? q.i : 0).title, artwork:[{src:'icons/icon-512.png', sizes:'512x512', type:'image/png'}]});
+    const h = (a, f) => { try{ navigator.mediaSession.setActionHandler(a, f); }catch(e){} };
+    h('play', ()=>narrResume()); h('pause', ()=>narrPause());
+    h('seekbackward', ()=>{ aud.currentTime = Math.max(0, aud.currentTime - 15); }); h('seekforward', ()=>{ aud.currentTime = Math.min(aud.duration||0, aud.currentTime + 15); });
+    h('nexttrack', NARR.k+1 < NARR.queue.length ? ()=>{ aud.pause(); narrNext(); } : null);
+    h('previoustrack', ()=>{ aud.currentTime = 0; });
+  }catch(e){}
 }
-function narrPause(){ NARR.playing = false; NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){} paintNP(); }
-function narrResume(){ if(!NARR.active) return; NARR.playing = true; lockScreen(); narrSpeak(); }
-function narrStop(){ NARR.active = false; NARR.playing = false; NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){} if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render(); }
+function narrStart(queue){
+  if(!queue.length) return;
+  audioOn(); NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){}
+  Object.assign(NARR, {active:true, playing:true, queue, k:0, c:0});
+  lockScreen(); narrItem(0);
+}
+function narrPause(){ NARR.playing = false; NARR.tok++; if(NARR.rec) aud.pause(); else try{ speechSynthesis.cancel(); }catch(e){} paintNP(); }
+function narrResume(){ if(!NARR.active) return; NARR.playing = true; lockScreen(); if(NARR.rec){ aud.play(); paintNP(); } else narrSpeak(); }
+function narrStop(){
+  NARR.active = false; NARR.playing = false; NARR.rec = null; NARR.tok++;
+  try{ aud.pause(); aud.removeAttribute('src'); aud.load(); }catch(e){} try{ speechSynthesis.cancel(); }catch(e){}
+  try{ navigator.mediaSession.metadata = null; }catch(e){}
+  if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render();
+}
+// a spoken cue pauses the story, then it carries on a moment back
+function cueOver(text, u){
+  const recMode = !!NARR.rec; if(recMode){ NARR.cue = true; aud.pause(); }
+  const tok = NARR.tok, back = () => { if(tok!==NARR.tok || !NARR.playing) return; NARR.cue = false;
+    if(recMode){ aud.currentTime = Math.max(0, aud.currentTime - 1.2); aud.play(); } else narrSpeak(); };
+  let done = false; const once = () => { if(done) return; done = true; setTimeout(back, 300); };
+  u.onend = u.onerror = once; setTimeout(once, 900 + text.length*75);
+}
 // what to play while stretching: unread scenes first, then the scene this session is about to earn, then unread satchel finds
 function storyQueue(earning){
   const so = scenesOpen(), q = [];
@@ -467,19 +510,21 @@ function storyQueue(earning){
   if(!q.length && so) q.push({t:'s', i:so-1});
   return q.slice(0, 4);
 }
-function paintNP(){
+function paintNP(light){
   const el = document.getElementById('np'); if(!el) return;
-  document.querySelectorAll('.rbody p.speaking').forEach(p=>p.classList.remove('speaking'));
-  if(!NARR.active){ el.hidden = true; document.body.classList.remove('np-on'); return; }
-  const q = NARR.queue[NARR.k], it = itemOf(q), ch = NARR.chunks[NARR.c];
-  const pct = Math.min(100, NARR.c / Math.max(1, NARR.chunks.length) * 100);
-  el.hidden = false; document.body.classList.add('np-on');
-  el.innerHTML = `<div class="in"><span class="npk">${NARR.playing ? 'Reading' : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
-    <button class="npb" data-a="${NARR.playing?'narrpause':'narrplay'}" aria-label="${NARR.playing?'Pause the story':'Play the story'}">${NARR.playing?I.pause:I.play}</button>
-    <button class="npb ghost" data-a="narrstop" aria-label="Stop the story">${I.x}</button><i style="width:${pct.toFixed(1)}%"></i></div>`;
-  if(ui.screen==='read' && ui.read && ui.read.t===q.t && ui.read.i===q.i && ch && ch.p>=0){
-    const p = document.querySelectorAll('.rbody p')[ch.p]; if(p){ p.classList.add('speaking'); }
+  if(!NARR.active){ el.hidden = true; document.body.classList.remove('np-on'); document.querySelectorAll('.rbody p.speaking').forEach(p=>p.classList.remove('speaking')); return; }
+  const q = NARR.queue[NARR.k], it = itemOf(q);
+  const pct = NARR.rec ? (aud.duration ? aud.currentTime/aud.duration*100 : 0) : Math.min(100, NARR.c / Math.max(1, NARR.chunks.length) * 100);
+  const bar = el.querySelector('.in > i');
+  if(light && bar && el.dataset.k === String(NARR.k) && el.dataset.pl === String(NARR.playing)){ bar.style.width = pct.toFixed(1)+'%'; }
+  else {
+    el.hidden = false; document.body.classList.add('np-on'); el.dataset.k = NARR.k; el.dataset.pl = NARR.playing;
+    el.innerHTML = `<div class="in"><span class="npk">${NARR.playing ? (NARR.rec ? `Read by ${esc(q.t==='s' ? AUDIO.voices.s : AUDIO.voices.n)}` : 'Reading') : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
+      <button class="npb" data-a="${NARR.playing?'narrpause':'narrplay'}" aria-label="${NARR.playing?'Pause the story':'Play the story'}">${NARR.playing?I.pause:I.play}</button>
+      <button class="npb ghost" data-a="narrstop" aria-label="Stop the story">${I.x}</button><i style="width:${pct.toFixed(1)}%"></i></div>`;
   }
+  const ps = document.querySelectorAll('.rbody p'); const here = ui.screen==='read' && ui.read && ui.read.t===q.t && ui.read.i===q.i;
+  ps.forEach((p,x)=>p.classList.toggle('speaking', here && x===NARR.p));
 }
 async function lockScreen(){ try{ if(navigator.wakeLock) wl = await navigator.wakeLock.request('screen'); }catch(e){} }
 function unlockScreen(){ try{ wl && wl.release(); }catch(e){} wl = null; }
@@ -492,8 +537,9 @@ function startSession(code, trim){
   const steps = build(code, trim), loads = {};
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = loadOf(s.ex); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, lastSec:null};
-  ui.screen = 'run'; ui.sheet = null; enterStep(true); window.scrollTo(0,0);
-  if(SESS[code].type==='cool' && S.storyCool!==false) setTimeout(()=>{ if(ui.run && !NARR.active) narrStart(storyQueue(false)); }, 2600);
+  ui.screen = 'run'; ui.sheet = null;
+  if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(false)); // inside the tap, so the phone allows playback
+  enterStep(true); window.scrollTo(0,0);
 }
 function spokenFor(s){
   const e = EX[s.ex];
@@ -1199,8 +1245,10 @@ function settingsHTML(){
       <div class="srow"><label for="step">Dumbbell step</label><select id="step" style="width:auto">${[1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
     </section>
     <section class="card"><h2 class="ct">Story narrator</h2>
-      <div class="field"><label for="narrator">Voice</label><select id="narrator">${(()=>{ const vs = storyVoices(), cur = storyVoice(); return vs.length ? vs.map(v=>`<option value="${esc(v.voiceURI)}" ${cur&&cur.voiceURI===v.voiceURI?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('') : '<option>Your phone’s default voice</option>'; })()}</select>
-        <p class="hint">Sounds robotic? On iPhone go to Settings, Accessibility, Read &amp; Speak, Voices, English, and download a Premium or Enhanced UK voice. Then pick it here.</p></div>
+      ${typeof AUDIO!=='undefined' ? `<div class="srow"><span>Narration</span><div class="seg"><button data-a="narrmode" data-v="rec" aria-pressed="${S.narrMode!=='voice'}">Recorded</button><button data-a="narrmode" data-v="voice" aria-pressed="${S.narrMode==='voice'}">Phone voice</button></div></div>
+      <p class="hint" style="margin-top:-4px">${S.narrMode!=='voice' ? `Recorded: ${esc(AUDIO.voices.s)} reads the story, ${esc(AUDIO.voices.n)} reads the satchel. Keeps playing with the phone locked. Needs internet.` : 'Your phone’s own voice. Works offline, stops if the phone locks.'}</p>` : ''}
+      ${S.narrMode==='voice' || typeof AUDIO==='undefined' ? `<div class="field"><label for="narrator">Phone voice</label><select id="narrator">${(()=>{ const vs = storyVoices(), cur = storyVoice(); return vs.length ? vs.map(v=>`<option value="${esc(v.voiceURI)}" ${cur&&cur.voiceURI===v.voiceURI?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('') : '<option>Your phone’s default voice</option>'; })()}</select>
+        <p class="hint">Sounds robotic? On iPhone go to Settings, Accessibility, Read &amp; Speak, Voices, English, and download a Premium or Enhanced UK voice. Then pick it here.</p></div>` : ''}
       <div class="srow"><span>Pace</span><div class="seg">${[[.85,'Slower'],[.95,'Normal'],[1.05,'Brisk']].map(([v,l])=>`<button data-a="narrrate" data-v="${v}" aria-pressed="${(S.narrRate||.95)===v}">${l}</button>`).join('')}</div></div>
       <div class="srow"><span>Start by itself in cool-downs</span><div class="seg"><button data-a="storycool" data-v="1" aria-pressed="${S.storyCool!==false}">On</button><button data-a="storycool" data-v="0" aria-pressed="${S.storyCool===false}">Off</button></div></div>
       <div class="srow"><span>Hear a sample</span><button class="btn-ink" data-a="narrtest">Play</button></div>
@@ -1284,9 +1332,10 @@ document.addEventListener('click', e=>{
     case 'narrpause': narrPause(); if(ui.screen==='read') render(); break;
     case 'narrplay': narrResume(); if(ui.screen==='read') render(); break;
     case 'narrstop': narrStop(); break;
-    case 'narrrate': S.narrRate = +b.dataset.v; touch(); render(); break;
+    case 'narrmode': S.narrMode = b.dataset.v; touch(); if(NARR.active) narrStop(); render(); break;
+    case 'narrrate': S.narrRate = +b.dataset.v; touch(); try{ aud.playbackRate = recRate(); }catch(e){} render(); break;
     case 'storycool': S.storyCool = b.dataset.v==='1'; touch(); render(); break;
-    case 'narrtest': { audioOn(); try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('They walked. They carried. By noon Kesh\u2019s arms burned and her back had opinions, and she found she did not mind.'); const v = storyVoice(); if(v){ u.voice = v; u.lang = v.lang; } u.rate = S.narrRate || .95; speechSynthesis.speak(u); }catch(e){} break; }
+    case 'narrtest': { if(recFor({t:'s',i:0}) && !NARR.active){ aud.src = AUDIO.items.s0.src; aud.playbackRate = recRate(); aud.play(); setTimeout(()=>{ if(!NARR.active) aud.pause(); }, 12000); break; } audioOn(); try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('They walked. They carried. By noon Kesh\u2019s arms burned and her back had opinions, and she found she did not mind.'); const v = storyVoice(); if(v){ u.voice = v; u.lang = v.lang; } u.rate = S.narrRate || .95; speechSynthesis.speak(u); }catch(e){} break; }
     case 'storyall': ui.storyAll = !ui.storyAll; render(); break;
     case 'realmtab': ui.screen = 'tab'; ui.tab = 'realm'; render(); window.scrollTo(0,0); break;
     case 'overview': ui.sheet = 'overview'; render(); break;
