@@ -136,8 +136,8 @@ const SESS = {
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
   mobility:{title:'Mobility flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
-  coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','supine_flex','ham_floss','doorway_pec']},
-  coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','supine_flex','ham_floss','doorway_pec']},
+  coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
+  coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
   walkUK:{title:'Easy walk',sub:'Twenty minutes on the pad',type:'walk',items:['pad_walk']},
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
@@ -407,12 +407,8 @@ function tone(f=880, len=.18, vol=.28){
 }
 const chime = () => { tone(784,.16,.4); setTimeout(()=>tone(1046,.26,.4),140); };
 function say(text){
-  if(!S.voice || !window.speechSynthesis) return;
-  try{
-    const resume = NARR.playing; if(resume && !NARR.rec) NARR.tok++;
-    speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02;
-    if(resume) cueOver(text, u);
-    speechSynthesis.speak(u); }catch(e){}
+  if(!S.voice || !window.speechSynthesis || NARR.playing) return; // the story has the floor; tones and flashes still mark changes
+  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02; speechSynthesis.speak(u); }catch(e){}
 }
 function flash(word, rest){
   const f = document.getElementById('flash'); f.textContent = word; f.classList.toggle('rest', !!rest);
@@ -496,14 +492,6 @@ function narrStop(){
   try{ navigator.mediaSession.metadata = null; }catch(e){}
   if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render();
 }
-// a spoken cue pauses the story, then it carries on a moment back
-function cueOver(text, u){
-  const recMode = !!NARR.rec; if(recMode){ NARR.cue = true; aud.pause(); }
-  const tok = NARR.tok, back = () => { if(tok!==NARR.tok || !NARR.playing) return; NARR.cue = false;
-    if(recMode){ aud.currentTime = Math.max(0, aud.currentTime - 1.2); aud.play(); } else narrSpeak(); };
-  let done = false; const once = () => { if(done) return; done = true; setTimeout(back, 300); };
-  u.onend = u.onerror = once; setTimeout(once, 900 + text.length*75);
-}
 // what to play while stretching: unread scenes first, then the scene this session is about to earn, then unread satchel finds
 function storyQueue(earning){
   const so = scenesOpen(), q = [];
@@ -580,7 +568,7 @@ setInterval(()=>{
   paintTimer(s, left);
   if(s.lead && !r.timer.leadDone && left <= s.dur*1000){ r.timer.leadDone = true; tone(988,.14); say('Hold.'); }
   const sec = Math.ceil(left/1000);
-  if(sec !== r.lastSec){ r.lastSec = sec; if(sec<=3 && sec>0 && !(s.lead && left > s.dur*1000)){ tone(620,.08,.2); const b = document.getElementById('ring'); if(b){ b.classList.remove('tick'); void b.offsetWidth; b.classList.add('tick'); } } }
+  if(sec !== r.lastSec){ r.lastSec = sec; if(sec<=3 && sec>0 && !(s.lead && left > s.dur*1000)){ tone(620,.08,.2); const b = document.getElementById('ring'); if(b){ b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); } } }
   if(left <= 0) advance();
 }, 150);
 function fmt(sec){ return sec >= 60 ? Math.floor(sec/60)+':'+pad2(sec%60) : String(sec); }
@@ -958,7 +946,7 @@ function runHTML(){
                     : `<button class="btn" data-a="tpause">${paused?'Resume':'Pause'}</button><button class="btn sm" data-a="skip">Skip</button>`;
   }
   const calm = ['hip','mobility','walk','cool'].includes(def.type) || s.t==='hold' || /_cool$/.test(s.ex||'');
-  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(TRAINING.has(def.type)); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · cues pause it, then it carries on</span></span></button>`; }
+  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(TRAINING.has(def.type)); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · the coach goes quiet, beeps still mark each change</span></span></button>`; }
   return bar + `<div class="enter" style="display:grid;gap:14px" data-step="${r.i}">${body}</div><div class="dock"><div class="in">${dock}</div></div>`;
 }
 

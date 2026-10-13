@@ -215,7 +215,7 @@ a{color:var(--violet);text-underline-offset:3px}
 .ringbox .big{font-family:var(--display);font-style:italic;font-weight:600;font-size:clamp(76px,24vw,112px);line-height:1;letter-spacing:-.03em;font-variant-numeric:lining-nums tabular-nums}
 .ringbox .lbl{font-size:14px;font-weight:650;color:var(--muted);margin-top:4px}
 .ringbox.lead .big{color:var(--muted)}
-.ringbox.tick .big{animation:pulse .45s cubic-bezier(.2,.8,.2,1)}
+.ringbox.pulse .big{animation:pulse .45s cubic-bezier(.2,.8,.2,1)}
 @keyframes pulse{from{transform:scale(1.14)}to{transform:scale(1)}}
 .phase{font-weight:700;font-size:20px;text-align:center}
 .phase small{display:block;font-weight:600;font-size:14px;color:var(--muted)}
@@ -436,7 +436,7 @@ body.np-on .wrap{padding-bottom:calc(178px + env(safe-area-inset-bottom,0px))}
 .enter{animation:enter .4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){
-  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.tick .big,.sheet,.scrim{animation:none}
+  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.pulse .big,.sheet,.scrim{animation:none}
   .demo .b{opacity:0} #flash.on{animation-duration:.01s} .prog i,.btn-w,.ringbox .arc{transition:none}
 }
 </style>

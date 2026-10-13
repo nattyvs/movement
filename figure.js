@@ -205,8 +205,8 @@ const PROP = {
 };
 PROP.benchLong = '<rect x="44" y="104" width="160" height="10" rx="4" fill="var(--fig-prop-2)"/><rect x="54" y="114" width="8" height="32" fill="var(--fig-prop)"/><rect x="186" y="114" width="8" height="32" fill="var(--fig-prop)"/>';
 const POSES = {
-  squat:{anchor:'ankle', at:[116,140], a:{torso:3, thigh:181, shin:180, foot:90, upper:172, fore:40, weight:1, oneWeight:1, dbAng:90}, b:{torso:30, thigh:94, shin:203, foot:90, upper:160, fore:46, weight:1, oneWeight:1, dbAng:90}},
-  boxsquat:{anchor:'ankle', at:[106,140], prop:PROP.sofa, propBox:[18,92,88,146], a:{torso:3, thigh:181, shin:180, foot:90, upper:172, fore:40, weight:1, oneWeight:1, dbAng:90}, b:{torso:26, thigh:112, shin:200, foot:90, upper:162, fore:46, weight:1, oneWeight:1, dbAng:90}},
+  squat:{anchor:'ankle', at:[116,140], a:{torso:3, thigh:181, shin:180, foot:90, upper:172, fore:46, weight:1, oneWeight:1, dbAng:90}, b:{torso:30, thigh:94, shin:203, foot:90, upper:160, fore:56, weight:1, oneWeight:1, dbAng:90}},
+  boxsquat:{anchor:'ankle', at:[106,140], prop:PROP.sofa, propBox:[18,92,88,146], a:{torso:3, thigh:181, shin:180, foot:90, upper:172, fore:46, weight:1, oneWeight:1, dbAng:90}, b:{torso:26, thigh:112, shin:200, foot:90, upper:162, fore:58, weight:1, oneWeight:1, dbAng:90}},
   rdl:{anchor:'ankle', at:[118,140], a:{torso:1, neck:0, thigh:178, shin:182, foot:90, upper:182, fore:181, weight:1, dbAng:0}, b:{torso:66, neck:-6, thigh:148, shin:190, foot:90, upper:196, fore:196, weight:1, dbAng:0}},
   kickrdl:{anchor:'ankle', at:[126,140], a:{torso:1, thigh:178, shin:182, foot:90, thigh2:198, shin2:194, foot2:128, upper:182, fore:181, weight:1, dbAng:0}, b:{torso:66, neck:-6, thigh:148, shin:190, foot:90, thigh2:214, shin2:206, foot2:140, upper:196, fore:196, weight:1, dbAng:0}},
   row:{anchor:'ankle', at:[110,140], a:{torso:56, thigh:198, shin:184, foot:90, upper:178, fore:178, weight:1, dbAng:0}, b:{torso:56, thigh:198, shin:184, foot:90, upper:262, fore:176, weight:1, dbAng:0}},
