@@ -580,7 +580,15 @@ function build(code, trim){
     }
   });
   while(steps.length && steps[steps.length-1].t==='rest') steps.pop();
-  steps.forEach((s,i)=>{ const p = steps[i-1]; s.auto = !!p && ((s.t==='hold'&&p.t==='hold')||(s.t==='iv'&&p.t==='iv')); });
+  const calmRun = ['hip','mobility','cool'].includes(SESS[code].type);
+  if(calmRun){
+    // stretching sessions run hands-free: bodyweight reps become timed, and each step starts itself after a visible get-ready
+    for(let k=0;k<steps.length;k++){ const st = steps[k], e = EX[st.ex];
+      if(st.t==='work' && e && e.bw){ steps[k] = {t:'time', ex:st.ex, set:st.set, of:st.of, dur:e.est||45, lead:5, label:e.reps};
+        if(steps[k+1] && steps[k+1].t==='rest') steps.splice(k+1, 1); }
+      else if(st.t==='time' && !st.lead) st.lead = 5; }
+  }
+  steps.forEach((s,i)=>{ const p = steps[i-1]; s.auto = (calmRun && (s.t==='time'||s.t==='hold')) || (!!p && ((s.t==='hold'&&p.t==='hold')||(s.t==='iv'&&p.t==='iv'))); });
   return steps;
 }
 function estMin(code, trim){
@@ -810,7 +818,9 @@ function paintTimer(s, left){
   if(s.lead && left > s.dur*1000){ shown = left - s.dur*1000; lead = true; }
   big.textContent = fmt(Math.ceil(shown/1000));
   const ring = document.getElementById('ring'); if(ring) ring.classList.toggle('lead', lead);
-  const lbl = document.getElementById('rlbl'); if(lbl && s.t==='hold') lbl.textContent = lead ? 'Get into position' : 'Hold';
+  const lbl = document.getElementById('rlbl'); if(lbl && (s.t==='hold' || s.lead)) lbl.textContent = lead ? 'Get into position' : s.t==='hold' ? 'Hold' : (s.of>1 ? `Set ${s.set} of ${s.of}` : 'Go');
+  // the countdown stays visible when a sheet covers the screen
+  const sc = document.getElementById('sheetclock'); if(sc) sc.textContent = `${lead ? 'Get ready' : s.t==='rest' ? 'Rest' : 'Time left'} ${fmt(Math.ceil(shown/1000))}`;
   const arc = document.getElementById('arc'); if(arc){ const C = 2*Math.PI*46; arc.style.strokeDashoffset = String(C * (1 - left/totalMs)); }
 }
 function finishRun(early){
@@ -1047,6 +1057,7 @@ function render(){
   else if(ui.screen==='settings') html = settingsHTML();
   else if(ui.screen==='read') html = readHTML();
   else if(ui.screen==='preview') html = previewHTML();
+  document.body.classList.toggle('inrun', ui.screen==='run');
   app.innerHTML = html + (ui.sheet ? sheetHTML() : '');
   startFigure(); paintNP();
   if(ui.screen==='run'){ const r = ui.run; if(r && r.timer) paintTimer(r.steps[r.i], r.timer.paused ? r.timer.remaining : Math.max(0, r.timer.end-Date.now())); }
@@ -1071,7 +1082,7 @@ function todayHTML(){
   let head, meta;
   if(!next){ head = 'Done for today'; meta = p.wk.count>=p.wk.target ? 'Week target reached. Rest is part of the plan.' : 'Rest is part of the plan. Back tomorrow.'; }
   else if(!mainNext){ head = 'Stretch, then rest'; meta = 'You’ve trained today. Five minutes of hip work closes it.'; }
-  else if(p.recovery){ head = 'Recovery day'; meta = 'You trained yesterday. A mobility flow today, then a walk if you fancy it.'; }
+  else if(p.recovery){ head = 'Recovery day'; meta = p.hipDone ? 'You trained yesterday. A mobility flow today, then a walk if you fancy it.' : 'You trained yesterday. Hip block first, then a mobility flow.'; }
   else { head = SESS[mainNext].title; meta = `${SESS[mainNext].sub} · about ${estMin(mainNext)} min`; }
 
   let actions = '';
@@ -1104,13 +1115,13 @@ function todayHTML(){
   </section>
   <div class="say"><q>${dx(dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}</span></div>
   ${S.block && S.block.i > (S.blockSeen||0) ? (()=>{ const bi = blockInfo(); return `<section class="card newblock"><h2 class="ct">New block <span class="aside">${bi.round>1 ? `round ${bi.round}, ` : ''}${BLOCK_WEEKS} weeks</span></h2><p class="nbt">${dx(bi.def.name)}</p><p style="margin:0 0 12px">${esc(bi.def.blurb)} Your weights carry over, and anything new starts from a related lift. Paris and travel sessions stay the same.</p><button class="btn" data-a="blockseen">Got it</button></section>`; })() : ''}
-  <section class="card"><h2 class="ct">This week${wk.all.length?` <span class="aside">${wk.count} of ${wk.target} sessions</span>`:''}</h2>
+  <section class="card"><h2 class="ct">This week</h2>
     ${wk.all.length ? `<div class="week">${bars}</div>` : `<div class="slots">${Array.from({length:wk.target},(_,i)=>`<div class="slot">Session ${i+1}</div>`).join('')}</div>`}
     ${wk.all.length?`<div class="legend"><span><i style="background:var(--g4)"></i>Session</span><span><i style="background:var(--g2)"></i>Short or cardio</span><span><i style="background:var(--teal)"></i>Mobility or walk</span><span><i style="background:var(--violet);opacity:.6"></i>Hip block</span></div>`:''}
     <div class="stats">
       <div class="stat"><div class="n c-coral">${wk.count}<span class="muted" style="font-size:18px">/${wk.target}</span></div><div class="k">Sessions</div></div>
       <div class="stat"><div class="n c-amber">${balance().toLocaleString('en-GB')}</div><div class="k">Points to spend</div></div>
-      <div class="stat"><div class="n c-violet">${weeksOnTarget()}</div><div class="k">Weeks on target</div></div>
+      ${weeksOnTarget() ? `<div class="stat"><div class="n c-violet">${weeksOnTarget()}</div><div class="k">${weeksOnTarget()===1?'Week':'Weeks'} on target</div></div>` : `<div class="stat"><div class="n c-violet">${Math.min(monthCount(monthKey(now)), monthTarget(monthKey(now)))}</div><div class="k">Stones this month</div></div>`}
     </div>
   </section>
   <section class="card"><h2 class="ct">Today</h2><div class="items">
@@ -1191,7 +1202,7 @@ function runHTML(){
   if(s.t==='work'){
     const e = EX[s.ex];
     body = `${demoBox(s.ex)}
-      <div><h1 class="exname">${dx(e.name)}</h1><div class="presc">${esc(e.reps)}<small>Set ${s.set} of ${s.of}</small></div></div>
+      <div><h1 class="exname">${dx(e.name)}</h1><div class="presc">${esc(e.reps)}</div><div class="setof">Set <b class="num">${s.set}</b> of ${s.of}</div></div>
       <div class="loadrow">${hasLoad(s.ex) ? `<div class="stepper"><button data-a="load" data-d="-1" aria-label="Less weight">${I.minus}</button><span class="v">${fmtKg(r.loads[s.ex])}</span><button data-a="load" data-d="1" aria-label="More weight">${I.plus}</button></div>` : ''}
         <div class="stepper reps"><button data-a="reps" data-d="-1" aria-label="One rep fewer">${I.minus}</button><span class="v"><b class="num">${r.repNow}</b><small>reps</small></span><button data-a="reps" data-d="1" aria-label="One rep more">${I.plus}</button></div></div>
       <p class="hint" style="margin:-6px 0 0">${hasLoad(s.ex) ? esc(e.unit.charAt(0).toUpperCase()+e.unit.slice(1))+'. ' : ''}Set the reps you actually did before tapping done.</p>
@@ -1207,8 +1218,8 @@ function runHTML(){
     let label = '', phase = '';
     if(s.t==='iv'){ phase = ivWord(e, s.phase==='on'); label = (s.phase==='on'?e.onLabel:e.offLabel).split(' · ')[1]||''; }
     else if(s.t==='hold'){ phase = `${s.side} side`; label = running ? 'Hold' : 'Get into position'; }
-    else { phase = e.label; label = s.of>1 ? `Set ${s.set} of ${s.of}` : ''; }
-    const sub = s.t==='iv' ? `Round ${s.set} of ${s.of}` : s.t==='hold' ? `Hold ${s.set} of ${s.of}` : '';
+    else { phase = s.label || e.label; label = s.of>1 ? `Set ${s.set} of ${s.of}` : ''; }
+    const sub = s.t==='iv' ? `Round ${s.set} of ${s.of}` : s.t==='hold' && s.of>1 ? `Hold ${s.set} of ${s.of}` : '';
     body = `<div><h1 class="exname">${dx(e.name)}</h1></div>
       <div class="phase">${esc(phase)}<small>${esc(sub)}</small></div>
       ${ringHTML(s,label,!!poseFor(s.ex))}
@@ -1232,37 +1243,43 @@ function reviewHTML(){
   const ranRun = r.steps.some((st,k)=>/^(run|fin)\d$/.test(st.ex||'') && k < r.i);
   return `<div class="enter" style="display:grid;gap:14px">
     <section class="gcard flat"><h1>How was it?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. Filled in for a normal day. If nothing was off, just save.</p></section>
-    <section class="card"><h2 class="ct">Overall${ranRun ? ' <span class="aside">run included</span>' : ''}</h2><div class="chips">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
-      <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
+    <section class="card"><h2 class="ct">Overall${ranRun ? ' <span class="aside">run included</span>' : ''}</h2><div class="chips two">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
+      <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips three">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
       ${r.noteOpen || r.note ? `<label class="ct" for="snote" style="display:block;margin:18px 0 8px">Note</label>
       <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea>` : `<button class="linkbtn" data-a="noteopen" style="margin-top:14px">Add a note</button>`}</section>
   </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="save">Save session</button></div></div>`;
 }
 function celebrateHTML(){
-  const L = ui.last || {points:0, ups:[]}; const p = plan_(); const wk = p.wk;
+  // the end of a session is the reward: points and next time in the hero, Pip's line, and at most one next step
+  const L = ui.last || {points:0, ups:[], newScenes:[]}; const p = plan_(); const wk = p.wk;
   const cont = (L.kind==='hip' && p.main) ? p.main : null;
-  const st = stage();
-  const line = wk.count >= wk.target ? 'Week target reached.' : `${wk.count} of ${wk.target} sessions this week.`;
+  const st = stage(), trained = TRAINING.has(L.kind);
   const mk = L.mk || monthKey(new Date()); const rg = region(mk);
+  const meta = [`${esc(SESS[L.code]?.title||'Session')} logged`];
+  if(trained) meta.push(wk.count >= wk.target ? 'week target reached' : `${wk.count} of ${wk.target} this week`, `stone ${Math.min(monthCount(mk),monthTarget(mk))} of ${monthTarget(mk)} in ${esc(rg.name)}`);
+  if(L.bonus) meta.push('includes 25 for your week');
+  if(L.newNote>=0) meta.push('something new in the satchel');
+  const next = [];
+  (L.ups||[]).forEach(u=>next.push(`${esc(EX[u.id].name)} <b>${fmtKg(u.next)}</b>`));
+  (L.lad||[]).forEach(u=>next.push(`${esc(EX[u.from].name)} becomes <b>${esc(EX[u.to].name.toLowerCase())}</b>`));
+  if(L.run && L.run.now !== L.run.was) next.push(`Pad run ${L.run.now > L.run.was ? 'up' : 'down'} to <b>level ${L.run.now}</b>`);
   const said = L.gate ? 'The gate’s open. I’d carry your prize but my arms are tiny.' : L.stageUp ? `New colours. I’m a ${st.name.toLowerCase()} now. Don’t make it weird.` : L.kind==='hip' ? pickLine('hipOnly') : pickLine('done');
+  const n = (L.newScenes||[]).length;
+  let action = '';
+  if(cont) action = `<button class="btn-w" data-a="start" data-code="${cont}"><span>Continue to ${esc(SESS[cont].title)}</span><small>${estMin(cont)} min</small></button>`;
+  else if(trained) action = `<button class="btn-w" data-a="start" data-code="${coolCode()}"><span>Cool down with the story</span><small>${estMin(coolCode())} min</small></button>`;
   return `<div class="enter" style="display:grid;gap:14px">
-    <section class="gcard">
+    <section class="gcard celebrate">
       <div class="perch ${L.stageUp||L.gate?'hop':''}">${dragonSVG()}</div>
       <div class="pts"><svg class="sign" viewBox="0 0 10 10" aria-hidden="true"><path d="M5 0v10M0 5h10"/></svg><span class="visually-hidden" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">plus </span>${L.points}</div>
-      <p class="meta">${esc(SESS[L.code]?.title||'Session')} logged. ${L.bonus?'Includes 25 for hitting your week. ':''}${line} ${TRAINING.has(L.kind)?`Stone ${Math.min(monthCount(mk),monthTarget(mk))} of ${monthTarget(mk)} in ${esc(rg.name)}.`:''}</p>
+      <p class="meta">${meta.join(' · ').replace(/^./, c=>c.toUpperCase())}.</p>
+      ${next.length ? `<div class="gnext"><span class="gk">Next time</span><ul>${next.slice(0,4).map(x=>`<li>${I.up}<span>${x}</span></li>`).join('')}</ul></div>` : ''}
+      ${n && !cont && trained ? `<div class="gscenes"><span class="gk">${n>1 ? NUMW[n-1].replace(/^./,c=>c.toUpperCase())+' new scenes' : 'A new scene'}</span><span class="gt">${L.newScenes.map(i=>dx(STORY.scenes[i].title)).join(', ')}</span></div>` : ''}
+      ${action ? `<div class="row2" style="margin-top:16px">${action}</div>` : ''}
     </section>
     <div class="say"><q>${dx(said)}</q><span class="by">${esc(S.dragon)}, ${st.name.toLowerCase()}</span></div>
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
-    ${L.newScenes.length ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScenes[0]}"><span class="ct" style="margin:0">${L.newScenes.length>1 ? `${NUMW[L.newScenes.length-1].replace(/^./,c=>c.toUpperCase())} new scenes unlocked` : 'New scene unlocked'}</span><span class="ut">${L.newScenes.map(i=>dx(STORY.scenes[i].title)).join(' · ')}</span><span class="muted">${esc(bookOf(L.newScenes[0]).title)} · tap to read, about ${Math.max(1, Math.round(L.newScenes.reduce((a,i)=>a+itemSecs({t:'s',i}),0)/60))} min${L.newScenes.length>1 ? ' together' : ''}</span></button>` : ''}
-    ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
-    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About ${estMin(coolCode())} minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScenes.length && n<=L.newScenes.length ? (n>1 ? 'your new scenes' : 'your new scene') : 'the story'; })()} plays.</span></span></button>` : (L.newScenes.length || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
-    ${(()=>{ const lines = [];
-      (L.ups||[]).forEach(u=>lines.push(`${esc(EX[u.id].name)}: <b>${fmtKg(u.next)}</b>`));
-      (L.lad||[]).forEach(u=>lines.push(`${esc(EX[u.from].name)} becomes <b>${esc(EX[u.to].name.toLowerCase())}</b>`));
-      if(L.run && L.run.now !== L.run.was) lines.push(`Pad run ${L.run.now > L.run.was ? 'up' : 'down'} to level ${L.run.now}: <b>${esc(runDesc(L.run.now, L.code!=='padIV'))}</b>`);
-      return lines.length ? `<section class="card"><h2 class="ct">Next time</h2><ul class="uplist">${lines.map(x=>`<li>${I.up}<span>${x}</span></li>`).join('')}</ul></section>` : ''; })()}
-    ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
-  </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
+  </div><div class="dock"><div class="in"><button class="btn ${action ? '' : 'primary xl'}" data-a="home">${action ? 'Done for now' : 'Back to today'}</button></div></div>`;
 }
 
 /* ---------- Realm ---------- */
@@ -1467,8 +1484,8 @@ function progressHTML(){
     return `<svg viewBox="0 0 92 30" aria-hidden="true"><path class="sp" d="M${pts.map(p=>p.map(n=>n.toFixed(1)).join(' ')).join(' L')}"/><circle class="spdot" cx="${pts[pts.length-1][0].toFixed(1)}" cy="${pts[pts.length-1][1].toFixed(1)}" r="3"/></svg>`; };
   const mins = sessions.reduce((a,s)=>a+(s.minutes||0),0);
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
-    <section class="gcard flat"><h1>${trainingTotal()} sessions</h1><p class="meta">Since you started. ${mins.toLocaleString('en-GB')} minutes moving · ${sessions.filter(s=>s.kind==='hip').length} hip blocks · ${weeksOnTarget()} ${weeksOnTarget()===1?'week':'weeks'} on target</p></section>
-    <section class="card chart"><h2 class="ct">Sessions per week <span class="aside">dashed line is 3</span></h2>
+    <section class="gcard flat"><h1>${trainingTotal()} sessions</h1><p class="meta">Since you started. ${mins.toLocaleString('en-GB')} minutes moving · ${sessions.filter(s=>s.kind==='hip').length} hip blocks${weeksOnTarget() ? ` · ${weeksOnTarget()} ${weeksOnTarget()===1?'week':'weeks'} on target` : ''}</p></section>
+    <section class="card chart"><h2 class="ct">Sessions per week <span class="aside">dashed: target</span></h2>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Training sessions per week, last eight weeks"><defs><linearGradient id="pbar" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--g1)"/><stop offset="1" stop-color="var(--g4)"/></linearGradient></defs>
       <line class="gl" x1="20" x2="${W}" y1="${H-22}" y2="${H-22}"/><line class="tgt" x1="20" x2="${W}" y1="${tY.toFixed(1)}" y2="${tY.toFixed(1)}"/>${bars}</svg></section>
     ${musclesHTML()}
@@ -1483,7 +1500,7 @@ function musclesHTML(){
   const since = Date.now() - 14*864e5, tot = {}; let all = 0;
   sessions.filter(x=>x.ts>=since && x.sets).forEach(x=>Object.entries(x.sets).forEach(([id,n])=>(MUSCLES[id]||[]).forEach(g=>{ tot[g] = (tot[g]||0) + n; all += n; })));
   const max = Math.max(1, ...Object.values(tot));
-  const rows = GROUPS.map(([k,label,col])=>`<div class="mrow"><span class="ml">${label}</span><span class="mb"><i style="width:${((tot[k]||0)/max*100).toFixed(0)}%;background:${col}"></i></span><span class="mn num">${tot[k]||0}</span></div>`).join('');
+  const rows = GROUPS.map(([k,label,col])=>`<div class="mrow"><span class="ml">${label}</span><span class="mb"><i style="width:${((tot[k]||0)/max*100).toFixed(0)}%"></i></span><span class="mn num">${tot[k]||0}</span></div>`).join('');
   const top = Object.entries(tot).sort((a,b)=>b[1]-a[1])[0];
   return `<section class="card"><h2 class="ct">Muscles worked <span class="aside">last 2 weeks, sets</span></h2>
     ${all ? `<p style="margin:0 0 12px"><b class="num" style="font-size:26px">${all}</b> <span class="muted">sets · most worked: ${GROUPS.find(g=>g[0]===top[0])[1].toLowerCase()}</span></p>${rows}` : `<p class="empty">Your first session fills this in, set by set.</p>`}</section>`;
@@ -1494,23 +1511,18 @@ function settingsHTML(){
   return `<div class="enter" style="display:grid;gap:14px">
     <button class="back" data-a="home">${I.back}Today</button>
     <section class="gcard flat"><h1>Settings</h1><p class="meta">Your data, your coach, your dragon.</p></section>
-    <section class="card"><h2 class="ct">Your data on GitHub</h2>
-      <form data-form="gh" autocomplete="off">
-      <div class="field"><label for="ghowner">GitHub username</label><input type="text" id="ghowner" value="${esc(GH.owner)}" autocapitalize="off" spellcheck="false"></div>
-      <div class="field"><label for="ghrepo">Private data repo</label><input type="text" id="ghrepo" value="${esc(GH.repo)}" autocapitalize="off" spellcheck="false"></div>
-      <div class="field"><label for="ghtoken">Access token</label><input type="password" id="ghtoken" value="${esc(GH.token)}" placeholder="github_pat_…" autocapitalize="off" spellcheck="false">
-        <p class="hint">Fine-grained token, only this repo, Contents set to read and write. It stays on this phone.</p></div>
-      <div class="field"><button class="btn primary" type="submit" style="width:100%">${GH.token?'Save and sync':'Connect'}</button></div></form>
-      ${syncLineHTML()}
+    <section class="card"><h2 class="ct">Look</h2>
+      <div class="srow"><span>Theme</span><div class="seg">${[['system','Phone'],['dark','Night'],['light','Light']].map(([v,l])=>`<button data-a="settheme" data-v="${v}" aria-pressed="${S.theme===v}">${l}</button>`).join('')}</div></div>
+      <div class="field"><label for="dname">Dragon’s name</label><input type="text" id="dname" value="${esc(S.dragon)}" maxlength="24"></div>
     </section>
+
     <section class="card"><h2 class="ct">Coach</h2>
       <div class="srow"><span>Voice cues</span><div class="seg"><button data-a="setvoice" data-v="1" aria-pressed="${S.voice}">On</button><button data-a="setvoice" data-v="0" aria-pressed="${!S.voice}">Off</button></div></div>
-      <div class="srow"><span>Cues and music</span><div class="seg"><button data-a="overmusic" data-v="1" aria-pressed="${S.overMusic!==false}">Play over it</button><button data-a="overmusic" data-v="0" aria-pressed="${S.overMusic===false}">Pause it</button></div></div>
+      <div class="srow"><span>Cues and music</span><div class="seg"><button data-a="overmusic" data-v="1" aria-pressed="${S.overMusic!==false}">On top</button><button data-a="overmusic" data-v="0" aria-pressed="${S.overMusic===false}">Pause</button></div></div>
       <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? 'Cues play on top of Spotify or SoundCloud. iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.' : 'Cues pause your music and play even in silent mode.'}</p>
-      <div class="srow"><span>Test sound and voice</span><button class="btn-ink" data-a="testsound">Play</button></div>
-      <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p>
-      <div class="field"><label for="dialkg">Your dumbbell dial (kg)</label><input type="text" id="dialkg" inputmode="decimal" value="${esc(dial().join(', '))}" autocomplete="off" spellcheck="false">
-        <p class="hint">Every setting on your London dumbbells, in order. The + and − buttons jump between these, and a lift goes up one notch at a time.</p></div>
+      <div class="field"><span class="flabel">Your dumbbell dial</span><div class="dialchips">${dial().map(v=>`<span class="dchip num">${String(v).replace(/\.0$/,'')}</span>`).join('')}<span class="dunit">kg</span></div>
+        ${ui.dialEdit ? `<textarea id="dialkg" rows="2" inputmode="decimal" autocomplete="off" spellcheck="false">${esc(dial().join(', '))}</textarea><p class="hint">Every setting on your London dumbbells, separated by commas. Saved when you tap away.</p>` : `<button class="linkbtn" data-a="dialedit">Edit the dial</button>`}
+        <p class="hint">The + and − buttons jump between these, and a lift goes up one notch at a time.</p></div>
     </section>
     <section class="card"><h2 class="ct">Story narrator</h2>
       ${typeof AUDIO!=='undefined' ? `<div class="srow"><span>Narration</span><div class="seg"><button data-a="narrmode" data-v="rec" aria-pressed="${S.narrMode!=='voice'}">Recorded</button><button data-a="narrmode" data-v="voice" aria-pressed="${S.narrMode==='voice'}">Phone voice</button></div></div>
@@ -1519,11 +1531,19 @@ function settingsHTML(){
         <p class="hint">Sounds robotic? On iPhone go to Settings, Accessibility, Read &amp; Speak, Voices, English, and download a Premium or Enhanced UK voice. Then pick it here.</p></div>` : ''}
       <div class="srow"><span>Pace</span><div class="seg">${[[.85,'Slower'],[.95,'Normal'],[1.05,'Brisk']].map(([v,l])=>`<button data-a="narrrate" data-v="${v}" aria-pressed="${(S.narrRate||.95)===v}">${l}</button>`).join('')}</div></div>
       <div class="srow"><span>Start by itself in cool-downs</span><div class="seg"><button data-a="storycool" data-v="1" aria-pressed="${S.storyCool!==false}">On</button><button data-a="storycool" data-v="0" aria-pressed="${S.storyCool===false}">Off</button></div></div>
-      <div class="srow"><span>Hear a sample</span><button class="btn-ink" data-a="narrtest">Play</button></div>
     </section>
-    <section class="card"><h2 class="ct">Look</h2>
-      <div class="srow"><span>Theme</span><div class="seg">${[['system','Phone'],['dark','Night'],['light','Light']].map(([v,l])=>`<button data-a="settheme" data-v="${v}" aria-pressed="${S.theme===v}">${l}</button>`).join('')}</div></div>
-      <div class="field"><label for="dname">Dragon’s name</label><input type="text" id="dname" value="${esc(S.dragon)}" maxlength="24"></div>
+    <section class="card"><h2 class="ct">Test the sound</h2>
+      <div class="srow"><span>Play a sample</span><div class="seg"><button data-a="testsound" aria-pressed="false">Coach</button><button data-a="narrtest" aria-pressed="false">Story</button></div></div>
+      <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p></section>
+
+    <section class="card"><h2 class="ct">Your data on GitHub</h2>
+      <form data-form="gh" autocomplete="off">
+      <div class="field"><label for="ghowner">GitHub username</label><input type="text" id="ghowner" value="${esc(GH.owner)}" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="ghrepo">Private data repo</label><input type="text" id="ghrepo" value="${esc(GH.repo)}" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="ghtoken">Access token</label><input type="password" id="ghtoken" value="${esc(GH.token)}" placeholder="github_pat_…" autocapitalize="off" spellcheck="false">
+        <p class="hint">Fine-grained token, only this repo, Contents set to read and write. It stays on this phone.</p></div>
+      <div class="field"><button class="btn primary" type="submit" style="width:100%">${GH.token?'Save and sync':'Connect'}</button></div></form>
+      ${syncLineHTML()}
     </section>
     <section class="card"><h2 class="ct">How points work</h2>
       <ul class="steps" style="padding-left:18px;margin:0">
@@ -1546,7 +1566,7 @@ function sheetHTML(){
     const e = EX[ui.sheet.id], h = e.how;
     const sec = (t, list) => `<h4 style="margin:14px 0 6px;font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--label)">${t}</h4><ol style="margin:0;padding-left:20px;display:grid;gap:6px">${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
     return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="How to do ${esc(e.name)}">
-      ${demoBox(ui.sheet.id)}<h3 style="margin-top:14px">${esc(e.name)}</h3>${(()=>{ const k = ladderOf(ui.sheet.id); if(!k) return ''; const L = LADDERS[k], v = L.rungs.indexOf(ui.sheet.id);
+      ${ui.run && ui.run.timer ? `<div class="sheetclock num" id="sheetclock" aria-live="off"></div>` : ''}${demoBox(ui.sheet.id)}<h3 style="margin-top:14px">${esc(e.name)}</h3>${(()=>{ const k = ladderOf(ui.sheet.id); if(!k) return ''; const L = LADDERS[k], v = L.rungs.indexOf(ui.sheet.id);
         return `<p class="muted" style="margin:4px 0 0;font-size:14px">Step ${v+1} of ${L.rungs.length} on the ${esc(L.name.toLowerCase())} ladder${v < L.rungs.length-1 ? `. Next: ${esc(EX[L.rungs[v+1]].name.toLowerCase())}` : '. The top step'}.</p>`; })()}${sec('Set up', h.setup)}${sec('Do it', h.go)}${sec('Form tips', h.tips)}
       ${(()=>{ const k = ladderOf(ui.sheet.id), v = k ? LADDERS[k].rungs.indexOf(ui.sheet.id) : -1; return k && v > 0 && v === ladLevel(k) ? `<button class="btn" data-a="ladback" data-k="${k}" style="margin-top:16px">Too much for now? Back to ${esc(EX[LADDERS[k].rungs[v-1]].name.toLowerCase())}</button>` : ''; })()}
       <button class="btn primary" data-a="close" style="margin-top:10px">Got it</button></div></div>`;
@@ -1554,7 +1574,7 @@ function sheetHTML(){
   if(ui.sheet==='overview' && ui.run){
     const r = ui.run, cur = r.steps[r.i] && r.steps[r.i].ex, seen = [];
     r.steps.forEach((st,i)=>{ if(st.ex && !seen.find(x=>x.id===st.ex)) seen.push({id:st.ex, first:i}); });
-    return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="Today’s exercises"><h3>${esc(SESS[r.code].title)}</h3>
+    return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="Today’s exercises">${r.timer ? `<div class="sheetclock num" id="sheetclock" aria-live="off"></div>` : ''}<h3>${esc(SESS[r.code].title)}</h3>
       ${seen.map(x=>{ const done = r.steps.slice(x.first).every((st,j)=>st.ex!==x.id || x.first+j < r.i); const now = x.id===cur;
         return `<div class="ovr ${now?'now':''}"><span class="tick ${done&&!now?'on':''}">${done&&!now?I.check:''}</span><span>${esc(EX[x.id].name)}</span><span class="muted" style="font-size:13px">${now?'Now':''}</span></div>`; }).join('')}
       <button class="btn primary" data-a="close" style="margin-top:14px">Back to it</button></div></div>`;
@@ -1630,6 +1650,7 @@ document.addEventListener('click', e=>{
     case 'save': save(); break;
     case 'exit': ui.sheet = 'exit'; render(); break;
     case 'keep': case 'close': ui.sheet = null; render(); break;
+    case 'dialedit': ui.dialEdit = true; render(); setTimeout(()=>{ const t = document.getElementById('dialkg'); if(t) t.focus(); }, 30); break;
     case 'ladback': { const k = b.dataset.k, L = LADDERS[k], v = ladLevel(k); if(v > 0){ const was = L.rungs[v], now = L.rungs[v-1];
       S.ladder[k] = v-1; S.ladTop[k] = 0; if(ui.run) ui.run.steps.forEach((st,i)=>{ if(i >= ui.run.i && st.ex===was) st.ex = now; }); touch(); } ui.sheet = null; render(); break; }
     case 'blockseen': S.blockSeen = (S.block && S.block.i) || 0; touch(); render(); break;

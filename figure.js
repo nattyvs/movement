@@ -259,7 +259,7 @@ Object.assign(PROP, {
 });
 Object.assign(POSES, {
   catcow:{anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:80, neck:-34, arch:7, thigh:180, shin:270, foot:270, upper:180, fore:180}, b:{torso:80, neck:34, arch:-5, thigh:180, shin:270, foot:270, upper:180, fore:180}},
-  thread:{anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:78, neck:-10, thigh:180, shin:270, foot:270, upper:4, fore:2, upper2:180, fore2:180}, b:{torso:92, neck:60, thigh:184, shin:270, foot:270, upper:226, fore:268, upper2:178, fore2:182}},
+  thread:{anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:78, neck:-10, thigh:180, shin:270, foot:270, upper:4, fore:2, upper2:180, fore2:180}, b:{torso:92, neck:60, thigh:184, shin:270, foot:270, upper:226, fore:268, upper2:206, fore2:146}},
   wallangel:{anchor:'ankle', at:[40,140], prop:PROP.wallL, propBox:[-6,8,10,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:262, fore:0, upper2:262, fore2:0}, b:{torso:0, thigh:181, shin:180, foot:90, upper:338, fore:350, upper2:338, fore2:350}},
   doorway:{anchor:'hand', at:[96,-14], prop:'<rect x="86" y="-40" width="11" height="186" fill="var(--fig-prop)"/>', propBox:[86,-40,97,146], a:{torso:0, thigh:181, shin:180, foot:90, upper:268, ul:.35, fore:0, upper2:180, fore2:180}, b:{torso:4, neck:-4, thigh:164, shin:182, foot:90, thigh2:193, shin2:188, foot2:100, upper:266, ul:1, fore:2, upper2:180, fore2:178}},
   hipflexor:{anchor:'farknee', at:[92,140], prop:PROP.mat, a:{torso:0, thigh:88, shin:182, foot:90, thigh2:182, shin2:270, foot2:270, upper:180, fore:150}, b:{torso:-6, thigh:68, shin:196, foot:90, thigh2:208, shin2:270, foot2:270, upper:4, fore:2, upper2:180, fore2:160}},
