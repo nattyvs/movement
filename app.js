@@ -489,8 +489,6 @@ function findNudge(p){
   if(sessions.length>2 && hipDays.every(k=>!sessions.some(s=>s.day===k && s.kind==='hip'))) return {id:'hip', head:'Group chat', body:'Your physio and I have a group chat. We’re concerned. Mildly. Five minutes of hip?', hip:true};
   const wk = p.wk, dow = (now.getDay()+6)%7;
   if(dow>=3 && !wk.all.some(s=>s.legs)) return {id:'legs', head:'All wings, no landing gear', body:'No legs this week yet. Dragons notice these things.'};
-  const easy = Object.keys(S.loads).find(id=>{ const last2 = recent.filter(s=>s.efforts && s.efforts[id]).slice(0,2); return last2.length===2 && last2.every(s=>s.efforts[id]==='easy'); });
-  if(easy && EX[easy]) return {id:'easy', head:'Easy, was it', body:`${EX[easy].name}. Rude. It’s going up.`};
   if(hour>=21) return {id:'late', head:'It’s late', body:'Hip block and bed. I’ll allow it.', hip:true};
   return null;
 }
@@ -728,7 +726,7 @@ function spokenFor(s){
 }
 function enterStep(first){
   const r = ui.run, s = r.steps[r.i]; r.timer = null; r.lastSec = null;
-  if(s.t==='work'){ const last = (S.lastReps||{})[s.ex]; r.repNow = (r.repsBy[s.ex]||[])[s.set-1] ?? (last && last[s.set-1]) ?? repRange(EX[s.ex])[1]; }
+  if(s.t==='work'){ const last = (S.lastReps||{})[s.ex]; r.repNow = (r.repsBy[s.ex]||[])[s.set-1] ?? (last && last[s.set-1]) ?? repRange(EX[s.ex])[0]; } // last time's reps, so she only taps when she beats it
   if(s.t==='rest' || s.auto) startTimer(s.dur + (s.lead||0));
   say(spokenFor(s));
   render(); if(!first) window.scrollTo({top:0, behavior:'smooth'});
@@ -795,10 +793,10 @@ function save(){
   (r.loaded||[]).forEach(id=>{
     const used = r.loads[id]; let next = used;
     const reps = r.repsBy[id] || [], top = repRange(EX[id])[1];
-    const toppedNow = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top) && r.efforts[id]!=='max';
+    const toppedNow = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top);
     S.topRun = S.topRun||{}; S.topRun[id] = toppedNow ? (S.topRun[id]||0) + 1 : 0;
     const topped = S.topRun[id] >= 2; // two sessions in a row at the top of the range
-    if((r.efforts[id]==='easy' || topped) && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
+    if(topped && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
       next = stepKg(used, 1); // one notch up her dial
       if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
     S.loads[id] = next;
@@ -830,9 +828,13 @@ function save(){
   const stageNow = stage().index > stageBefore;
   let run = null;
   const ranRun = r.steps.some((st,k)=>/^(run|fin)\d$/.test(st.ex||'') && k < r.i);
-  const runFeel = r.runFeel || (r.code==='padIV' ? r.feel : null);
+  // the run comes last, so the one feel rating covers it. Up straight away after easy, or after two about-right runs in a row
+  const runFeel = r.feel;
   if(ranRun && runFeel){ const was = runLevel(); let now = was;
-    if(runFeel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(runFeel!=='hard') now = Math.min(RUNS.length, was+1);
+    if(runFeel==='toomuch' || r.hip==='sore'){ now = Math.max(1, was-1); S.runTop = 0; }
+    else if(runFeel==='easy'){ now = Math.min(RUNS.length, was+1); S.runTop = 0; }
+    else if(runFeel==='right'){ S.runTop = (S.runTop||0) + 1; if(S.runTop >= 2){ now = Math.min(RUNS.length, was+1); S.runTop = 0; } }
+    else S.runTop = 0;
     S.runLevel = now; doc.runLevel = was; run = {was, now}; }
   ui.last = {run, points, ups, lad:ladUps, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScenes: Array.from({length: scenesOpen()-scBefore}, (_,k)=>scBefore+k), newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
@@ -863,7 +865,7 @@ async function ghPut(path, data, sha, message){
 }
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
 const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, runLevel:S.runLevel, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
-  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, ladder:S.ladder||{}, ladTop:S.ladTop||{}, block:S.block||null, blockSeen:S.blockSeen||0, updated:S.updated});
+  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, ladder:S.ladder||{}, ladTop:S.ladTop||{}, runTop:S.runTop||0, block:S.block||null, blockSeen:S.blockSeen||0, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
   if(syncing) return; if(!navigator.onLine){ setSync('wait','Offline. Will sync when you have signal.'); return; }
@@ -880,7 +882,7 @@ async function sync(retry){
     r = await ghGet('data/state.json');
     const rs = r.data || {};
     const remoteNewer = (rs.updated||0) > (S.updated||0);
-    if(remoteNewer) ['loc','step','dial','runLevel','voice','theme','dragon','loads','seenStage','ladder','ladTop','block','blockSeen'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
+    if(remoteNewer) ['loc','step','dial','runLevel','voice','theme','dragon','loads','seenStage','ladder','ladTop','runTop','block','blockSeen'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
     if((rs.rewardsUpdated||0) > (S.rewardsUpdated||0)){ S.rewards = rs.rewards; S.rewardsUpdated = rs.rewardsUpdated; }
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
@@ -1188,20 +1190,17 @@ function runHTML(){
 /* ---------- Review & celebrate ---------- */
 function reviewHTML(){
   const r = ui.run;
-  const pick = (act, cur, val, label, hint, id) => `<button class="chip" data-a="${act}" data-v="${val}"${id?` data-id="${id}"`:''} aria-pressed="${cur===val}">${label}${hint?`<small>${hint}</small>`:''}</button>`;
+  if(!r.feel) r.feel = 'right'; if(!r.hip) r.hip = 'fine'; // a normal day is already filled in: just Save
+  const pick = (act, cur, val, label, hint) => `<button class="chip" data-a="${act}" data-v="${val}" aria-pressed="${cur===val}">${label}${hint?`<small>${hint}</small>`:''}</button>`;
   const feel = [['easy','Too easy','could do more'],['right','About right','worked, not wrecked'],['hard','Hard','glad it’s over'],['toomuch','Too much','struggled to finish']];
   const hip = [['fine','Fine'],['niggly','Niggly'],['sore','Sore']];
-  const weights = (r.loaded||[]).length ? `<section class="card"><h2 class="ct">Weights <span class="aside">reps left on the last set</span></h2>${r.loaded.map(id=>{ const e = EX[id], v = r.efforts[id];
-      return `<div class="eff"><div class="nm">${esc(e.name)}</div><div class="ld">${fmtKg(r.loads[id])} · ${esc(e.unit)}${e.fixed?' · Paris weights':''}</div><div class="chips">${pick('effort',v,'easy','Easy','3+ left',id)}${pick('effort',v,'right','Right','1–2 left',id)}${pick('effort',v,'max','Max','0 left',id)}</div></div>`; }).join('')}
-      <p class="hint" style="margin-top:10px">Easy, or two sessions in a row at the top of the rep range, moves that lift up one notch on your dial.</p></section>` : '';
+  const ranRun = r.steps.some((st,k)=>/^(run|fin)\d$/.test(st.ex||'') && k < r.i);
   return `<div class="enter" style="display:grid;gap:14px">
-    <section class="gcard flat"><h1>How did that feel?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. All optional. It’s what your coach reads at review time.</p></section>
-    <section class="card"><h2 class="ct">Overall</h2><div class="chips">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
-      ${r.code!=='padIV' && r.steps.some((st,k)=>/^fin\d$/.test(st.ex||'') && k < r.i) ? `<h2 class="ct" style="margin-top:18px">The pad run at the end</h2><div class="chips">${feel.map(([v,l,h])=>pick('runfeel',r.runFeel,v,l,h)).join('')}</div>` : ''}
+    <section class="gcard flat"><h1>How was it?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. Filled in for a normal day. If nothing was off, just save.</p></section>
+    <section class="card"><h2 class="ct">Overall${ranRun ? ' <span class="aside">run included</span>' : ''}</h2><div class="chips">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
       <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
-      <label class="ct" for="snote" style="display:block;margin:18px 0 8px">Anything to add</label>
-      <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea></section>
-    ${weights}
+      ${r.noteOpen || r.note ? `<label class="ct" for="snote" style="display:block;margin:18px 0 8px">Note</label>
+      <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea>` : `<button class="linkbtn" data-a="noteopen" style="margin-top:14px">Add a note</button>`}</section>
   </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="save">Save session</button></div></div>`;
 }
 function celebrateHTML(){
@@ -1222,9 +1221,11 @@ function celebrateHTML(){
     ${L.newScenes.length ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScenes[0]}"><span class="ct" style="margin:0">${L.newScenes.length>1 ? `${NUMW[L.newScenes.length-1].replace(/^./,c=>c.toUpperCase())} new scenes unlocked` : 'New scene unlocked'}</span><span class="ut">${L.newScenes.map(i=>dx(STORY.scenes[i].title)).join(' · ')}</span><span class="muted">${esc(bookOf(L.newScenes[0]).title)} · tap to read, about ${Math.max(1, Math.round(L.newScenes.reduce((a,i)=>a+itemSecs({t:'s',i}),0)/60))} min${L.newScenes.length>1 ? ' together' : ''}</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
     ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About ${estMin(coolCode())} minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScenes.length && n<=L.newScenes.length ? (n>1 ? 'your new scenes' : 'your new scene') : 'the story'; })()} plays.</span></span></button>` : (L.newScenes.length || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
-    ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now, true))}</b> at the end of A and B, or <b>${esc(runDesc(L.run.now))}</b> as a pad run on its own.</p></section>` : ''}
-    ${L.lad && L.lad.length ? `<section class="card"><h2 class="ct">Next step up</h2><ul class="uplist">${L.lad.map(u=>`<li>${I.up}<span>${esc(EX[u.from].name)} becomes <b>${esc(EX[u.to].name.toLowerCase())}</b></span></li>`).join('')}</ul><p class="muted" style="margin:8px 0 0;font-size:14px">It swaps in from your next session. If it’s too much, open it during the session and step back.</p></section>` : ''}
-    ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
+    ${(()=>{ const lines = [];
+      (L.ups||[]).forEach(u=>lines.push(`${esc(EX[u.id].name)}: <b>${fmtKg(u.next)}</b>`));
+      (L.lad||[]).forEach(u=>lines.push(`${esc(EX[u.from].name)} becomes <b>${esc(EX[u.to].name.toLowerCase())}</b>`));
+      if(L.run && L.run.now !== L.run.was) lines.push(`Pad run ${L.run.now > L.run.was ? 'up' : 'down'} to level ${L.run.now}: <b>${esc(runDesc(L.run.now, L.code!=='padIV'))}</b>`);
+      return lines.length ? `<section class="card"><h2 class="ct">Next time</h2><ul class="uplist">${lines.map(x=>`<li>${I.up}<span>${x}</span></li>`).join('')}</ul></section>` : ''; })()}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
 }
@@ -1588,10 +1589,9 @@ document.addEventListener('click', e=>{
     case 'load': { const s = r.steps[r.i]; r.loads[s.ex] = EX[s.ex].fixed ? Math.min(3, Math.max(2, r.loads[s.ex] + (+b.dataset.d))) : stepKg(r.loads[s.ex], +b.dataset.d); render(); break; }
     case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
-    case 'effort': r.efforts[b.dataset.id] = b.dataset.v; render(); break;
-    case 'feel': r.feel = r.feel===b.dataset.v ? null : b.dataset.v; render(); break;
-    case 'runfeel': r.runFeel = r.runFeel===b.dataset.v ? null : b.dataset.v; render(); break;
-    case 'hipfeel': r.hip = r.hip===b.dataset.v ? null : b.dataset.v; render(); break;
+    case 'feel': r.feel = b.dataset.v; render(); break;
+    case 'hipfeel': r.hip = b.dataset.v; render(); break;
+    case 'noteopen': r.noteOpen = true; render(); setTimeout(()=>{ const t = document.getElementById('snote'); if(t) t.focus(); }, 30); break;
     case 'save': save(); break;
     case 'exit': ui.sheet = 'exit'; render(); break;
     case 'keep': case 'close': ui.sheet = null; render(); break;
