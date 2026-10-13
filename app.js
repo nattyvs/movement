@@ -489,7 +489,8 @@ function storyVoice(){
   const gb = vs.filter(v=>/en[-_]GB/i.test(v.lang));
   return gb.find(v=>/premium/i.test(v.name)) || gb.find(v=>/enhanced/i.test(v.name)) || voiceGB || gb[0] || vs[0] || null;
 }
-const itemOf = q => q.t==='s' ? STORY.scenes[q.i] : STORY.notes[q.i];
+// 'r' is the short spoken recap of scene i, played before the next new scene
+const itemOf = q => q.t==='s' ? STORY.scenes[q.i] : q.t==='r' ? {title:'Previously', text:[STORY.scenes[q.i].recap || '']} : STORY.notes[q.i];
 function chunksFor(q){
   const it = itemOf(q), out = [{p:-1, text: smart(it.title) + '.'}];
   [].concat(it.text).map(smart).forEach((para, pi)=>{
@@ -500,7 +501,7 @@ function chunksFor(q){
   return out;
 }
 function narrNext(){
-  const q = NARR.queue[NARR.k]; if(q){ S.read[q.t+q.i] = 1; touch(); }
+  const q = NARR.queue[NARR.k]; if(q && q.t!=='r'){ S.read[q.t+q.i] = 1; touch(); }
   NARR.k++; if(NARR.k >= NARR.queue.length){ narrStop(); return; }
   narrItem(NARR.rec ? 0 : 1200);
 }
@@ -532,7 +533,7 @@ aud.addEventListener('pause', ()=>{ if(NARR.rec && NARR.playing && !NARR.cue && 
 aud.addEventListener('play', ()=>{ if(NARR.rec && !NARR.playing){ NARR.playing = true; paintNP(); } });
 function mediaMeta(q, rec){
   try{ if(!('mediaSession' in navigator)) return; const it = itemOf(q);
-    navigator.mediaSession.metadata = new MediaMetadata({title: it.title, artist: q.t==='s' ? `Read by ${AUDIO.voices.s}` : `${kindOf(it)} · read by ${AUDIO.voices.n}`, album: bookOf(q.t==='s' ? q.i : 0).title, artwork:[{src:'icons/icon-512.png', sizes:'512x512', type:'image/png'}]});
+    navigator.mediaSession.metadata = new MediaMetadata({title: it.title, artist: q.t!=='n' ? `Read by ${AUDIO.voices.s}` : `${kindOf(it)} · read by ${AUDIO.voices.n}`, album: bookOf(q.t!=='n' ? q.i : 0).title, artwork:[{src:'icons/icon-512.png', sizes:'512x512', type:'image/png'}]});
     const h = (a, f) => { try{ navigator.mediaSession.setActionHandler(a, f); }catch(e){} };
     h('play', ()=>narrResume()); h('pause', ()=>narrPause());
     h('seekbackward', ()=>{ aud.currentTime = Math.max(0, aud.currentTime - 15); }); h('seekforward', ()=>{ aud.currentTime = Math.min(aud.duration||0, aud.currentTime + 15); });
@@ -559,7 +560,7 @@ function itemSecs(q){ const a = typeof AUDIO !== 'undefined' && AUDIO.items[q.t+
   const it = itemOf(q); return [].concat(it.text).join(' ').split(/\s+/).length / 2.6 + 3; }
 // what to play while stretching, sized to the stretching time (budget, in seconds):
 // unread scenes in order (plus any this session is about to earn), each followed by the satchel finds that belong to it.
-// If that leaves the cool-down half empty, it opens with the last scene she heard, as a "last time".
+// New scenes open with a one or two sentence "Previously" recap of the scene before, so she knows where she is.
 function storyQueue(earn, budget){
   budget = budget || 420;
   const so = scenesOpen(), book = bookOf(Math.max(0, so-1)), top = Math.min(STORY.scenes.length, so + (earn||0));
@@ -570,8 +571,8 @@ function storyQueue(earn, budget){
   scenes.forEach(i=>{ cand.push({t:'s', i}); notesUpTo(i); });
   notesUpTo(1e9);
   if(!cand.length){ return so ? [{t:'s', i:so-1}] : []; }
-  const total = cand.reduce((a,q)=>a+itemSecs(q),0), first = scenes[0];
-  if(first > 0 && total < budget*.7 && bookOf(first-1)===bookOf(first)) cand.unshift({t:'s', i:first-1, recap:true});
+  const first = scenes[0];
+  if(first > 0 && bookOf(first-1)===bookOf(first) && STORY.scenes[first-1].recap) cand.unshift({t:'r', i:first-1});
   const q = []; let t = 0;
   for(const x of cand){ if(q.length && t >= budget) break; q.push(x); t += itemSecs(x); }
   return q.slice(0, 12);
@@ -587,7 +588,7 @@ function paintNP(light){
   if(light && bar && el.dataset.k === String(NARR.k) && el.dataset.pl === String(NARR.playing)){ bar.style.width = pct.toFixed(1)+'%'; }
   else {
     el.hidden = false; document.body.classList.add('np-on'); el.dataset.k = NARR.k; el.dataset.pl = NARR.playing;
-    el.innerHTML = `<div class="in"><span class="npk">${q.recap ? 'Last time · ' : ''}${NARR.playing ? (NARR.rec ? `Read by ${esc(q.t==='s' ? AUDIO.voices.s : AUDIO.voices.n)}` : 'Reading') : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
+    el.innerHTML = `<div class="in"><span class="npk">${NARR.playing ? (NARR.rec ? `Read by ${esc(q.t!=='n' ? AUDIO.voices.s : AUDIO.voices.n)}` : 'Reading') : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
       <button class="npb" data-a="${NARR.playing?'narrpause':'narrplay'}" aria-label="${NARR.playing?'Pause the story':'Play the story'}">${NARR.playing?I.pause:I.play}</button>
       <button class="npb ghost" data-a="narrstop" aria-label="Stop the story">${I.x}</button><i style="width:${pct.toFixed(1)}%"></i></div>`;
   }
@@ -1058,7 +1059,7 @@ function runHTML(){
                     : `<button class="btn" data-a="tpause">${paused?'Resume':'Pause'}</button><button class="btn sm" data-a="skip">Skip</button>`;
   }
   const calm = ['hip','mobility','walk','cool'].includes(def.type) || s.t==='hold' || /_cool$/.test(s.ex||'');
-  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(runEarn(r), Math.max(240, secsLeft(r.steps, r.i))); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · the coach goes quiet, beeps still mark each change</span></span></button>`; }
+  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(runEarn(r), Math.max(240, secsLeft(r.steps, r.i))); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${(()=>{ const real = q.filter(x=>x.t!=='r'); return dx(itemOf(real[0]).title) + (real.length>1 ? ` and ${real.length-1} more` : ''); })()} · the coach goes quiet, beeps still mark each change</span></span></button>`; }
   return bar + `<div class="enter" style="display:grid;gap:14px" data-step="${r.i}">${body}</div><div class="dock"><div class="in">${dock}</div></div>`;
 }
 
@@ -1178,7 +1179,7 @@ function storyCardHTML(){
   const so = scenesOpen(), all = !!ui.storyAll, last = STORY.scenes.length - 1;
   const cur = chapterOf(Math.min(so, last)), book = bookOf(cur.from);
   const finished = so > book.to || (so > last && cur.to >= book.to);
-  const row = i => `<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${sceneLabel(i)}</span><span class="stt">${dx(STORY.scenes[i].title)}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`;
+  const row = i => `<button class="strow" data-a="read" data-t="s" data-i="${i}"><span class="sn">${sceneLabel(i)}</span><span class="stw"><span class="stt">${dx(STORY.scenes[i].title)}</span>${S.read['s'+i] && STORY.scenes[i].recap ? `<span class="srec">${esc(smart(STORY.scenes[i].recap))}</span>` : ''}</span>${S.read['s'+i]?'':'<span class="new">New</span>'}</button>`;
   let tail;
   if(so <= last && so <= book.to) tail = `<div class="strow locked"><span class="sn">${sceneLabel(so)}</span><span class="stt">${dx(STORY.scenes[so].title)}</span><span class="muted" style="font-size:13px">Next session</span></div>`;
   else if(finished) tail = `<p class="theend">The end.</p><p class="muted" style="margin:0;font-size:14px;text-align:center">A new story is on its way. Keep training and it starts as soon as it’s written.</p>`;
@@ -1200,7 +1201,7 @@ function storyCardHTML(){
     return `<button class="strow note${led?'':' doc'}" data-a="read" data-t="n" data-i="${i}"><span class="nmeta"><span class="nk">${esc(kindOf(n))}</span><span class="stt">${led ? esc(excerpt([].concat(n.text).join(' '))) : dx(n.title)}</span></span>${S.read['n'+i]?'':'<span class="new">New</span>'}</button>`; }).join('');
   const capped = cur.notes && nOpen.filter(i=>noteChapter(i)===cur).length > cur.notes[1]-cur.notes[0];
   return `<section class="card story"><h2 class="ct">${esc(book.title)} <span class="aside">Chapter ${cur.n}: ${esc(cur.title)}</span></h2>
-    <p class="muted" style="margin:0 0 6px;font-size:14px">Every session unlocks a scene. Hip and mobility days open something from the company’s satchel: ledger pages, who’s who, sketches, maps.</p>
+    <p class="muted" style="margin:0 0 6px;font-size:14px">Longer sessions unlock more scenes, and each one you’ve read keeps a short recap here. Hip and mobility days open something from the company’s satchel: ledger pages, who’s who, sketches, maps.</p>
     <div class="slist">${rows}</div>
     ${nOpen.length ? `<h3 class="ct" style="margin:16px 0 4px">${esc(book.notebook)} <span class="aside">${nOpen.length} ${nOpen.length===1?'thing':'things'}</span></h3><div class="slist">${notes}</div>${capped && !finished ? `<p class="muted" style="margin:8px 0 0;font-size:13.5px">That’s everything in the satchel for now. More turns up as the story moves on.</p>` : ''}` : `<p class="muted" style="margin:12px 0 0;font-size:14px">The satchel opens with your next hip or mobility session.</p>`}
     ${hidden>0 || all ? `<button class="linkbtn" data-a="storyall">${all ? 'Show fewer' : `Show everything so far`}</button>` : ''}
@@ -1225,7 +1226,7 @@ function readHTML(){
     <article class="page${isScene?'':' ledger'}${!isScene && (item.kind||'ledger')!=='ledger' ? ' doc' : ''}"><h1 class="rt">${dx(item.title)}</h1>
       <p class="rmeta">${isScene ? `${esc(bookOf(i).title)} · Chapter ${c.n} · ${i===c.from && c.n===1 ? 'Prologue' : 'Scene '+sceneLabel(i)}` : esc(kindOf(item))}</p>
       ${(()=>{ const on = NARR.active && NARR.queue[NARR.k] && NARR.queue[NARR.k].t===t && NARR.queue[NARR.k].i===i;
-        return `<button class="listenbtn" data-a="${on ? (NARR.playing?'narrpause':'narrplay') : 'listen'}" data-t="${t}" data-i="${i}">${on && NARR.playing ? I.pause+' Pause' : I.ear+(on?' Carry on listening':' Listen')}</button>`; })()}
+        return `${isScene && i>bookOf(i).from && STORY.scenes[i-1].recap ? `<aside class="prevbox"><b>Previously</b>${esc(smart(STORY.scenes[i-1].recap))}</aside>` : ''}<button class="listenbtn" data-a="${on ? (NARR.playing?'narrpause':'narrplay') : 'listen'}" data-t="${t}" data-i="${i}">${on && NARR.playing ? I.pause+' Pause' : I.ear+(on?' Carry on listening':' Listen')}</button>`; })()}
       <div class="rbody">${body}</div>${isEnd ? `<p class="theend">The end.</p>` : ''}</article>
     <div style="display:flex;gap:10px;flex-wrap:wrap">${prev}${next}</div></div>`;
 }
@@ -1435,7 +1436,7 @@ document.addEventListener('click', e=>{
     case 'choose': ui.screen = 'choose'; render(); window.scrollTo(0,0); break;
     case 'preview': ui.preview = {code:b.dataset.code, trim:false}; ui.screen = 'preview'; render(); window.scrollTo(0,0); break;
     case 'read': ui.read = {t:b.dataset.t, i:+b.dataset.i}; ui.sheet = null; ui.screen = 'read'; render(); window.scrollTo(0,0); break;
-    case 'listen': narrStart([{t:b.dataset.t, i:+b.dataset.i}]); render(); break;
+    case 'listen': { const t = b.dataset.t, i = +b.dataset.i, pr = t==='s' && i>bookOf(i).from && STORY.scenes[i-1].recap; narrStart(pr ? [{t:'r', i:i-1}, {t, i}] : [{t, i}]); render(); break; }
     case 'storyrun': { const r2 = ui.run; narrStart(r2 ? storyQueue(runEarn(r2), Math.max(240, secsLeft(r2.steps, r2.i))) : storyQueue(0)); render(); break; }
     case 'narrpause': narrPause(); if(ui.screen==='read') render(); break;
     case 'narrplay': narrResume(); if(ui.screen==='read') render(); break;

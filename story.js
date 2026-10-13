@@ -12,7 +12,7 @@ const STORY = {
     {n:1, title:'Hollowmere', from:0, to:12, notes:[0,19]}
   ],
   scenes: [
-    {title:'The Offer', text:[
+    {title:'The Offer', recap:'A woman calling herself Corvane hires five strangers to carry a warm, humming iron box to the Last Lookout, on foot, for four hundred crowns each. Kesh notices Corvane knew all their names before they gave them.', text:[
       'The woman who hired them never sat down. She stood at the end of the table in the back room of the Drowned Lamp, wet cloak dripping on the boards, and let the iron box do the talking.',
       'It was the size of a bread oven and about as warm. Kesh felt the heat of it from three seats away. It hummed, very low, the way a cat does when it has decided not to trust you yet.',
       '"Mistress Corvane," the woman said, which was clearly not her name. "The box goes to the Last Lookout. On foot. You will not open it. You will not sell it. You will not let it get cold."',
@@ -26,7 +26,7 @@ const STORY = {
       'It was a lie, and a lazy one. Kesh had been lied to by better women. But the purse landed on the table with a sound like a door opening, and the box hummed, and nobody left.',
       'Later she would remember that Corvane had called each of them by name before they had given it.'
     ]},
-    {title:'Who Carries', text:[
+    {title:'Who Carries', recap:'The company sets off across the Hollowmere marsh, taking turns with the box: Hal the old soldier with the bad knee, Tibbet the forger, Brother Amos, young Pell and Kesh. The box is heavier than it looks, and warm right through.', text:[
       'They argued about it for the first mile, which Kesh considered a good sign. People who argued about the work meant to do it.',
       '"It should be the one with two working knees," said the big man, whose name was Hal Pike. He had been a soldier for thirty years and a cripple for two, and he said both facts the same way, like reading a bill.',
       '"It should be whoever is paid most," said Tibbet Sorrel, the thin man, who forged things for a living and believed in fair accounting where it suited him.',
@@ -40,7 +40,7 @@ const STORY = {
       'They walked. They carried. By noon Kesh\'s arms burned and her back had opinions, and she found she did not mind. There was a kind of peace in a weight that only asked to be held.',
       'Behind her she heard Pell explaining the box to Hal. Pell had decided it contained a saint\'s head. Hal had decided Pell was an idiot. Both seemed content.'
     ]},
-    {title:'The Ferryman\'s Fee', text:[
+    {title:'The Ferryman\'s Fee', recap:'A ferryman eyes the box and lets slip that men in grey cloaks came by yesterday asking about it. Kesh writes in her ledger: who told them which road?', text:[
       'The road ended at water, and at the water was a raft, and on the raft was a man who looked as if the marsh had grown him for the purpose.',
       '"Crossing\'s a crown a head," he said. "Or whatever\'s in the box."',
       'Nobody had told him there was anything in the box. Kesh noticed that. She noticed the way his eyes went to it and stayed, the way a dog watches a plate.',
@@ -56,7 +56,7 @@ const STORY = {
       'On the far bank, Kesh made the first entry in her ledger. Grey cloaks. Paid in silver. One day ahead of us.',
       'Then, under it: Who told them which road?'
     ]},
-    {title:'Mist', text:[
+    {title:'Mist', recap:'Lost in the mist, Kesh feels the box\'s hum change and lets it choose the path, and it\'s right. The box knows where it\'s going, and so does someone else.', text:[
       'By the second morning it was clear that Pell did not know the marsh. He had said he knew it. He had said it often and with feeling. He knew, it turned out, one path to his aunt\'s house and the location of several good eels.',
       '"Left," he said, at a fork in the reeds.',
       '"You said left an hour ago," said Tibbet, "and we walked in a circle and met ourselves."',
@@ -73,7 +73,7 @@ const STORY = {
       'That night she wrote: The box knows where it is going.',
       'And under it, smaller, because writing it down made it real: So does someone else.'
     ]},
-    {title:'Maintenance', text:[
+    {title:'Maintenance', recap:'On watch, Kesh sees Hal do the nightly stretches that keep his knee from locking. He tells her he was crippled at Thornwick Pass eleven years ago, escorting another iron box.', text:[
       'Hal took the first watch and Kesh took it with him, because she did not sleep well in marshes and because she wanted to see what he did when he thought nobody was looking.',
       'What he did was stretch.',
       'He lay on his back on his cloak, hooked his good ankle over his bad knee and pulled, breathing out slow through his teeth. Then the other way. Then knee to chest. Then a long, careful reach. Four movements, twice through, with the grim attention of a man defusing something.',
@@ -89,7 +89,7 @@ const STORY = {
       '"Never found out. I woke up at the bottom of a ravine with my leg bent wrong and nine dead friends." He finished his last stretch and sat up. "So when a woman with a made-up name puts an iron box on a table and offers four hundred crowns, I take the job. I want to know what I paid for."',
       'Across the camp, Brother Amos had gone to sit beside the box. He was singing to it. Very softly, with no words at all.'
     ]},
-    {title:'Grey Cloaks', text:[
+    {title:'Grey Cloaks', recap:'The grey cloaks turn out to be the Margrave\'s tithe-men, searching carts at the Stillwater causeway. The company hides the box in a peat cart and gets through on a pass Tibbet forged with a turnip.', text:[
       'The causeway at Stillwater had a toll-house, and the toll-house had grey cloaks.',
       'Four of them, checking every cart. They wore no badge, which in Kesh\'s experience meant they worked for someone whose badge you would recognise. They were turning out sacks and prising lids off barrels with the bored thoroughness of men paid by the day.',
       '"Back," Kesh said, and they went back into the reeds before anyone saw them.',
@@ -104,7 +104,7 @@ const STORY = {
       'Thirty yards past the barrier, Tibbet sat down hard on the verge and was quietly sick into the reeds.',
       '"Turnip," he said, when he could. "I used a turnip. I am a professional."'
     ]},
-    {title:'The Ledger', text:[
+    {title:'The Ledger', recap:'Going through her ledger, Kesh finds that every one of their debts, her own included, was bought up by someone who signs with a C. They weren\'t hired. They were collected.', text:[
       'Kesh kept accounts the way other people kept faith. Every debt, every favour, every name. She had learned it as a quartermaster\'s clerk in a war nobody remembered winning, and she had kept it up afterwards because debts, unlike people, did not lie about what they were.',
       'That night, while the others slept, she went back through it.',
       'Hal Pike. She knew the name before the Drowned Lamp. Owed a gambling house in Ashwell seventy crowns, bought out three months ago by a buyer who signed only with an initial.',
@@ -118,7 +118,7 @@ const STORY = {
       'They had not been hired. They had been collected.',
       'Somebody had bought five people the way you buy five horses for a hard road. The question was not why. The question was what that somebody expected to happen to the horses at the end.'
     ]},
-    {title:'The Drowned Chapel', text:[
+    {title:'The Drowned Chapel', recap:'Sheltering from a storm in a drowned chapel, Kesh catches Amos bowing to a carving of dragons. He admits he\'s no priest but the last of the people who kept dragon eggs warm with song, and Corvane knows it.', text:[
       'The storm came in sideways off the mere and they ran for the only shelter there was: a chapel sunk to its knees in the marsh, its nave half full of black water, its roof still mostly a roof.',
       'They made camp in the choir, which was dry, and in the bell tower, which was drier. Brother Amos lit a candle on the altar out of what he said was habit.',
       'Kesh watched him do it. He bowed to the wrong side.',
@@ -133,7 +133,7 @@ const STORY = {
       '"Does Corvane know?" Kesh asked.',
       '"Of course," said Amos. "Why else would she want me?"'
     ]},
-    {title:'Cold', text:[
+    {title:'Cold', recap:'On the coldest night the box goes quiet and starts to cool. The five of them huddle round it until dawn, the hum comes back, and for the first time they feel like a company.', text:[
       'The fourth night was the coldest any of them could remember. The mist froze on the reeds. Their breath froze in their beards, those who had beards. The fire would not catch, because nothing in Hollowmere was ever dry enough to burn.',
       'And the box went quiet.',
       'Pell noticed first. He sat up in the dark and said, "It\'s stopped," in a voice so small and frightened that everyone was awake at once.',
@@ -146,7 +146,7 @@ const STORY = {
       'Nobody slept. Nobody moved. When the sun came up grey and thin over the mere, they were still there, tangled together, stiff as old rope.',
       'It was, Kesh thought later, the first time they had been a company. It was a strange thing to have to thank a box for.'
     ]},
-    {title:'Pride', text:[
+    {title:'Pride', recap:'Tibbet falls into a bog and Hal hauls him out, locking his bad knee doing it. Tibbet, coat ruined, does Hal\'s stretches with him until the knee frees.', text:[
       'Tibbet went into the bog on the fifth morning, and he went in the way he did everything: neatly, completely and with a great deal of commentary.',
       'One moment he was stepping from tussock to tussock with the precision of a man who had once forged a duke\'s signature on a moving carriage. The next he was up to his waist in black water, and the water was pulling.',
       '"I would like," he said, in a high calm voice, "for someone to help me now."',
@@ -159,7 +159,7 @@ const STORY = {
       'So Hal showed him. And the most fastidious man in the realm held a mercenary\'s muddy ankle and pushed, gently, exactly where he was told, until the knee unlocked with a sound like a cork.',
       'Neither of them mentioned it afterwards. But that night Tibbet gave Hal the better side of the fire, and Hal let him.'
     ]},
-    {title:'The Seal', text:[
+    {title:'The Seal', recap:'Tibbet recognises the seal on the box: a noble house he invented fourteen years ago for a woman who never sat down. Someone has been planning this for a very long time.', text:[
       'On the sixth day Tibbet asked to look at the box. Properly look. Kesh let him, because a man who forges for a living sees things other people do not.',
       'He turned it in the light. He ran his fingers over the rivets. Then he bent close to the wax seal on the lid, a great red disc stamped with a crest of a tower and three stars, and went completely still.',
       '"Tibbet?"',
@@ -176,7 +176,7 @@ const STORY = {
       'Nobody said the obvious thing. That someone had been planning this for a very long time, and that every one of them had been in the plan before they knew it existed.',
       'The box hummed, contented, as if it had been waiting for them to catch up.'
     ]},
-    {title:'Followed', text:[
+    {title:'Followed', recap:'Six grey cloaks are closing in, and someone must have told them the road. Hal offers to stay behind and hold them, but Kesh decides they all go together, at his pace.', text:[
       'Pell saw them from the top of a drainage cut, lying on his belly with Kesh\'s spyglass: six grey cloaks on the causeway behind, moving fast and not stopping to search carts any more.',
       '"They know," he said, sliding down. "They\'re not looking. They\'re coming."',
       '"The ferryman," said Tibbet bitterly. "I should have paid him real money."',
@@ -192,7 +192,7 @@ const STORY = {
       '"That\'ll be a slow pace."',
       '"Then it\'s a slow pace," Kesh said. "Move."'
     ]},
-    {title:'The Ferryman\'s Gate', text:[
+    {title:'The Ferryman\'s Gate', recap:'They reach the Ferryman\'s Gate at dawn and pay the toll with a true story. An arrow from the Lantern Wood stops the grey cloaks, and none of them fired it.', text:[
       'They walked all night. Hal set a pace like a funeral and never once stopped, and nobody complained, and the box hummed louder with every mile as if it could smell the trees.',
       'The grey cloaks were a quarter mile behind at moonset. Two hundred yards at first light. Close enough to hear their boots on the stone.',
       'The Gate was an arch of black timber across the last causeway, and under it sat an old woman with a lantern and a book.',
