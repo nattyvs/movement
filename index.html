@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-title" content="Movement">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="apple-touch-icon" href="icons/icon-180.png">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/favicon-64.png">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preload" href="fonts/BodoniModa-Italic.woff" as="font" type="font/woff" crossorigin>
 <style>
@@ -121,6 +121,7 @@ a{color:var(--violet);text-underline-offset:3px}
 .bar.full{height:54px;background:linear-gradient(180deg,var(--g3),var(--g4))}
 .bar.short,.bar.cardio{height:34px;background:linear-gradient(180deg,var(--g2),var(--g3));opacity:.85}
 .bar.walk{height:20px;background:var(--teal);opacity:.75}
+.bar.cool{height:12px;background:var(--teal);opacity:.5}
 .bar.hip{height:12px;background:var(--violet);opacity:.55}
 .day .d{font-size:12px;font-weight:650;color:var(--muted)}
 .day.now .d{color:var(--ink)}
@@ -400,6 +401,27 @@ input::placeholder,textarea::placeholder{color:var(--muted)}
 .ovr.now{color:var(--violet)}
 .ovr.now .tick{border-color:var(--violet);border-width:2.4px}
 
+
+/* story player */
+.listen{display:grid;grid-template-columns:28px 1fr;gap:12px;align-items:center;width:100%;text-align:left;color:var(--ink);border-color:color-mix(in srgb,var(--violet) 45%,var(--line))}
+.listen > .ic{width:26px;height:26px;color:var(--violet)}
+.listen .lt{display:block;font-family:var(--display);font-style:italic;font-weight:600;font-size:22px;line-height:1.15}
+.listen .muted{display:block;font-size:14px;margin-top:2px}
+.listenbtn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--card-2);color:var(--ink);border-radius:999px;padding:9px 16px;font-weight:650;font-size:15px;margin:0 0 16px;min-height:44px}
+.listenbtn .ic{width:18px;height:18px;color:var(--violet)}
+.rbody p{transition:background-color .3s ease;border-radius:8px}
+.rbody p.speaking{background:color-mix(in srgb,var(--violet) 14%,transparent);box-shadow:0 0 0 6px color-mix(in srgb,var(--violet) 14%,transparent)}
+.np{position:fixed;left:0;right:0;z-index:7;bottom:calc(84px + env(safe-area-inset-bottom,0px));padding:0 12px;pointer-events:none}
+.np .in{pointer-events:auto;position:relative;overflow:hidden;max-width:476px;margin:0 auto;display:grid;grid-template-columns:1fr auto auto;grid-template-rows:auto auto;column-gap:6px;align-items:center;background:var(--ink);color:var(--bg);border-radius:18px;padding:10px 10px 12px 16px;box-shadow:var(--shadow)}
+.npk{grid-column:1;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;font-weight:700;opacity:.7}
+.npt{grid-column:1;grid-row:2;font-family:var(--display);font-style:italic;font-weight:600;font-size:18px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.npb{grid-row:1/3;width:44px;height:44px;border-radius:50%;border:0;background:var(--bg);color:var(--ink);display:grid;place-items:center;padding:0}
+.npb .ic{width:18px;height:18px}
+.npb.ghost{background:transparent;color:var(--bg);opacity:.8}
+.np .in > i{position:absolute;left:0;bottom:0;height:3px;background:var(--grad);transition:width .4s ease}
+body:has(.dock) .np{bottom:calc(98px + env(safe-area-inset-bottom,0px))}
+body.np-on .wrap{padding-bottom:calc(178px + env(safe-area-inset-bottom,0px))}
+
 /* sheet & toast */
 .scrim{position:fixed;inset:0;z-index:30;background:rgba(18,14,32,.5);display:grid;align-items:end;justify-items:center;padding:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));animation:fadein .2s ease-out}
 .sheet{width:100%;max-width:476px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:22px;padding:22px 18px 14px;max-height:82vh;overflow:auto;animation:rise .28s cubic-bezier(.2,.8,.2,1)}
@@ -428,6 +450,7 @@ input::placeholder,textarea::placeholder{color:var(--muted)}
   <button class="tab" data-tab="progress"><svg class="ic" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Progress</button>
 </div></nav>
 <div id="flash" aria-hidden="true"></div>
+<div id="np" class="np" role="region" aria-label="Story player" hidden></div>
 <div id="toast" class="toast" role="status" hidden></div>
 <script src="figure.js"></script>
 <script src="story.js"></script>

@@ -136,6 +136,8 @@ const SESS = {
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
   mobility:{title:'Mobility flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
+  coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','supine_flex','ham_floss','doorway_pec']},
+  coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','supine_flex','ham_floss','doorway_pec']},
   walkUK:{title:'Easy walk',sub:'Twenty minutes on the pad',type:'walk',items:['pad_walk']},
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
@@ -147,7 +149,7 @@ const MUSCLES = {goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], t
   hip_flexor:['mobility'], knee_wall:['mobility'], squat_hold:['mobility'], ham_floss:['mobility'], calf_raise:['legs','mobility']};
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
-const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15};
+const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool:5};
 const ORDER = {uk:['A','B','C'], paris:['P1','P2']};
 const TRAINING = new Set(['full','short','cardio']);
 
@@ -269,7 +271,7 @@ const bookOf = i => BOOKS().find(b=>i>=b.from && i<=b.to) || BOOKS()[BOOKS().len
 // when did chapter c open? scene i opens after the i-th training session
 function chapterStart(c){ if(c.from===0) return 0; const tr = sessions.filter(x=>TRAINING.has(x.kind)).sort((a,b)=>a.ts-b.ts); return tr[c.from-1] ? tr[c.from-1].ts : Infinity; }
 function openNotes(){
-  const so = scenesOpen(), care = sessions.filter(x=>x.kind==='hip'||x.kind==='mobility'), out = [];
+  const so = scenesOpen(), care = sessions.filter(x=>x.kind==='hip'||x.kind==='mobility'||x.kind==='cool'), out = [];
   STORY.chapters.forEach(c=>{ if(!c.notes || c.from >= so) return; const st = chapterStart(c);
     let left = care.filter(x=>x.ts>=st).length;
     // in order; an extra waits until the scene it relates to is open, so nothing spoils the story
@@ -403,14 +405,85 @@ function tone(f=880, len=.18, vol=.28){
 const chime = () => { tone(784,.16); setTimeout(()=>tone(1046,.26),140); };
 function say(text){
   if(!S.voice || !window.speechSynthesis) return;
-  try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02; speechSynthesis.speak(u); }catch(e){}
+  try{
+    const resume = NARR.playing; if(resume) NARR.tok++;
+    speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02;
+    if(resume){ const tok = NARR.tok; u.onend = u.onerror = ()=>{ if(tok===NARR.tok && NARR.playing) setTimeout(()=>{ if(tok===NARR.tok) narrSpeak(); }, 300); }; }
+    speechSynthesis.speak(u); }catch(e){}
 }
 function flash(word, rest){
   const f = document.getElementById('flash'); f.textContent = word; f.classList.toggle('rest', !!rest);
   f.classList.remove('on'); void f.offsetWidth; f.classList.add('on');
 }
+/* ================= Story narrator (the phone's own voice) ================= */
+const NARR = {active:false, playing:false, queue:[], k:0, chunks:[], c:0, tok:0};
+function storyVoices(){ try{ const vs = speechSynthesis.getVoices() || []; return vs.filter(v=>/^en[-_]/i.test(v.lang)); }catch(e){ return []; } }
+function storyVoice(){
+  const vs = storyVoices(); if(S.narrator){ const v = vs.find(v=>v.voiceURI===S.narrator); if(v) return v; }
+  const gb = vs.filter(v=>/en[-_]GB/i.test(v.lang));
+  return gb.find(v=>/premium/i.test(v.name)) || gb.find(v=>/enhanced/i.test(v.name)) || voiceGB || gb[0] || vs[0] || null;
+}
+const itemOf = q => q.t==='s' ? STORY.scenes[q.i] : STORY.notes[q.i];
+function chunksFor(q){
+  const it = itemOf(q), out = [{p:-1, text: smart(it.title) + '.'}];
+  [].concat(it.text).map(smart).forEach((para, pi)=>{
+    const sents = para.match(/[^.!?…]+[.!?…]+[’”"')]*\s*|[^.!?…]+$/g) || [para]; let buf = '';
+    sents.forEach(x=>{ if(buf && (buf + x).length > 220){ out.push({p:pi, text:buf.trim()}); buf = ''; } buf += x; });
+    if(buf.trim()) out.push({p:pi, text:buf.trim()});
+  });
+  return out;
+}
+function narrSpeak(){
+  if(!NARR.playing || !window.speechSynthesis) return;
+  const ch = NARR.chunks[NARR.c];
+  if(!ch){
+    const q = NARR.queue[NARR.k]; S.read[q.t+q.i] = 1; touch();
+    NARR.k++; if(NARR.k >= NARR.queue.length){ narrStop(); return; }
+    NARR.chunks = chunksFor(NARR.queue[NARR.k]); NARR.c = 0; paintNP(); const tok = ++NARR.tok;
+    setTimeout(()=>{ if(tok===NARR.tok) narrSpeak(); }, 1400); return;
+  }
+  const tok = ++NARR.tok;
+  try{ const u = new SpeechSynthesisUtterance(ch.text); u.lang = 'en-GB'; const v = storyVoice(); if(v){ u.voice = v; u.lang = v.lang; } u.rate = S.narrRate || .95;
+    u.onend = ()=>{ if(tok!==NARR.tok || !NARR.playing) return; NARR.c++; paintNP(); narrSpeak(); };
+    u.onerror = ()=>{ if(tok!==NARR.tok || !NARR.playing) return; NARR.c++; narrSpeak(); };
+    speechSynthesis.speak(u); }catch(e){}
+  paintNP();
+}
+function narrStart(queue){
+  if(!queue.length || !window.speechSynthesis) return;
+  audioOn(); NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){}
+  Object.assign(NARR, {active:true, playing:true, queue, k:0, chunks:chunksFor(queue[0]), c:0});
+  lockScreen(); narrSpeak();
+}
+function narrPause(){ NARR.playing = false; NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){} paintNP(); }
+function narrResume(){ if(!NARR.active) return; NARR.playing = true; lockScreen(); narrSpeak(); }
+function narrStop(){ NARR.active = false; NARR.playing = false; NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){} if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render(); }
+// what to play while stretching: unread scenes first, then the scene this session is about to earn, then unread satchel finds
+function storyQueue(earning){
+  const so = scenesOpen(), q = [];
+  for(let i=0;i<so;i++) if(!S.read['s'+i]) q.push({t:'s', i});
+  if(earning && so < STORY.scenes.length && bookOf(so) === bookOf(Math.max(0, so-1)) && !S.read['s'+so]) q.push({t:'s', i:so});
+  openNotes().forEach(i=>{ if(!S.read['n'+i]) q.push({t:'n', i}); });
+  if(!q.length && so) q.push({t:'s', i:so-1});
+  return q.slice(0, 4);
+}
+function paintNP(){
+  const el = document.getElementById('np'); if(!el) return;
+  document.querySelectorAll('.rbody p.speaking').forEach(p=>p.classList.remove('speaking'));
+  if(!NARR.active){ el.hidden = true; document.body.classList.remove('np-on'); return; }
+  const q = NARR.queue[NARR.k], it = itemOf(q), ch = NARR.chunks[NARR.c];
+  const pct = Math.min(100, NARR.c / Math.max(1, NARR.chunks.length) * 100);
+  el.hidden = false; document.body.classList.add('np-on');
+  el.innerHTML = `<div class="in"><span class="npk">${NARR.playing ? 'Reading' : 'Paused'}${NARR.queue.length>1 ? ` · ${NARR.k+1} of ${NARR.queue.length}` : ''}</span><span class="npt">${dx(it.title)}</span>
+    <button class="npb" data-a="${NARR.playing?'narrpause':'narrplay'}" aria-label="${NARR.playing?'Pause the story':'Play the story'}">${NARR.playing?I.pause:I.play}</button>
+    <button class="npb ghost" data-a="narrstop" aria-label="Stop the story">${I.x}</button><i style="width:${pct.toFixed(1)}%"></i></div>`;
+  if(ui.screen==='read' && ui.read && ui.read.t===q.t && ui.read.i===q.i && ch && ch.p>=0){
+    const p = document.querySelectorAll('.rbody p')[ch.p]; if(p){ p.classList.add('speaking'); }
+  }
+}
 async function lockScreen(){ try{ if(navigator.wakeLock) wl = await navigator.wakeLock.request('screen'); }catch(e){} }
 function unlockScreen(){ try{ wl && wl.release(); }catch(e){} wl = null; }
+try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>{ if(ui.screen==='settings') render(); }; }catch(e){}
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ if(ui.screen==='run') lockScreen(); queueSync(); } });
 
 /* ================= Session runner ================= */
@@ -420,6 +493,7 @@ function startSession(code, trim){
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = loadOf(s.ex); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null; enterStep(true); window.scrollTo(0,0);
+  if(SESS[code].type==='cool' && S.storyCool!==false) setTimeout(()=>{ if(ui.run && !NARR.active) narrStart(storyQueue(false)); }, 2600);
 }
 function spokenFor(s){
   const e = EX[s.ex];
@@ -475,6 +549,7 @@ function finishRun(early){
   unlockScreen();
   const r = ui.run; r.early = early;
   r.loaded = [...new Set(r.steps.filter((s,i)=> s.ex && hasLoad(s.ex) && (!early || i < r.i)).map(s=>s.ex))];
+  if(SESS[r.code].type==='cool'){ save(); return; }
   ui.screen = 'review'; render(); window.scrollTo(0,0);
 }
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
@@ -597,7 +672,9 @@ const I = {
   book:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5zM20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>',
   hip:'<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v4.5M12 15.8v.2"/></svg>',
   trash:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 7h14M10 7V5h4v2M7 7l1 12h8l1-12"/></svg>',
-  up:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'
+  up:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 19V5M6 11l6-6 6 6"/></svg>',
+  pause:'<svg class="ic" viewBox="0 0 24 24"><path d="M8 5.5h2.6v13H8zM13.4 5.5H16v13h-2.6z" fill="currentColor" stroke="none"/></svg>',
+  ear:'<svg class="ic" viewBox="0 0 24 24"><path d="M4 15v-3a8 8 0 0 1 16 0v3"/><rect x="3.5" y="14" width="4" height="6" rx="1.6"/><rect x="16.5" y="14" width="4" height="6" rx="1.6"/></svg>'
 };
 
 /* The dragon, drawn in code. Facing left, perched. */
@@ -665,7 +742,7 @@ function render(){
   else if(ui.screen==='read') html = readHTML();
   else if(ui.screen==='preview') html = previewHTML();
   app.innerHTML = html + (ui.sheet ? sheetHTML() : '');
-  startFigure();
+  startFigure(); paintNP();
   if(ui.screen==='run'){ const r = ui.run; if(r && r.timer) paintTimer(r.steps[r.i], r.timer.paused ? r.timer.remaining : Math.max(0, r.timer.end-Date.now())); }
 }
 
@@ -831,6 +908,8 @@ function runHTML(){
     dock = !running ? `<button class="btn primary xl" data-a="tstart">${I.play} Start</button><button class="btn sm" data-a="skip">Skip</button>`
                     : `<button class="btn" data-a="tpause">${paused?'Resume':'Pause'}</button><button class="btn sm" data-a="skip">Skip</button>`;
   }
+  const calm = ['hip','mobility','walk','cool'].includes(def.type) || s.t==='hold' || /_cool$/.test(s.ex||'');
+  if(calm && !NARR.active && STORY.scenes.length){ const q = storyQueue(TRAINING.has(def.type)); if(q.length) body += `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen while you stretch</span><span class="muted">${dx(itemOf(q[0]).title)}${q.length>1?` and ${q.length-1} more`:''} · cues pause it, then it carries on</span></span></button>`; }
   return bar + `<div class="enter" style="display:grid;gap:14px" data-step="${r.i}">${body}</div><div class="dock"><div class="in">${dock}</div></div>`;
 }
 
@@ -869,6 +948,7 @@ function celebrateHTML(){
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
     ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
+    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${S.loc==='paris'?'coolParis':'coolUK'}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='paris'?'march':'walk'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -993,6 +1073,8 @@ function readHTML(){
     <button class="back" data-a="realmtab">${I.back}Realm</button>
     <article class="page${isScene?'':' ledger'}${!isScene && (item.kind||'ledger')!=='ledger' ? ' doc' : ''}"><h1 class="rt">${dx(item.title)}</h1>
       <p class="rmeta">${isScene ? `${esc(bookOf(i).title)} · Chapter ${c.n} · ${i===c.from && c.n===1 ? 'Prologue' : 'Scene '+sceneLabel(i)}` : esc(kindOf(item))}</p>
+      ${(()=>{ const on = NARR.active && NARR.queue[NARR.k] && NARR.queue[NARR.k].t===t && NARR.queue[NARR.k].i===i;
+        return `<button class="listenbtn" data-a="${on ? (NARR.playing?'narrpause':'narrplay') : 'listen'}" data-t="${t}" data-i="${i}">${on && NARR.playing ? I.pause+' Pause' : I.ear+(on?' Carry on listening':' Listen')}</button>`; })()}
       <div class="rbody">${body}</div>${isEnd ? `<p class="theend">The end.</p>` : ''}</article>
     <div style="display:flex;gap:10px;flex-wrap:wrap">${prev}${next}</div></div>`;
 }
@@ -1116,13 +1198,20 @@ function settingsHTML(){
       <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p>
       <div class="srow"><label for="step">Dumbbell step</label><select id="step" style="width:auto">${[1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
     </section>
+    <section class="card"><h2 class="ct">Story narrator</h2>
+      <div class="field"><label for="narrator">Voice</label><select id="narrator">${(()=>{ const vs = storyVoices(), cur = storyVoice(); return vs.length ? vs.map(v=>`<option value="${esc(v.voiceURI)}" ${cur&&cur.voiceURI===v.voiceURI?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('') : '<option>Your phone’s default voice</option>'; })()}</select>
+        <p class="hint">Sounds robotic? On iPhone go to Settings, Accessibility, Read &amp; Speak, Voices, English, and download a Premium or Enhanced UK voice. Then pick it here.</p></div>
+      <div class="srow"><span>Pace</span><div class="seg">${[[.85,'Slower'],[.95,'Normal'],[1.05,'Brisk']].map(([v,l])=>`<button data-a="narrrate" data-v="${v}" aria-pressed="${(S.narrRate||.95)===v}">${l}</button>`).join('')}</div></div>
+      <div class="srow"><span>Start by itself in cool-downs</span><div class="seg"><button data-a="storycool" data-v="1" aria-pressed="${S.storyCool!==false}">On</button><button data-a="storycool" data-v="0" aria-pressed="${S.storyCool===false}">Off</button></div></div>
+      <div class="srow"><span>Hear a sample</span><button class="btn-ink" data-a="narrtest">Play</button></div>
+    </section>
     <section class="card"><h2 class="ct">Look</h2>
       <div class="srow"><span>Theme</span><div class="seg">${[['system','Phone'],['dark','Night'],['light','Light']].map(([v,l])=>`<button data-a="settheme" data-v="${v}" aria-pressed="${S.theme===v}">${l}</button>`).join('')}</div></div>
       <div class="field"><label for="dname">Dragon’s name</label><input type="text" id="dname" value="${esc(S.dragon)}" maxlength="24"></div>
     </section>
     <section class="card"><h2 class="ct">How points work</h2>
       <ul class="steps" style="padding-left:18px;margin:0">
-        <li>Full session 30, cardio 20, short or mobility 15, hip block or walk 10.</li>
+        <li>Full session 30, cardio 20, short or mobility 15, hip block or walk 10, cool-down 5.</li>
         <li>Plus 5 when a weight goes up, plus 25 for hitting your week.</li>
         <li>Three sessions a week in London, two in a Paris week. Ten minutes counts.</li>
         <li>Each month is a region. Reach its gate and its prize is free.</li></ul></section>
@@ -1190,6 +1279,14 @@ document.addEventListener('click', e=>{
     case 'choose': ui.screen = 'choose'; render(); window.scrollTo(0,0); break;
     case 'preview': ui.preview = {code:b.dataset.code, trim:false}; ui.screen = 'preview'; render(); window.scrollTo(0,0); break;
     case 'read': ui.read = {t:b.dataset.t, i:+b.dataset.i}; ui.sheet = null; ui.screen = 'read'; render(); window.scrollTo(0,0); break;
+    case 'listen': narrStart([{t:b.dataset.t, i:+b.dataset.i}]); render(); break;
+    case 'storyrun': { const r2 = ui.run; narrStart(storyQueue(!!(r2 && TRAINING.has(SESS[r2.code].type)))); render(); break; }
+    case 'narrpause': narrPause(); if(ui.screen==='read') render(); break;
+    case 'narrplay': narrResume(); if(ui.screen==='read') render(); break;
+    case 'narrstop': narrStop(); break;
+    case 'narrrate': S.narrRate = +b.dataset.v; touch(); render(); break;
+    case 'storycool': S.storyCool = b.dataset.v==='1'; touch(); render(); break;
+    case 'narrtest': { audioOn(); try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance('They walked. They carried. By noon Kesh\u2019s arms burned and her back had opinions, and she found she did not mind.'); const v = storyVoice(); if(v){ u.voice = v; u.lang = v.lang; } u.rate = S.narrRate || .95; speechSynthesis.speak(u); }catch(e){} break; }
     case 'storyall': ui.storyAll = !ui.storyAll; render(); break;
     case 'realmtab': ui.screen = 'tab'; ui.tab = 'realm'; render(); window.scrollTo(0,0); break;
     case 'overview': ui.sheet = 'overview'; render(); break;
@@ -1212,7 +1309,7 @@ document.addEventListener('click', e=>{
     case 'exit': ui.sheet = 'exit'; render(); break;
     case 'keep': case 'close': ui.sheet = null; render(); break;
     case 'endlog': ui.sheet = null; finishRun(true); break;
-    case 'discard': ui.sheet = null; unlockScreen(); ui.run = null; ui.screen = 'tab'; ui.tab = 'today'; render(); break;
+    case 'discard': ui.sheet = null; if(NARR.active) narrStop(); unlockScreen(); ui.run = null; ui.screen = 'tab'; ui.tab = 'today'; render(); break;
     case 'nudgeoff': S.nudged[dayKey(new Date())] = 1; S.seenStage = stage().index; touch(); render(); break;
     case 'nudgego': S.nudged[dayKey(new Date())] = 1; S.seenStage = stage().index; touch(); startSession(b.dataset.code, false); break;
     case 'claim': ui.sheet = {type:'claim', id:b.dataset.id}; render(); break;
@@ -1244,6 +1341,7 @@ document.addEventListener('submit', e=>{
 document.addEventListener('input', e=>{ if(e.target.id==='snote' && ui.run) ui.run.note = e.target.value; });
 document.addEventListener('change', e=>{
   if(e.target.id==='step'){ S.step = +e.target.value; touch(); }
+  if(e.target.id==='narrator'){ S.narrator = e.target.value; touch(); }
   if(e.target.id==='dname'){ S.dragon = e.target.value.trim() || 'Pip'; touch(); }
 });
 
