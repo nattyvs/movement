@@ -347,6 +347,8 @@ function applyPlan(){
   if(p.exercises) for(const [id,o] of Object.entries(p.exercises)) EX[id] = Object.assign(EX[id]||{}, o);
   if(p.sessions) for(const [id,o] of Object.entries(p.sessions)) SESS[id] = Object.assign(SESS[id]||{}, o);
   if(p.order) for(const [loc,arr] of Object.entries(p.order)) ORDER[loc] = arr;
+  // corrections to logged sessions (e.g. the weights she actually used), keyed by session id
+  if(p.fixes) for(const x of sessions){ const f = p.fixes[x.id]; if(f) Object.assign(x, f); }
   if(p.loads && (p.updated||0) > (S.planApplied||0)){ S.loads = Object.assign({}, S.loads, p.loads); S.planApplied = p.updated; }
   installRuns();
 }
