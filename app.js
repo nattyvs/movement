@@ -545,7 +545,7 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 function startSession(code, trim){
   audioOn(); lockScreen();
   const steps = build(code, trim), loads = {};
-  steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = loadOf(s.ex); });
+  steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = EX[s.ex].fixed ? loadOf(s.ex) : snapKg(loadOf(s.ex)); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, repsBy:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null;
   if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(false)); // inside the tap, so the phone allows playback
@@ -633,8 +633,8 @@ function save(){
     S.topRun = S.topRun||{}; S.topRun[id] = toppedNow ? (S.topRun[id]||0) + 1 : 0;
     const topped = S.topRun[id] >= 2; // two sessions in a row at the top of the range
     if((r.efforts[id]==='easy' || topped) && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
-      const inc = EX[id].legs ? S.step : Math.max(.5, S.step/2); // upper body moves in smaller jumps
-      next = Math.min(25, +(used + inc).toFixed(2)); if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
+      next = stepKg(used, 1); // one notch up her dial
+      if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
@@ -677,7 +677,7 @@ async function ghPut(path, data, sha, message){
   if(!res.ok) throw new Error('put '+res.status);
 }
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
-const stateOut = () => ({loc:S.loc, step:S.step, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
+const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
   redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
@@ -695,7 +695,7 @@ async function sync(retry){
     r = await ghGet('data/state.json');
     const rs = r.data || {};
     const remoteNewer = (rs.updated||0) > (S.updated||0);
-    if(remoteNewer) ['loc','step','voice','theme','dragon','loads','seenStage'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
+    if(remoteNewer) ['loc','step','dial','voice','theme','dragon','loads','seenStage'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
     if((rs.rewardsUpdated||0) > (S.rewardsUpdated||0)){ S.rewards = rs.rewards; S.rewardsUpdated = rs.rewardsUpdated; }
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
@@ -735,6 +735,10 @@ const dx = t => esc(t).replace(/([WVY])(?=[a-z\u00e0-\u00ff])/g,'<span class="kw
 const fmtClock = ms => { const t = Math.max(0, Math.floor(ms/1000)), h = Math.floor(t/3600), m = Math.floor(t/60)%60, x = t%60; return (h ? h+':'+pad2(m) : m) + ':' + pad2(x); };
 // '8–12 reps' -> [8,12]; '10 each side' -> [10,10]
 const repRange = e => { const m = /(\d+)\s*[–-]\s*(\d+)/.exec(e.reps||''); if(m) return [+m[1], +m[2]]; const n = /(\d+)/.exec(e.reps||''); return n ? [+n[1], +n[1]] : [10,10]; };
+const DIAL = [2.5, 3.5, 4.5, 5.5, 6.5, 8];
+const dial = () => (Array.isArray(S.dial) && S.dial.length ? S.dial : DIAL).slice().sort((a,b)=>a-b);
+const snapKg = x => dial().reduce((b,v)=>Math.abs(v-x) < Math.abs(b-x) ? v : b);
+const stepKg = (x, d) => { const L = dial(), i = L.indexOf(snapKg(x)); return L[Math.max(0, Math.min(L.length-1, i + d))]; };
 const fmtKg = n => (Math.round(n*10)/10).toString().replace(/\.0$/,'')+' kg';
 const I = {
   check:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -1279,8 +1283,8 @@ function settingsHTML(){
       <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? 'Cues play on top of Spotify or SoundCloud. iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.' : 'Cues pause your music and play even in silent mode.'}</p>
       <div class="srow"><span>Test sound and voice</span><button class="btn-ink" data-a="testsound">Play</button></div>
       <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p>
-      <div class="srow"><label for="step">Weights go up by</label><select id="step" style="width:auto">${[.5,1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
-      <p class="hint" style="margin-top:-4px">For leg lifts when a set feels easy or you hit the top of the rep range. Upper-body lifts go up by half. In a session, the + and − buttons move by 0.5 kg.</p>
+      <div class="field"><label for="dialkg">Your dumbbell dial (kg)</label><input type="text" id="dialkg" inputmode="decimal" value="${esc(dial().join(', '))}" autocomplete="off" spellcheck="false">
+        <p class="hint">Every setting on your London dumbbells, in order. The + and − buttons jump between these, and a lift goes up one notch at a time.</p></div>
     </section>
     <section class="card"><h2 class="ct">Story narrator</h2>
       ${typeof AUDIO!=='undefined' ? `<div class="srow"><span>Narration</span><div class="seg"><button data-a="narrmode" data-v="rec" aria-pressed="${S.narrMode!=='voice'}">Recorded</button><button data-a="narrmode" data-v="voice" aria-pressed="${S.narrMode==='voice'}">Phone voice</button></div></div>
@@ -1389,7 +1393,7 @@ document.addEventListener('click', e=>{
     case 'plus15': if(r.timer){ r.timer.end += 15000; r.timer.total += 15; } break;
     case 'reps': { r.repNow = Math.max(0, Math.min(60, r.repNow + (+b.dataset.d))); render(); break; }
     case 'prev': goBack(); break;
-    case 'load': { const s = r.steps[r.i]; const step = EX[s.ex].fixed ? 1 : .5; r.loads[s.ex] = Math.min(25, Math.max(0, +(r.loads[s.ex] + (+b.dataset.d)*step).toFixed(2))); render(); break; }
+    case 'load': { const s = r.steps[r.i]; r.loads[s.ex] = EX[s.ex].fixed ? Math.min(3, Math.max(2, r.loads[s.ex] + (+b.dataset.d))) : stepKg(r.loads[s.ex], +b.dataset.d); render(); break; }
     case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'effort': r.efforts[b.dataset.id] = b.dataset.v; render(); break;
@@ -1430,7 +1434,7 @@ document.addEventListener('submit', e=>{
 });
 document.addEventListener('input', e=>{ if(e.target.id==='snote' && ui.run) ui.run.note = e.target.value; });
 document.addEventListener('change', e=>{
-  if(e.target.id==='step'){ S.step = +e.target.value; touch(); }
+  if(e.target.id==='dialkg'){ const L = [...new Set(e.target.value.split(/[,;\s]+/).map(x=>parseFloat(x.replace(',','.'))).filter(x=>x>0 && x<60))].sort((a,b)=>a-b); if(L.length>=2){ S.dial = L; touch(); toast('Dial saved: '+L.join(', ')+' kg'); } else toast('Add at least two weights, separated by commas.'); }
   if(e.target.id==='narrator'){ S.narrator = e.target.value; touch(); }
   if(e.target.id==='dname'){ S.dragon = e.target.value.trim() || 'Pip'; touch(); }
 });
