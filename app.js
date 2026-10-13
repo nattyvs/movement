@@ -133,7 +133,61 @@ const EX = {
     how:{setup:['On your back, one leg long.'],go:['Hug the other knee gently towards the opposite shoulder.','Hold and breathe.'],tips:['Gentle. Stop before any pinch at the front of the hip.']}},
   supine_flex:{name:'Supine passive hip flexion',kind:'hold',holds:2,dur:15,demo:'One_Knee_To_Chest',
     cue:'On your back, hug one knee gently towards your chest. The other leg stays long.',
-    how:{setup:['On your back, both legs long.'],go:['Hug one knee gently to your chest.','Hold, then swap.'],tips:['Let the long leg relax into the floor.']}}
+    how:{setup:['On your back, both legs long.'],go:['Hug one knee gently to your chest.','Hold, then swap.'],tips:['Let the long leg relax into the floor.']}},
+  /* ---- ladder rungs: harder versions that swap in as she masters each one ---- */
+  incline_push:{name:'Push-up, hands on a step',kind:'reps',sets:3,reps:'8–12 reps',bw:true,rest:60,
+    cue:'Hands on the bottom stair, one straight line from heels to head.',
+    how:{setup:['Hands on the bottom stair or a low, sturdy step, a little wider than your shoulders.','Walk your feet back until your body is one straight line.'],go:['Lower your chest to the edge of the step.','Press the step away to the top.'],tips:['Squeeze your glutes so your hips stay in line.','Too hard today? A higher step makes it easier.']}},
+  push_up:{name:'Push-up',kind:'reps',sets:3,reps:'5–10 reps',bw:true,rest:75,demo:'Pushups',
+    cue:'From your toes, one straight line. Lower with control, press the floor away.',
+    how:{setup:['Hands a little wider than your shoulders, on a mat.','Step back onto your toes, body one straight line.'],go:['Lower until your chest is a fist above the floor.','Press the floor away to the top.'],tips:['Last reps getting ragged? Finish the set from your knees.','Elbows at about 45 degrees, not flared wide.']}},
+  step_up_db:{name:'Dumbbell step-up',kind:'reps',sets:3,reps:'8–12 each side',load:2.5,unit:'each hand',rest:60,est:60,demo:'Dumbbell_Step_Ups',legs:true,
+    cue:'A dumbbell in each hand. Whole foot on the step, push through the heel, step down slowly.',
+    how:{setup:['Face the bottom stair, a dumbbell in each hand.','Place your whole foot on the step.'],go:['Push through that heel to stand up tall.','Step down slowly with the other foot.'],tips:['The top leg does the work, no bounce from below.','Knee in line with your toes.']}},
+  dead_bug_long:{name:'Dead bug, longer',kind:'timed',sets:2,dur:45,rest:30,label:'Slow and controlled',demo:'Dead_Bug',
+    cue:'Low back stays heavy on the floor. Reach opposite arm and leg away, then swap.',
+    how:{setup:['On your back, arms to the ceiling, knees bent over hips.','Press your lower back into the floor.'],go:['Lower one arm and the opposite leg slowly towards the floor.','Return and swap sides.'],tips:['Breathe out as you reach.','If your back lifts, make the reach smaller.']}},
+  dead_bug_db:{name:'Dead bug with a dumbbell',kind:'timed',sets:2,dur:40,rest:30,load:2.5,fixed:true,unit:'in both hands',label:'Arms still, legs move',demo:'Dead_Bug',
+    cue:'Hold a light dumbbell above your chest with both hands. Lower one leg at a time while your back stays heavy.',
+    how:{setup:['On your back, knees bent over hips.','Hold one light dumbbell above your chest, arms straight.'],go:['Lower one leg slowly until the heel nearly touches the floor.','Bring it back and swap legs.'],tips:['The dumbbell stays still.','Back lifting? Bend the knee more as you lower.']}},
+  hops15:{name:'Pogo hops',kind:'reps',sets:3,reps:'15 small hops',bw:true,rest:45,est:25,legs:true,
+    cue:'Quick two-footed bounces on the balls of your feet. Impact helps bone.',note:'Skip these if your hip complains.',
+    how:{setup:['Stand tall, feet hip-width, soft knees.'],go:['Small quick bounces on the balls of your feet.','Land softly and go again straight away.'],tips:['Tiny hops. Height is not the point.','Stop if your hip or knees complain.']}},
+  hops20:{name:'Pogo hops',kind:'reps',sets:3,reps:'20 small hops',bw:true,rest:45,est:30,legs:true,
+    cue:'Quick two-footed bounces on the balls of your feet. Impact helps bone.',note:'Skip these if your hip complains.',
+    how:{setup:['Stand tall, feet hip-width, soft knees.'],go:['Small quick bounces on the balls of your feet.','Land softly and go again straight away.'],tips:['Tiny hops. Height is not the point.','Stop if your hip or knees complain.']}},
+  sl_bridge:{name:'Single-leg glute bridge',kind:'reps',sets:2,reps:'8–12 each side',bw:true,rest:45,est:60,demo:'Butt_Lift_Bridge',legs:true,
+    cue:'One foot planted, the other leg straight. Drive up through the heel and keep your hips level.',note:'If your sore side complains, go back to the two-foot bridge.',
+    how:{setup:['On your back, one foot flat near your bottom.','Straighten the other leg, thighs level with each other.'],go:['Push through the planted heel and lift your hips.','Pause at the top, lower slowly.'],tips:['Hips stay level, no tipping to one side.','Ribs down at the top.']}},
+  /* ---- block two: new angles ---- */
+  heel_goblet:{name:'Heels-up goblet squat',kind:'reps',sets:3,reps:'10–15 reps',load:6.5,from:['goblet_box',1],unit:'one dumbbell',rest:60,demo:'Goblet_Squat',legs:true,
+    cue:'Heels on a folded towel or a thin book. Sit straight down between your heels, chest tall.',
+    how:{setup:['Heels on a folded towel or a thin book, feet a little wider than hips.','Hold one dumbbell upright against your chest.'],go:['Sit straight down, knees travelling forward over your toes.','Drive up through your whole foot.'],tips:['The raised heels let you sit deeper with a tall chest.','Go only as low as your hip is happy.']}},
+  bstance_thrust:{name:'Staggered hip thrust',kind:'reps',sets:3,reps:'10–12 each side',load:3.5,from:['hip_thrust',.7],unit:'across your hips',rest:45,est:60,demo:'Barbell_Hip_Thrust',legs:true,
+    cue:'Shoulders on the sofa. One foot flat, the other a little forward with toes up. Drive through the flat foot.',
+    how:{setup:['Upper back against the sofa, dumbbell on your hip crease.','One foot flat. The other a half step forward, heel down and toes up, as a kickstand.'],go:['Drive through the flat foot until your body is a table.','Hold one second, lower with control. Swap sides after the set.'],tips:['The kickstand foot only balances you.','Hips level at the top.']}},
+  kick_rdl_db:{name:'Kickstand Romanian deadlift',kind:'reps',sets:3,reps:'10–12 each side',load:3.5,from:['rdl',.7],unit:'each hand',rest:45,est:60,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
+    cue:'Back foot on its toes for balance, weight in the front leg. Hinge back, then stand.',
+    how:{setup:['Front foot flat, back foot a step behind on its toes.','Most of your weight on the front leg.'],go:['Hinge back, weights sliding down the front thigh.','Squeeze the front glute to stand.'],tips:['Hips stay level.','The back foot is only a kickstand.']}},
+  rev_lunge:{name:'Reverse lunge',kind:'reps',sets:3,reps:'8–12 each side',load:3.5,from:['split_squat',1],unit:'each hand',rest:60,est:70,demo:'Split_Squat_with_Dumbbells',legs:true,
+    cue:'Step back into a lunge, back knee towards the floor, then push through the front heel to stand.',
+    how:{setup:['Stand tall, a dumbbell in each hand.'],go:['Take a long step back and lower the back knee towards the floor.','Push through the front heel to bring the feet back together.'],tips:['Front knee tracks over the toes.','A hand on the wall is fine while you learn it.']}},
+  alt_press:{name:'Alternating dumbbell press',kind:'reps',sets:3,reps:'8–12 each side',load:3,from:['db_press',1],unit:'each hand',rest:60,est:60,demo:'Standing_Dumbbell_Press',
+    cue:'Ribs down, glutes on. Press one arm up while the other waits at your shoulder.',
+    how:{setup:['Stand tall, dumbbells at shoulder height, palms forward.','Squeeze glutes and brace your middle.'],go:['Press one dumbbell up until your arm is by your ear.','Lower it and press the other.'],tips:['No leaning to the side as you press.','Stop short of any shoulder pinch.']}},
+  /* ---- block three: slow and strong ---- */
+  slow_goblet:{name:'Slow goblet squat',kind:'reps',sets:3,reps:'10–12 reps',load:5.5,from:['goblet_box',.8],unit:'one dumbbell',rest:60,est:50,demo:'Goblet_Squat',legs:true,
+    cue:'Three seconds down, a one-second pause at the bottom, then stand up strong.',
+    how:{setup:['Dumbbell at your chest, feet a little wider than hips.'],go:['Count three seconds on the way down, pause for one.','Stand up strong.'],tips:['The slow part is the point.','Lighter than your usual squat is right.']}},
+  pause_thrust:{name:'Paused hip thrust',kind:'reps',sets:3,reps:'10–12 reps',load:3.5,from:['hip_thrust',.8],unit:'across your hips',rest:60,est:55,demo:'Barbell_Hip_Thrust',legs:true,
+    cue:'Drive up and hold three seconds at the top. Lower slowly.',
+    how:{setup:['Upper back against the sofa, feet flat, dumbbell on your hip crease.'],go:['Drive up until your body is flat like a table.','Hold three seconds, lower for three.'],tips:['Squeeze your glutes through the whole hold.','Chin tucked, eyes forward.']}},
+  slow_rdl:{name:'Slow Romanian deadlift',kind:'reps',sets:3,reps:'10–12 reps',load:4.5,from:['rdl',.8],unit:'each hand',rest:60,est:55,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
+    cue:'Three seconds down the thighs, then stand up in one smooth move.',
+    how:{setup:['Feet hip-width, a dumbbell in each hand in front of your thighs.'],go:['Push your hips back for a slow count of three.','Squeeze your glutes to stand.'],tips:['Back flat all the way.','Weights stay close to your legs.']}},
+  slow_split:{name:'Slow split squat',kind:'reps',sets:3,reps:'8–10 each side',load:2.5,from:['split_squat',.8],unit:'each hand',rest:60,est:70,demo:'Split_Squat_with_Dumbbells',legs:true,
+    cue:'Three seconds down, pause, drive up. A hand on the wall if you need it.',
+    how:{setup:['Long stride stance, dumbbells at your sides.'],go:['Count three seconds on the way down.','Pause, then drive up through the front heel.'],tips:['Front knee tracks over the toes.','Torso tall.']}}
 };
 
 const SESS = {
@@ -161,7 +215,10 @@ const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hing
   dead_bug:['core'], split_squat:['legs','glutes'], tempo_split:['legs','glutes'], row:['back'], one_arm_row:['back'], band_row:['back'], step_up:['legs','glutes'], db_press:['shoulders'], pallof:['core'],
   hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
   piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
-  hip_flexor:['mobility'], knee_wall:['mobility'], squat_hold:['mobility'], ham_floss:['mobility'], calf_raise:['legs','mobility']};
+  hip_flexor:['mobility'], knee_wall:['mobility'], squat_hold:['mobility'], ham_floss:['mobility'], calf_raise:['legs','mobility'],
+  incline_push:['chest'], push_up:['chest','core'], step_up_db:['legs','glutes'], dead_bug_long:['core'], dead_bug_db:['core'], hops15:['legs'], hops20:['legs'], sl_bridge:['glutes'],
+  heel_goblet:['legs','glutes'], bstance_thrust:['glutes'], kick_rdl_db:['glutes','legs'], rev_lunge:['legs','glutes'], alt_press:['shoulders'],
+  slow_goblet:['legs','glutes'], pause_thrust:['glutes'], slow_rdl:['glutes','legs'], slow_split:['legs','glutes']};
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
 const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool:5};
@@ -172,6 +229,33 @@ const RUNS = [
   {rounds:5, on:120, off:60, fin:{rounds:3, on:60, off:60}}, {rounds:4, on:180, off:60, fin:{rounds:3, on:90, off:45}},
   {rounds:3, on:300, off:60, fin:{rounds:3, on:120, off:60}}, {rounds:2, on:480, off:60, fin:{rounds:2, on:180, off:45}},
   {steady:1200, fin:{steady:360}}];
+/* Ladders: each one starts at the version in her sessions and swaps in the next once she masters it.
+   Reps: two sessions in a row with every set at the top of the range. Timed: three sessions done. Never on a "too much" day or a sore hip. */
+const LADDERS = {
+  push:{name:'Push-up', rungs:['knee_push','incline_push','push_up']},
+  stepup:{name:'Step-up', rungs:['step_up','step_up_db']},
+  deadbug:{name:'Dead bug', rungs:['dead_bug','dead_bug_long','dead_bug_db'], timed:3},
+  hops:{name:'Pogo hops', rungs:['hops','hops15','hops20']},
+  bridge:{name:'Glute bridge', rungs:['pause_bridge','sl_bridge']}
+};
+const ladderOf = id => Object.keys(LADDERS).find(k=>LADDERS[k].rungs.includes(id));
+const ladLevel = k => Math.max(0, Math.min(LADDERS[k].rungs.length-1, ((typeof S!=='undefined' && S.ladder) || {})[k] || 0));
+const ladId = id => { const k = ladderOf(id); return k ? LADDERS[k].rungs[ladLevel(k)] : id; };
+/* Blocks: every six weeks of London training, Sessions A, B and C rotate to fresh exercises for the same movements.
+   Loads carry over per exercise; new ones start from a related lift. Paris and travel sessions stay as they are. */
+const BLOCK_WEEKS = 6;
+const BLOCKS = [
+  {name:'Foundations', blurb:'The core lifts: box squat, hip thrust, Romanian deadlift, split squat, rows and presses.'},
+  {name:'New angles', blurb:'Same movements, new angles: heels-up squats, staggered thrusts and hinges, reverse lunges and alternating presses.', sessions:{
+    A:{sub:'Heels-up squat, staggered thrust and hinge, then a pad run', items:['pad_warm',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','kick_rdl_db']},'dead_bug','pad_intervals']},
+    B:{sub:'Reverse lunge, one-arm row and step-ups, then a pad run', items:['pad_warm',{pair:['rev_lunge','one_arm_row']},{pair:['step_up','alt_press']},'pallof','pad_intervals']},
+    C:{sub:'The stronger day: hinge and row, then squat', items:['pad_warm',{pair:['rdl_heavy','row']},'goblet_heavy','hops','carry']}}},
+  {name:'Slow and strong', blurb:'Slower lowering and pauses at the hardest point. Lighter weights, more time under tension, kind to tendons.', sessions:{
+    A:{sub:'Slow squat, paused thrust and slow hinge, then a pad run', items:['pad_warm',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','slow_rdl']},'dead_bug','pad_intervals']},
+    B:{sub:'Slow split squat, row and step-ups, then a pad run', items:['pad_warm',{pair:['slow_split','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']}}}
+];
+const blockIdx = () => (((typeof S!=='undefined' && S.block && S.block.i) || 0) % BLOCKS.length);
+const mapItem = it => typeof it==='string' ? ladId(it) : it.pair ? Object.assign({}, it, {pair: it.pair.map(ladId)}) : Object.assign({}, it, {id: ladId(it.id)});
 const runDesc = (n, fin) => { const x = fin ? RUNS[n-1].fin : RUNS[n-1]; if(x.steady) return `${x.steady/60} minutes steady at 6 km/h`;
   const t = v => v>=60 ? (v/60)+' min' : v+' s'; return `${x.rounds} × ${t(x.on)} at 6, ${t(x.off)} easy`; };
 function installRuns(){ // re-run after every plan apply, which rebuilds EX and SESS
@@ -187,9 +271,15 @@ RUNS.forEach((x,i)=>{ const n = i+1;
     : {name:'Pad run finisher', kind:'iv', rounds:f.rounds, on:f.on, off:f.off, onLabel:'Run · 6 km/h', offLabel:'Easy · 4.5 km/h', cue:`${runDesc(n,true)}. Your little runs, growing.`};
   MUSCLES['fin'+n] = ['legs'];
 });
-// A and B finish with the run at her current level
-for(const code of ['A','B']){ const sess = SESS[code]; if(!sess) continue; const base = sess.items.slice();
-  Object.defineProperty(sess, 'items', {get(){ return base.map(it => it==='pad_intervals' || /^fin\d$/.test(it) ? 'fin'+runLevel() : it); }, configurable:true}); }
+// Every session reads its items live: London A, B and C from the current block (unless the coach's plan sets them),
+// ladders swap in her current rung, and A and B finish with the run at her current level.
+let ov = {}; try{ ov = (plan && plan.sessions) || {}; }catch(e){}
+for(const [code, sess] of Object.entries(SESS)){ if(code==='padIV') continue;
+  const base = sess.items.slice(), baseSub = sess.sub;
+  const fromBlock = () => !(ov[code] && ov[code].items) && sess.loc==='uk' && (BLOCKS[blockIdx()].sessions||{})[code];
+  Object.defineProperty(sess, 'items', {get(){ const b = fromBlock();
+    return (b ? b.items : base).map(it => (code==='A'||code==='B') && (it==='pad_intervals' || /^fin\d$/.test(it)) ? 'fin'+runLevel() : mapItem(it)); }, configurable:true, enumerable:true});
+  Object.defineProperty(sess, 'sub', {get(){ const b = fromBlock(); return b ? b.sub : baseSub; }, configurable:true, enumerable:true}); }
 if(SESS.padIV){
   Object.defineProperty(SESS.padIV, 'items', {get(){ return ['pad_warm', 'run'+runLevel(), 'pad_cool']; }, configurable:true});
   Object.defineProperty(SESS.padIV, 'sub', {get(){ return `Level ${runLevel()} of ${RUNS.length}: ${runDesc(runLevel())}`; }, configurable:true});
@@ -233,7 +323,7 @@ const SIZE_NAME = {small:'Small', medium:'Medium', big:'Big'};
 
 /* ================= State ================= */
 const S = {loc:'uk', loads:{}, step:1, voice:true, theme:'system', dragon:'Pip', read:{}, rewards:DEFAULT_REWARDS, rewardsUpdated:0,
-  redemptions:[], prizes:{}, planApplied:0, nudged:{}, updated:0, lastSync:0};
+  redemptions:[], prizes:{}, planApplied:0, nudged:{}, updated:0, lastSync:0, ladder:{}, ladTop:{}, block:null, blockSeen:0};
 let sessions = [];
 let plan = {};
 let GH = {owner:'nattyvs', repo:'movement-data', token:''};
@@ -287,6 +377,20 @@ function weeksOnTarget(){
   return n;
 }
 const trainingTotal = () => sessions.filter(isTraining).length;
+/* blocks: count weeks with at least one London strength session; weeks away or off don't use the block up */
+const ukFull = () => sessions.filter(s=>s.kind==='full' && s.location==='uk').sort((a,b)=>a.ts-b.ts);
+function ensureBlock(){
+  const all = ukFull(); if(!all.length) return;
+  if(!S.block){ S.block = {i:0, start: weekStart(new Date(all[0].ts)).getTime()}; S.blockSeen = 0; touch(); }
+  const thisWeek = weekStart(new Date()).getTime();
+  const done = new Set(all.filter(s=>s.ts>=S.block.start).map(s=>weekStart(new Date(s.ts)).getTime()).filter(w=>w<thisWeek));
+  if(done.size >= BLOCK_WEEKS){ S.block = {i:S.block.i+1, start:thisWeek}; touch(); }
+}
+function blockInfo(){
+  const b = S.block || {i:0, start:weekStart(new Date()).getTime()}, now = weekStart(new Date()).getTime();
+  const wk = new Set(ukFull().filter(s=>s.ts>=b.start).map(s=>weekStart(new Date(s.ts)).getTime()));
+  return {i:b.i, n:(b.i % BLOCKS.length)+1, round:Math.floor(b.i / BLOCKS.length)+1, def:BLOCKS[b.i % BLOCKS.length], week:Math.min(BLOCK_WEEKS, wk.size + (wk.has(now) ? 0 : 1))};
+}
 const earned = () => sessions.reduce((a,s)=>a+(s.points||0),0);
 const spent = () => S.redemptions.reduce((a,r)=>a+(r.cost||0),0);
 const balance = () => earned() - spent();
@@ -448,7 +552,8 @@ function estMin(code, trim){
   const secs = build(code, trim).reduce((a,s)=>a+(s.t==='work' ? (EX[s.ex].est||40) : (s.dur+(s.lead||0))),0);
   return Math.max(1, Math.round(secs/60));
 }
-const loadOf = id => (S.loads[id] ?? EX[id].load);
+// a lift she hasn't done yet starts from a related one (e.g. reverse lunge from split squat), snapped to her dial
+const loadOf = id => S.loads[id] ?? (EX[id].from && EX[EX[id].from[0]] ? snapKg(loadOf(EX[id].from[0]) * EX[id].from[1]) : EX[id].load);
 const hasLoad = id => EX[id] && EX[id].load !== undefined && !EX[id].bw;
 
 /* ================= Sound, voice, screen ================= */
@@ -696,13 +801,26 @@ function save(){
       if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
     S.loads[id] = next;
   });
+  // ladders: two sessions in a row at the top of the range (or three done, for timed ones) moves her up a rung
+  const ladUps = [], okDay = r.feel!=='toomuch' && r.hip!=='sore'; S.ladder = S.ladder || {}; S.ladTop = S.ladTop || {};
+  for(const [k, L] of Object.entries(LADDERS)){
+    const lv = ladLevel(k), id = L.rungs[lv]; if(lv >= L.rungs.length-1) continue;
+    if(!r.steps.some((st,i)=>st.ex===id && i < r.i)) continue;
+    const e = EX[id];
+    if(e.kind==='reps'){ const reps = r.repsBy[id] || [], top = repRange(e)[1];
+      const topped = reps.length >= Math.min(2, e.sets||2) && reps.every(n=>n>=top);
+      S.ladTop[k] = topped && okDay ? (S.ladTop[k]||0) + 1 : 0;
+      if(S.ladTop[k] >= 2){ S.ladder[k] = lv+1; S.ladTop[k] = 0; ladUps.push({from:id, to:L.rungs[lv+1]}); } }
+    else if(okDay){ S.ladTop[k] = (S.ladTop[k]||0) + 1;
+      if(S.ladTop[k] >= (L.timed||3)){ S.ladder[k] = lv+1; S.ladTop[k] = 0; ladUps.push({from:id, to:L.rungs[lv+1]}); } }
+  }
   const now = new Date(), mk = monthKey(now);
   const wkBefore = weekInfo(now,true), monthBefore = monthCount(mk), stageBefore = stage().index, scBefore = scenesOpen(), ntBefore = openNotes();
   let points = POINTS[kind] + ups.length*5, bonus = false;
   if(TRAINING.has(kind) && wkBefore.count+1 === wkBefore.target){ points += 25; bonus = true; }
   const doc = {id:'s'+uid(), ts:now.getTime(), day:dayKey(now), kind, code:r.code, title:(r.trim?def.title+', short':def.title), location:S.loc,
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
-    story: earnFor(r.code, r.trim, r.early), legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
+    story: earnFor(r.code, r.trim, r.early), ...(def.loc==='uk' && kind==='full' && S.block ? {block:S.block.i} : {}), legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
   S.lastReps = Object.assign(S.lastReps||{}, r.repsBy);
   if(r.feel) doc.feel = r.feel; if(r.runFeel) doc.runFeel = r.runFeel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
@@ -714,7 +832,7 @@ function save(){
   if(ranRun && runFeel){ const was = runLevel(); let now = was;
     if(runFeel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(runFeel!=='hard') now = Math.min(RUNS.length, was+1);
     S.runLevel = now; doc.runLevel = was; run = {was, now}; }
-  ui.last = {run, points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScenes: Array.from({length: scenesOpen()-scBefore}, (_,k)=>scBefore+k), newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
+  ui.last = {run, points, ups, lad:ladUps, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScenes: Array.from({length: scenesOpen()-scBefore}, (_,k)=>scBefore+k), newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
   touch(); render(); window.scrollTo(0,0);
 }
@@ -743,7 +861,7 @@ async function ghPut(path, data, sha, message){
 }
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
 const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, runLevel:S.runLevel, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
-  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, updated:S.updated});
+  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, ladder:S.ladder||{}, ladTop:S.ladTop||{}, block:S.block||null, blockSeen:S.blockSeen||0, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
   if(syncing) return; if(!navigator.onLine){ setSync('wait','Offline. Will sync when you have signal.'); return; }
@@ -760,7 +878,7 @@ async function sync(retry){
     r = await ghGet('data/state.json');
     const rs = r.data || {};
     const remoteNewer = (rs.updated||0) > (S.updated||0);
-    if(remoteNewer) ['loc','step','dial','runLevel','voice','theme','dragon','loads','seenStage'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
+    if(remoteNewer) ['loc','step','dial','runLevel','voice','theme','dragon','loads','seenStage','ladder','ladTop','block','blockSeen'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
     if((rs.rewardsUpdated||0) > (S.rewardsUpdated||0)){ S.rewards = rs.rewards; S.rewardsUpdated = rs.rewardsUpdated; }
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
@@ -875,6 +993,7 @@ function dragonSVG(opts={}){
 }
 
 function render(){
+  if(ui.screen==='tab' || ui.screen==='preview') ensureBlock();
   document.querySelectorAll('.tab').forEach(t=>t.setAttribute('aria-current', ui.screen==='tab' && t.dataset.tab===ui.tab ? 'page' : 'false'));
   const rt = document.querySelector('.tab[data-tab="realm"]'); if(rt) rt.classList.toggle('unread', unread()>0);
   $('tabs').hidden = !(ui.screen==='tab');
@@ -945,6 +1064,7 @@ function todayHTML(){
     <div class="row2">${actions}</div>
   </section>
   <div class="say"><q>${dx(dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}</span></div>
+  ${S.block && S.block.i > (S.blockSeen||0) ? (()=>{ const bi = blockInfo(); return `<section class="card newblock"><h2 class="ct">New block <span class="aside">${bi.round>1 ? `round ${bi.round}, ` : ''}${BLOCK_WEEKS} weeks</span></h2><p class="nbt">${dx(bi.def.name)}</p><p style="margin:0 0 12px">${esc(bi.def.blurb)} Your weights carry over, and anything new starts from a related lift. Paris and travel sessions stay the same.</p><button class="btn" data-a="blockseen">Got it</button></section>`; })() : ''}
   <section class="card"><h2 class="ct">This week${wk.all.length?` <span class="aside">${wk.count} of ${wk.target} sessions</span>`:''}</h2>
     ${wk.all.length ? `<div class="week">${bars}</div>` : `<div class="slots">${Array.from({length:wk.target},(_,i)=>`<div class="slot">Session ${i+1}</div>`).join('')}</div>`}
     ${wk.all.length?`<div class="legend"><span><i style="background:var(--g4)"></i>Session</span><span><i style="background:var(--g2)"></i>Short or cardio</span><span><i style="background:var(--teal)"></i>Mobility or walk</span><span><i style="background:var(--violet);opacity:.6"></i>Hip block</span></div>`:''}
@@ -1101,6 +1221,7 @@ function celebrateHTML(){
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
     ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About ${estMin(coolCode())} minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScenes.length && n<=L.newScenes.length ? (n>1 ? 'your new scenes' : 'your new scene') : 'the story'; })()} plays.</span></span></button>` : (L.newScenes.length || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
     ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now, true))}</b> at the end of A and B, or <b>${esc(runDesc(L.run.now))}</b> as a pad run on its own.</p></section>` : ''}
+    ${L.lad && L.lad.length ? `<section class="card"><h2 class="ct">Next step up</h2><ul class="uplist">${L.lad.map(u=>`<li>${I.up}<span>${esc(EX[u.from].name)} becomes <b>${esc(EX[u.to].name.toLowerCase())}</b></span></li>`).join('')}</ul><p class="muted" style="margin:8px 0 0;font-size:14px">It swaps in from your next session. If it’s too much, open it during the session and step back.</p></section>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -1256,7 +1377,7 @@ function previewHTML(){
       return `<button class="pex" data-a="guide" data-id="${id}" ${EX[id].how?'':'disabled'}><span class="pth">${f?FIG.svg(f.p.a, f.p):''}</span><span><span class="pnm">${esc(EX[id].name)}</span><span class="pln">${esc(exLine(id,b))}</span>${(MUSCLES[id]||[]).length?`<span class="pmu">${(MUSCLES[id]||[]).map(g=>GROUPS.find(x=>x[0]===g)[1]).join(' · ')}</span>`:''}</span></button>`; }).join('')}</div>`).join('');
   return `<div class="enter" style="display:grid;gap:14px">
     <button class="back" data-a="home">${I.back}Today</button>
-    <section class="gcard flat"><h1>${dx(def.title)}</h1><p class="meta">${esc(def.sub)} · about ${estMin(code,trim)} min. Tap any exercise to see how it’s done.</p></section>
+    <section class="gcard flat"><h1>${dx(def.title)}</h1><p class="meta">${esc(def.sub)} · about ${estMin(code,trim)} min${def.loc==='uk' && def.type==='full' && S.block ? (()=>{ const bi = blockInfo(); return ` · ${esc(bi.def.name)}, week ${bi.week} of ${BLOCK_WEEKS}`; })() : ''}. Tap any exercise to see how it’s done.</p></section>
     <section class="card">${list}</section>
   </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="${trim?'starttrim':'start'}" data-code="${code}">${I.play} Begin</button></div></div>`;
 }
@@ -1387,8 +1508,10 @@ function sheetHTML(){
     const e = EX[ui.sheet.id], h = e.how;
     const sec = (t, list) => `<h4 style="margin:14px 0 6px;font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--label)">${t}</h4><ol style="margin:0;padding-left:20px;display:grid;gap:6px">${list.map(x=>`<li>${esc(x)}</li>`).join('')}</ol>`;
     return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="How to do ${esc(e.name)}">
-      ${demoBox(ui.sheet.id)}<h3 style="margin-top:14px">${esc(e.name)}</h3>${sec('Set up', h.setup)}${sec('Do it', h.go)}${sec('Form tips', h.tips)}
-      <button class="btn primary" data-a="close" style="margin-top:16px">Got it</button></div></div>`;
+      ${demoBox(ui.sheet.id)}<h3 style="margin-top:14px">${esc(e.name)}</h3>${(()=>{ const k = ladderOf(ui.sheet.id); if(!k) return ''; const L = LADDERS[k], v = L.rungs.indexOf(ui.sheet.id);
+        return `<p class="muted" style="margin:4px 0 0;font-size:14px">Step ${v+1} of ${L.rungs.length} on the ${esc(L.name.toLowerCase())} ladder${v < L.rungs.length-1 ? `. Next: ${esc(EX[L.rungs[v+1]].name.toLowerCase())}` : '. The top step'}.</p>`; })()}${sec('Set up', h.setup)}${sec('Do it', h.go)}${sec('Form tips', h.tips)}
+      ${(()=>{ const k = ladderOf(ui.sheet.id), v = k ? LADDERS[k].rungs.indexOf(ui.sheet.id) : -1; return k && v > 0 && v === ladLevel(k) ? `<button class="btn" data-a="ladback" data-k="${k}" style="margin-top:16px">Too much for now? Back to ${esc(EX[LADDERS[k].rungs[v-1]].name.toLowerCase())}</button>` : ''; })()}
+      <button class="btn primary" data-a="close" style="margin-top:10px">Got it</button></div></div>`;
   }
   if(ui.sheet==='overview' && ui.run){
     const r = ui.run, cur = r.steps[r.i] && r.steps[r.i].ex, seen = [];
@@ -1470,6 +1593,9 @@ document.addEventListener('click', e=>{
     case 'save': save(); break;
     case 'exit': ui.sheet = 'exit'; render(); break;
     case 'keep': case 'close': ui.sheet = null; render(); break;
+    case 'ladback': { const k = b.dataset.k, L = LADDERS[k], v = ladLevel(k); if(v > 0){ const was = L.rungs[v], now = L.rungs[v-1];
+      S.ladder[k] = v-1; S.ladTop[k] = 0; if(ui.run) ui.run.steps.forEach((st,i)=>{ if(i >= ui.run.i && st.ex===was) st.ex = now; }); touch(); } ui.sheet = null; render(); break; }
+    case 'blockseen': S.blockSeen = (S.block && S.block.i) || 0; touch(); render(); break;
     case 'endlog': ui.sheet = null; finishRun(true); break;
     case 'discard': ui.sheet = null; if(NARR.active) narrStop(); unlockScreen(); ui.run = null; ui.screen = 'tab'; ui.tab = 'today'; render(); break;
     case 'nudgeoff': S.nudged[dayKey(new Date())] = 1; S.seenStage = stage().index; touch(); render(); break;

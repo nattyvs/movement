@@ -231,8 +231,14 @@ const POSES = {
   stepup:{anchor:'ankle', at:[156,116], prop:PROP.step, propBox:[128,122,224,146], a:{torso:12, thigh:122, shin:182, foot:90, thigh2:196, shin2:186, foot2:96, upper:192, fore:186, upper2:170, fore2:176}, b:{torso:2, thigh:180, shin:180, foot:90, thigh2:178, shin2:181, foot2:90, upper:182, fore:181, upper2:178, fore2:180}},
   press:{anchor:'ankle', at:[118,140], a:{torso:0, thigh:181, shin:180, foot:90, upper:150, fore:356, upper2:146, fore2:356, weight:1, dbAng:0}, b:{torso:0, thigh:181, shin:180, foot:90, upper:6, fore:2, upper2:4, fore2:0, weight:1, dbAng:0}},
   kneepush:{anchor:'knee', at:[62,138], prop:PROP.mat, a:{torso:62, neck:22, thigh:242, shin:268, foot:268, upper:172, fore:182}, b:{torso:78, neck:8, thigh:256, shin:268, foot:268, upper:245, fore:132}},
+  // full push-up: straight line from toes; hands stay put while the body pivots (angles solved so the hands sit on the mat)
+  pushup:{anchor:'toe', at:[44,141], prop:PROP.mat, a:{torso:75.7, neck:12, thigh:255.7, shin:255.7, foot:165.7, upper:180, fore:180}, b:{torso:84.1, neck:6, thigh:264.1, shin:264.1, foot:174.1, upper:240, fore:140}},
+  // hands on the bottom stair, toes on the floor
+  inclinepush:{anchor:'toe', at:[52,140.4], prop:PROP.step, propBox:[128,122,224,146], a:{torso:66.5, neck:12, thigh:246.5, shin:246.5, foot:156.5, upper:180, fore:180}, b:{torso:73.2, neck:6, thigh:253.2, shin:253.2, foot:163.2, upper:230, fore:145}},
   thrust:{anchor:'shoulder', at:[70,100], prop:PROP.sofa, propBox:[18,92,88,146], a:{torso:302, neck:38, thigh:66, shin:176, foot:90, upper:150, fore:96, weight:1, oneWeight:1, dbAng:90}, b:{torso:272, neck:20, thigh:96, shin:182, foot:90, upper:150, fore:90, weight:1, oneWeight:1, dbAng:90}},
   bridge:{anchor:'shoulder', at:[58,131], prop:PROP.mat, a:{torso:270, neck:0, thigh:52, shin:158, foot:90, upper:100, fore:92}, b:{torso:250, neck:-8, thigh:98, shin:176, foot:90, upper:100, fore:92}},
+  // single-leg bridge: the free leg stays straight, thighs level
+  slbridge:{anchor:'shoulder', at:[58,131], prop:PROP.mat, a:{torso:270, neck:0, thigh:52, shin:158, foot:90, thigh2:52, shin2:52, foot2:-38, upper:100, fore:92}, b:{torso:250, neck:-8, thigh:98, shin:176, foot:90, thigh2:98, shin2:98, foot2:8, upper:100, fore:92}},
   deadbug:{anchor:'hip', at:[124,126], prop:PROP.mat, a:{torso:270, neck:0, thigh:0, shin:90, foot:0, thigh2:0, shin2:90, foot2:0, upper:0, fore:0, upper2:0, fore2:0}, b:{torso:270, neck:0, thigh:78, shin:84, foot:60, thigh2:0, shin2:90, foot2:0, upper:0, fore:0, upper2:-80, fore2:-82}},
   march:{anchor:'ankle', at:[118,140], a:{torso:0, thigh:181, shin:180, foot:90, thigh2:112, shin2:184, foot2:100, upper:200, fore:150, upper2:162, fore2:176}, b:{torso:0, thigh:112, shin:184, foot:100, thigh2:181, shin2:180, foot2:90, upper:162, fore:176, upper2:200, fore2:150}},
   carry:{anchor:'ankle', at:[118,140], a:{torso:0, thigh:181, shin:180, foot:90, thigh2:128, shin2:186, foot2:100, upper:182, fore:181, weight:1, dbAng:0}, b:{torso:0, thigh:128, shin:186, foot:100, thigh2:181, shin2:180, foot2:90, upper:182, fore:181, weight:1, dbAng:0}},
@@ -320,6 +326,12 @@ Object.assign(POSES, {
 });
 POSES.chairsquat.at = [130,140];
 Object.assign(EX_POSE, {tr_squat:'chairsquat', tr_split:'bwsplit', tr_hinge:'bwrdl', tr_stepup:'stepup'});
+// dumbbell step-up: arms straight down holding weights
+POSES.stepupdb = {anchor:'ankle', at:POSES.stepup.at, prop:POSES.stepup.prop, propBox:POSES.stepup.propBox,
+  a:Object.assign({}, POSES.stepup.a, {upper:184, fore:183, upper2:176, fore2:178, weight:1, dbAng:0}), b:Object.assign({}, POSES.stepup.b, {upper:182, fore:181, upper2:178, fore2:180, weight:1, dbAng:0})};
+// ladder rungs and block exercises
+Object.assign(EX_POSE, {incline_push:'inclinepush', push_up:'pushup', step_up_db:'stepupdb', dead_bug_long:'deadbug', dead_bug_db:'deadbug', hops15:'hops', hops20:'hops', sl_bridge:'slbridge',
+  heel_goblet:'squat', bstance_thrust:'thrust', kick_rdl_db:'kickrdl', rev_lunge:'split', alt_press:'press', slow_goblet:'squat', pause_thrust:'thrust', slow_rdl:'rdl', slow_split:'split'});
 
 for(let n=1;n<=7;n++) EX_POSE['run'+n] = n===7 ? 'walk' : 'walkfast';
 for(let n=1;n<=7;n++) EX_POSE['fin'+n] = n===7 ? 'walk' : 'walkfast';
