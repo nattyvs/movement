@@ -1408,6 +1408,16 @@ function boot(){
   try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>{ voiceGB = null; }; }catch(e){}
   render();
   if(ghReady()) sync(); else setSync('off');
-  if('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+  if('serviceWorker' in navigator && location.protocol==='https:'){
+    // pick up new versions by itself: check whenever the app comes back to the screen,
+    // and reload once the new version has taken over (never in the middle of a session or the story)
+    const had = !!navigator.serviceWorker.controller; let pending = false;
+    const apply = () => { if(ui.screen==='run' || ui.screen==='review' || NARR.active){ pending = true; return; } location.reload(); };
+    navigator.serviceWorker.addEventListener('controllerchange', ()=>{ if(had) apply(); });
+    navigator.serviceWorker.register('sw.js').then(reg=>{
+      document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible') reg.update().catch(()=>{}); });
+      setInterval(()=>{ if(pending) apply(); }, 5000);
+    }).catch(()=>{});
+  }
 }
 boot();
