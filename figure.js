@@ -304,3 +304,5 @@ Object.assign(POSES, {
 });
 POSES.chairsquat.at = [130,140];
 Object.assign(EX_POSE, {tr_squat:'chairsquat', tr_split:'bwsplit', tr_hinge:'bwrdl', tr_stepup:'stepup'});
+
+for(let n=1;n<=7;n++) EX_POSE['run'+n] = n===7 ? 'walk' : 'walkfast';

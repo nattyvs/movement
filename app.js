@@ -165,6 +165,28 @@ const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hing
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
 const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool:5};
+/* Pad runs: seven levels from short bursts to a steady 20 minutes at 6 km/h (her pad's top speed).
+   Up a level after a run that felt about right or easy; same again if hard; down if too much or the hip was sore. */
+const RUNS = [
+  {rounds:8, on:45, off:45}, {rounds:6, on:60, off:60}, {rounds:5, on:120, off:60}, {rounds:4, on:180, off:60},
+  {rounds:3, on:300, off:60}, {rounds:2, on:480, off:60}, {steady:1200}];
+const runDesc = n => { const x = RUNS[n-1]; if(x.steady) return '20 minutes steady at 6 km/h';
+  const t = v => v>=60 ? (v/60)+' min' : v+' s'; return `${x.rounds} × ${t(x.on)} at 6, ${t(x.off)} easy`; };
+function installRuns(){ // re-run after every plan apply, which rebuilds EX and SESS
+RUNS.forEach((x,i)=>{ const n = i+1;
+  EX['run'+n] = x.steady
+    ? {name:'The long run', kind:'timed', dur:x.steady, label:'Steady · 6 km/h', cue:'Twenty minutes at 6. Find a rhythm you could hold a conversation at. If you need to, drop to 5 for a minute and come back.'}
+    : {name:`Pad run, level ${n}`, kind:'iv', rounds:x.rounds, on:x.on, off:x.off, onLabel:'Run · 6 km/h', offLabel:'Easy · 4.5 km/h',
+       cue:`${runDesc(n)}. Push the pad to 6 for the run, back to 4.5 to recover.`};
+  MUSCLES['run'+n] = ['legs'];
+});
+if(SESS.padIV){
+  Object.defineProperty(SESS.padIV, 'items', {get(){ return ['pad_warm', 'run'+runLevel(), 'pad_cool']; }, configurable:true});
+  Object.defineProperty(SESS.padIV, 'sub', {get(){ return `Level ${runLevel()} of ${RUNS.length}: ${runDesc(runLevel())}`; }, configurable:true});
+  SESS.padIV.title = 'Pad run'; }
+}
+installRuns();
+const runLevel = () => Math.max(1, Math.min(RUNS.length, S.runLevel || 1));
 const ORDER = {uk:['A','B','C'], paris:['P1','P2'], away:['T1','T2']};
 const TRAINING = new Set(['full','short','cardio']);
 
@@ -226,9 +248,11 @@ function applyPlan(){
   if(p.sessions) for(const [id,o] of Object.entries(p.sessions)) SESS[id] = Object.assign(SESS[id]||{}, o);
   if(p.order) for(const [loc,arr] of Object.entries(p.order)) ORDER[loc] = arr;
   if(p.loads && (p.updated||0) > (S.planApplied||0)){ S.loads = Object.assign({}, S.loads, p.loads); S.planApplied = p.updated; }
+  installRuns();
 }
 
 /* ================= Dates & stats ================= */
+const ivWord = (e, on) => ((on ? e.onLabel : e.offLabel)||'').split(' · ')[0] || (on ? 'Fast' : 'Easy');
 const pad2 = n => String(n).padStart(2,'0');
 const dayKey = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 const monthKey = d => d.getFullYear()+'-'+pad2(d.getMonth()+1);
@@ -555,7 +579,7 @@ function spokenFor(s){
   const e = EX[s.ex];
   if(s.t==='work') return `${e.name}. ${s.of>1?`Set ${s.set} of ${s.of}. `:''}${e.reps}.`;
   if(s.t==='rest'){ const nx = ui.run.steps[ui.run.i+1]; return nx && EX[nx.ex] ? `Rest. Next, ${EX[nx.ex].name}.` : 'Rest.'; }
-  if(s.t==='iv') return s.phase==='on' ? (s.set===1 ? `${e.name}. Fast.` : 'Fast.') : 'Easy.';
+  if(s.t==='iv') return s.phase==='on' ? (s.set===1 ? `${e.name}. ${ivWord(e,true)}.` : `${ivWord(e,true)}.`) : `${ivWord(e,false)}.`;
   if(s.t==='hold') return `${s.set===1&&s.side==='Left'?e.name+'. ':''}${s.side} side. Get into position.`;
   if(s.t==='time') return `${e.name}. ${e.label}.`;
   return '';
@@ -588,7 +612,7 @@ function advance(){
   const n = r.steps[r.i];
   if(s.t==='rest'){ flash('Go'); tone(1046,.3); }
   else if(n.t==='rest'){ flash('Rest', true); tone(660,.25); }
-  else if(n.t==='iv'){ flash(n.phase==='on'?'Fast':'Easy', n.phase!=='on'); tone(n.phase==='on'?1046:660,.25); }
+  else if(n.t==='iv'){ flash(ivWord(EX[n.ex], n.phase==='on'), n.phase!=='on'); tone(n.phase==='on'?1046:660,.25); }
   else if(n.t==='hold'){ flash('Switch', true); tone(880,.22); }
   else { tone(880,.22); }
   enterStep(false);
@@ -649,7 +673,11 @@ function save(){
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
-  ui.last = {points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
+  let run = null;
+  if(r.code==='padIV' && !r.early){ const was = runLevel(); let now = was;
+    if(r.feel==='toomuch' || r.hip==='sore') now = Math.max(1, was-1); else if(r.feel!=='hard') now = Math.min(RUNS.length, was+1);
+    S.runLevel = now; doc.runLevel = was; run = {was, now}; }
+  ui.last = {run, points, ups, bonus, code:r.code, kind, early:!!r.early, gate:gateNow, mk, stageUp:stageNow, newScene: scenesOpen()>scBefore ? scenesOpen()-1 : -1, newNote: (openNotes().filter(i=>!ntBefore.includes(i)).pop() ?? -1)};
   ui.run = null; ui.screen = 'celebrate';
   touch(); render(); window.scrollTo(0,0);
 }
@@ -677,7 +705,7 @@ async function ghPut(path, data, sha, message){
   if(!res.ok) throw new Error('put '+res.status);
 }
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
-const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
+const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, runLevel:S.runLevel, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
   redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
@@ -695,7 +723,7 @@ async function sync(retry){
     r = await ghGet('data/state.json');
     const rs = r.data || {};
     const remoteNewer = (rs.updated||0) > (S.updated||0);
-    if(remoteNewer) ['loc','step','dial','voice','theme','dragon','loads','seenStage'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
+    if(remoteNewer) ['loc','step','dial','runLevel','voice','theme','dragon','loads','seenStage'].forEach(k=>{ if(rs[k]!==undefined) S[k] = rs[k]; });
     if((rs.rewardsUpdated||0) > (S.rewardsUpdated||0)){ S.rewards = rs.rewards; S.rewardsUpdated = rs.rewardsUpdated; }
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
@@ -926,7 +954,7 @@ function chooseHTML(){
     {nm:'Strength', ds:`${SESS[full].title}: ${SESS[full].sub.toLowerCase()}`, times:[[10,'short'],[20,'trim'],[30,'full']]},
     {nm:'Mobility flow', ds:'Spine, shoulders, hips and ankles', code:'mobility'},
     {nm:'Hip block', ds:'Your physio’s four stretches', code:'hip'},
-    {nm:S.loc==='uk'?'Pad intervals':'Cardio intervals', ds:SESS[cardioCode()].sub, code:cardioCode()},
+    {nm:S.loc==='uk'?'Pad run':'Cardio intervals', ds:SESS[cardioCode()].sub, code:cardioCode()},
     {nm:'Easy walk', ds:SESS[walkCode()].sub, code:walkCode()}
   ];
   return `<div class="enter" style="display:grid;gap:14px">
@@ -981,7 +1009,7 @@ function runHTML(){
   } else {
     const e = EX[s.ex], running = !!r.timer, paused = running && r.timer.paused;
     let label = '', phase = '';
-    if(s.t==='iv'){ phase = s.phase==='on' ? 'Fast' : 'Easy'; label = (s.phase==='on'?e.onLabel:e.offLabel).split(' · ')[1]||''; }
+    if(s.t==='iv'){ phase = ivWord(e, s.phase==='on'); label = (s.phase==='on'?e.onLabel:e.offLabel).split(' · ')[1]||''; }
     else if(s.t==='hold'){ phase = `${s.side} side`; label = running ? 'Hold' : 'Get into position'; }
     else { phase = e.label; label = s.of>1 ? `Set ${s.set} of ${s.of}` : ''; }
     const sub = s.t==='iv' ? `Round ${s.set} of ${s.of}` : s.t==='hold' ? `Hold ${s.set} of ${s.of}` : '';
@@ -1034,6 +1062,7 @@ function celebrateHTML(){
     ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
     ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
+    ${L.run ? `<section class="card"><h2 class="ct">Pad runs <span class="aside">level ${L.run.now} of ${RUNS.length}</span></h2><p style="margin:0">${L.run.now>L.run.was ? 'Up a level. Next time: ' : L.run.now<L.run.was ? 'Down a level to recover. Next time: ' : 'Same level again. Next time: '}<b>${esc(runDesc(L.run.now))}</b>.</p></section>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
