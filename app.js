@@ -7,7 +7,7 @@ const EX = {
   march_warm:{name:'Marching warm-up',kind:'timed',dur:120,label:'Knees up, arms swinging',cue:'March on the spot. Add a few slow bodyweight squats if you feel stiff.'},
   pad_cool:{name:'Cool-down walk',kind:'timed',dur:120,label:'Slow · 4 km/h',cue:'Bring the pace right down and let your breathing settle.'},
   march_cool:{name:'Cool-down march',kind:'timed',dur:120,label:'Slow march',cue:'Slow it right down. Long breaths out.'},
-  goblet_box:{name:'Goblet box squat',kind:'reps',sets:3,reps:'8–12 reps',load:6,unit:'one dumbbell',rest:60,demo:'Goblet_Squat',legs:true,
+  goblet_box:{name:'Goblet box squat',kind:'reps',sets:3,reps:'10–15 reps',load:6,unit:'one dumbbell',rest:60,demo:'Goblet_Squat',legs:true,
     cue:'Dumbbell at your chest. Sit back until you touch the sofa edge, then stand tall.',
     how:{setup:['Stand just in front of the sofa, feet a little wider than hips.','Hold one dumbbell upright against your chest, elbows tucked.'],go:['Push your hips back and sit until you brush the sofa.','Drive through your whole foot to stand tall.'],tips:['Knees follow your toes, never cave in.','Chest proud, as if showing off a necklace.']}},
   knee_push:{name:'Knee push-up',kind:'reps',sets:3,reps:'8–12 reps',bw:true,rest:60,demo:'Pushups',demoNote:'Photo shows a full push-up. Do yours from the knees.',
@@ -16,34 +16,34 @@ const EX = {
   hip_thrust:{name:'Dumbbell hip thrust',kind:'reps',sets:3,reps:'10–15 reps',load:3.5,unit:'across your hips',rest:60,demo:'Barbell_Hip_Thrust',demoNote:'Photo shows a barbell. Use a dumbbell across your hips.',legs:true,
     cue:'Shoulders on the sofa, feet flat. Drive up and hold one second at the top.',
     how:{setup:['Upper back against the sofa edge, feet flat, knees bent.','Rest the dumbbell on your hip crease, hands holding it steady.'],go:['Drive through your heels and lift until your body is flat like a table.','Hold one second, lower with control.'],tips:['Chin tucked, eyes forward, not at the ceiling.','Feel it in your glutes. If it is your hamstrings, bring feet closer.']}},
-  rdl:{name:'Romanian deadlift',kind:'reps',sets:3,reps:'8–12 reps',load:5,unit:'each hand',rest:60,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
+  rdl:{name:'Romanian deadlift',kind:'reps',sets:3,reps:'10–15 reps',load:5,unit:'each hand',rest:60,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
     cue:'Soft knees. Push hips back while the dumbbells slide down your thighs.',
     how:{setup:['Feet hip-width, a dumbbell in each hand in front of your thighs.','Soft bend in the knees, ribs down.'],go:['Push your hips back, sliding the weights down your legs.','Stop when you feel a hamstring stretch, then squeeze glutes to stand.'],tips:['Back stays flat the whole way.','The weights stay close, almost brushing your legs.']}},
   dead_bug:{name:'Dead bug',kind:'timed',sets:2,dur:30,rest:30,label:'Slow and controlled',demo:'Dead_Bug',
     cue:'Low back stays heavy on the floor. Reach opposite arm and leg away, then swap.',
     how:{setup:['On your back, arms to the ceiling, knees bent over hips.','Press your lower back into the floor.'],go:['Lower one arm and the opposite leg slowly towards the floor.','Return and swap sides.'],tips:['Breathe out as you reach.','If your back lifts, make the reach smaller.']}},
-  split_squat:{name:'Supported split squat',kind:'reps',sets:3,reps:'8–10 each side',load:3.5,unit:'each hand',rest:60,est:60,demo:'Split_Squat_with_Dumbbells',legs:true,
+  split_squat:{name:'Supported split squat',kind:'reps',sets:3,reps:'10–12 each side',load:3.5,unit:'each hand',rest:60,est:60,demo:'Split_Squat_with_Dumbbells',legs:true,
     cue:'A hand on the wall if you need it. Drop the back knee straight down.',
     how:{setup:['Long stride stance, back heel lifted.','Dumbbells at your sides, or one hand on the wall.'],go:['Drop the back knee straight down towards the floor.','Push through the front heel to rise.'],tips:['Front knee tracks over the toes.','Torso tall, weight mostly on the front leg.']}},
-  row:{name:'Bent-over row',kind:'reps',sets:3,reps:'10–12 reps',load:5,unit:'each hand',rest:60,demo:'Bent_Over_Two-Dumbbell_Row',
+  row:{name:'Bent-over row',kind:'reps',sets:3,reps:'10–15 reps',load:5,unit:'each hand',rest:60,demo:'Bent_Over_Two-Dumbbell_Row',
     cue:'Hinge forward with a flat back. Pull the dumbbells towards your hip pockets.',
     how:{setup:['Hinge forward to about 45 degrees, soft knees.','Arms hang straight under your shoulders.'],go:['Pull the dumbbells to your hip pockets.','Squeeze shoulder blades, lower slowly.'],tips:['Neck long, eyes on the floor ahead.','No jerking. If you swing, go lighter.']}},
   step_up:{name:'Step-up',kind:'reps',sets:3,reps:'8 each side',bw:true,rest:60,est:60,demo:'Dumbbell_Step_Ups',legs:true,
     cue:'Bottom stair or a sturdy step. Whole foot on, push through the heel, step down slowly.',
     how:{setup:['Face the bottom stair, hand on the rail if you like.','Place your whole foot on the step.'],go:['Push through that heel to stand up tall.','Step down slowly with the other foot.'],tips:['The top leg does the work, not a bounce from below.','Knee in line with your toes.']}},
-  db_press:{name:'Standing dumbbell press',kind:'reps',sets:3,reps:'8–12 reps',load:3,unit:'each hand',rest:60,demo:'Standing_Dumbbell_Press',
+  db_press:{name:'Standing dumbbell press',kind:'reps',sets:3,reps:'10–15 reps',load:3,unit:'each hand',rest:60,demo:'Standing_Dumbbell_Press',
     cue:'Ribs down, glutes on. Press overhead until your arms sit by your ears.',
     how:{setup:['Stand tall, dumbbells at shoulder height, palms forward.','Squeeze glutes and brace your middle.'],go:['Press straight up until arms are by your ears.','Lower with control to the shoulders.'],tips:['Do not lean back to finish the rep.','Stop short of any shoulder pinch.']}},
   pallof:{name:'Pallof press',kind:'reps',sets:2,reps:'10 each side',bw:true,rest:30,est:50,demo:'Pallof_Press',demoNote:'Photo shows a cable. Use your band anchored at chest height.',
     cue:'Band anchored at chest height beside you. Press straight out and resist the twist.',
     how:{setup:['Anchor the band at chest height, stand side-on to it.','Hold the band at your chest with both hands.'],go:['Press your hands straight out in front.','Hold two seconds, bring back to your chest.'],tips:['Hips and shoulders stay square.','Step further away to make it harder.']}},
-  goblet_heavy:{name:'Goblet squat, heavy',kind:'reps',sets:4,reps:'5–6 reps',load:8,unit:'one dumbbell',rest:90,est:30,demo:'Goblet_Squat',legs:true,
+  goblet_heavy:{name:'Goblet squat, stronger',kind:'reps',sets:3,reps:'8–10 reps',load:8,unit:'one dumbbell',rest:75,est:40,demo:'Goblet_Squat',legs:true,
     cue:'Your heaviest lift. Slow down, strong up. Stop each set with one or two good reps left.',
     how:{setup:['Same set-up as the box squat, a heavier dumbbell.','Big breath in and brace before each rep.'],go:['Sit down under control, as deep as feels good.','Drive up hard.'],tips:['Quality over depth. Your hip decides how low.','Rest the full 90 seconds. Heavy work needs it.']}},
-  one_arm_row:{name:'One-arm row',kind:'reps',sets:4,reps:'8 each side',load:7,unit:'one dumbbell',rest:30,est:50,demo:'One-Arm_Dumbbell_Row',
+  one_arm_row:{name:'One-arm row',kind:'reps',sets:3,reps:'10–12 each side',load:7,unit:'one dumbbell',rest:30,est:50,demo:'One-Arm_Dumbbell_Row',
     cue:'Hand and knee on the sofa. Pull your elbow back past your ribs.',
     how:{setup:['One hand and knee on the sofa, back flat.','Dumbbell hangs under your shoulder.'],go:['Pull your elbow back past your ribs.','Lower slowly to a full stretch.'],tips:['Do not twist your torso open.','Think elbow to back pocket.']}},
-  rdl_heavy:{name:'Romanian deadlift, heavy',kind:'reps',sets:3,reps:'6 reps',load:7,unit:'each hand',rest:90,est:30,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
+  rdl_heavy:{name:'Romanian deadlift, stronger',kind:'reps',sets:3,reps:'8–10 reps',load:7,unit:'each hand',rest:75,est:40,demo:'Stiff-Legged_Dumbbell_Deadlift',legs:true,
     cue:'Same hinge, heavier weights. Keep the dumbbells close to your legs.',
     how:{setup:['As for the Romanian deadlift, heavier dumbbells.','Brace before each rep.'],go:['Hips back, weights slide down the thighs.','Squeeze glutes to stand tall.'],tips:['Back flat, always.','Stop when the hamstrings say stop.']}},
   hops:{name:'Pogo hops',kind:'reps',sets:3,reps:'10 small hops',bw:true,rest:45,est:20,legs:true,
@@ -59,6 +59,18 @@ const EX = {
   tempo_split:{name:'Tempo split squat',kind:'reps',sets:3,reps:'10 each side',load:3,unit:'each hand',fixed:true,rest:45,est:70,demo:'Split_Squat_with_Dumbbells',legs:true,
     cue:'Three seconds down, pause, drive up. Slow tempo makes light weights count.',
     how:{setup:['Long stride stance, light dumbbells at your sides.'],go:['Count three seconds on the way down.','Pause, then drive up.'],tips:['The slow part is the point. No rushing.','Wall for balance is fine.']}},
+  tr_squat:{name:'Chair squat',kind:'reps',sets:3,reps:'12–15 reps',bw:true,rest:45,est:50,legs:true,
+    cue:'Sit back for three seconds until you touch the chair, then stand tall. Hug a full backpack to make it harder.',
+    how:{setup:['Stand in front of a sturdy chair or bed, feet hip-width.','Arms forward, or hug a backpack at your chest.'],go:['Sit back slowly for three seconds until you just touch the seat.','Stand up tall without bouncing off it.'],tips:['Knees follow your toes.','A full backpack with water bottles makes a good travel weight.']}},
+  tr_split:{name:'Split squat',kind:'reps',sets:3,reps:'10–12 each side',bw:true,rest:45,est:70,legs:true,
+    cue:'Long stride, slow down for three, drive up. Hand on a wall for balance.',
+    how:{setup:['Long stride stance, back heel lifted.','A hand on a wall or chair for balance.'],go:['Lower slowly for three seconds.','Drive up through the front heel.'],tips:['Front knee stays in line with your toes.','Hold the backpack for extra load.']}},
+  tr_hinge:{name:'Backpack Romanian deadlift',kind:'reps',sets:3,reps:'12–15 reps',bw:true,rest:45,est:50,legs:true,
+    cue:'Hold a backpack by the straps. Push your hips back, flat back, then squeeze to stand.',
+    how:{setup:['Feet hip-width, backpack held in front of your thighs.','Soft knees, ribs down.'],go:['Push your hips back, sliding the bag down your legs.','Stop at a hamstring stretch, then squeeze your glutes to stand.'],tips:['Back stays flat, not rounded.','No bag? Do it slowly with your hands on your thighs.']}},
+  tr_stepup:{name:'Stair step-up',kind:'reps',sets:3,reps:'10 each side',bw:true,rest:45,est:60,legs:true,
+    cue:'Bottom stair or a sturdy step. Push through the heel, step down slowly.',
+    how:{setup:['Face the bottom stair, hand on the rail if you like.'],go:['Whole foot on the step, push through the heel to stand tall.','Step down slowly.'],tips:['The top leg does the work.','Knee in line with your toes.']}},
   band_row:{name:'Band row',kind:'reps',sets:3,reps:'15 reps',bw:true,rest:45,
     cue:'Band round a door handle or your feet. Squeeze your shoulder blades together.',
     how:{setup:['Loop the band round a closed door handle or your feet.','Step back until it is taut.'],go:['Pull your hands to your ribs.','Squeeze shoulder blades, return slowly.'],tips:['Shoulders away from your ears.','Slow on the way back.']}},
@@ -127,13 +139,16 @@ const EX = {
 const SESS = {
   A:{title:'Session A',sub:'Squat, hinge and push',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},'dead_bug','pad_intervals']},
   B:{title:'Session B',sub:'Single leg and pull',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']},
-  C:{title:'Session C',sub:'The heavy day, for muscle and bone',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_heavy','one_arm_row']},'rdl_heavy','hops','carry']},
+  C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_heavy','one_arm_row']},'rdl_heavy','hops','carry']},
   P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
   P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
   shortUK:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'uk',legs:true,items:[{id:'pad_warm',dur:120},{pair:['goblet_box','row'],sets:2,rest:45},{id:'hip_thrust',sets:2,rest:45},{id:'dead_bug',sets:1}]},
   shortParis:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'paris',legs:true,items:[{id:'march_warm',dur:120},{pair:['tempo_goblet','band_row'],sets:2,rest:45},{id:'pause_bridge',sets:2},{id:'dead_bug',sets:1}]},
   padIV:{title:'Pad intervals',sub:'Your little runs, eight rounds',type:'cardio',loc:'uk',items:['pad_warm','pad_iv8','pad_cool']},
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
+  T1:{title:'Travel one',sub:'Squat, pull and core. Band and a chair',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_squat','band_row']},{pair:['tr_split','pull_apart']},'pause_bridge','dead_bug']},
+  T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'pallof','jacks']},
+  shortAway:{title:'Ten-minute version',sub:'Anywhere, no kit',type:'short',loc:'away',legs:true,items:[{id:'march_warm',dur:120},{pair:['tr_squat','knee_push'],sets:2,rest:45},{id:'pause_bridge',sets:2},'dead_bug']},
   mobility:{title:'Mobility flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
   coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
@@ -142,7 +157,7 @@ const SESS = {
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
 const GROUPS = [['legs','Legs','var(--coral)'],['glutes','Glutes','var(--g2)'],['back','Back','var(--indigo)'],['chest','Chest and arms','var(--amber)'],['shoulders','Shoulders','var(--teal)'],['core','Core','var(--good)'],['mobility','Mobility','var(--violet)']];
-const MUSCLES = {goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], tempo_goblet:['legs','glutes'], knee_push:['chest'], hip_thrust:['glutes'], rdl:['glutes','legs'], rdl_heavy:['glutes','legs'], kick_rdl:['glutes','legs'],
+const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hinge:['glutes','legs'], tr_stepup:['legs','glutes'], goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], tempo_goblet:['legs','glutes'], knee_push:['chest'], hip_thrust:['glutes'], rdl:['glutes','legs'], rdl_heavy:['glutes','legs'], kick_rdl:['glutes','legs'],
   dead_bug:['core'], split_squat:['legs','glutes'], tempo_split:['legs','glutes'], row:['back'], one_arm_row:['back'], band_row:['back'], step_up:['legs','glutes'], db_press:['shoulders'], pallof:['core'],
   hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
   piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
@@ -150,7 +165,7 @@ const MUSCLES = {goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], t
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
 const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool:5};
-const ORDER = {uk:['A','B','C'], paris:['P1','P2']};
+const ORDER = {uk:['A','B','C'], paris:['P1','P2'], away:['T1','T2']};
 const TRAINING = new Set(['full','short','cardio']);
 
 const REGIONS = [
@@ -185,7 +200,7 @@ const SIZE_COST = {small:100, medium:400, big:1200};
 const SIZE_NAME = {small:'Small', medium:'Medium', big:'Big'};
 
 /* ================= State ================= */
-const S = {loc:'uk', loads:{}, step:2, voice:true, theme:'system', dragon:'Pip', read:{}, rewards:DEFAULT_REWARDS, rewardsUpdated:0,
+const S = {loc:'uk', loads:{}, step:1, voice:true, theme:'system', dragon:'Pip', read:{}, rewards:DEFAULT_REWARDS, rewardsUpdated:0,
   redemptions:[], prizes:{}, planApplied:0, nudged:{}, updated:0, lastSync:0};
 let sessions = [];
 let plan = {};
@@ -228,7 +243,7 @@ function weekInfo(ref, isCurrent){
   for(let i=0;i<7;i++){ const k = dayKey(addDays(start,i)); days.push({key:k, list:sessions.filter(s=>s.day===k)}); }
   const all = days.flatMap(d=>d.list);
   const count = all.filter(isTraining).length;
-  const paris = all.some(s=>s.location==='paris') || (isCurrent && S.loc==='paris');
+  const paris = all.some(s=>s.location==='paris' || s.location==='away') || (isCurrent && S.loc!=='uk');
   return {start, days, all, count, target: paris ? 2 : 3};
 }
 function weeksOnTarget(){
@@ -290,6 +305,7 @@ const LINES = {
   hipOnly:['Stretched. Very dignified. I might have hips. Unclear.'],
   peckish:['Three days. I’m not wasting away. I’m a bit see-through.','Remember me? Small. Scaly. Peckish.'],
   sulk:['I’m not sulking. I’m resting my face.','Fine. I’ll sit on this cold rock. Ten minutes and I’ll forget it happened.'],
+  away:['New place, same dragon. A chair and a band will do.','Travel week. Two sessions keeps the streak. I counted.','Hotel rooms are just gyms with worse lighting.'],
   paris:['Paris stairs count as a mountain. I’ve decided.','Light kit, slow tempo. Very continental.'],
   week:['Week done. I’ve grown. Slightly. Don’t make it weird.']
 };
@@ -300,6 +316,7 @@ function dragonLine(p){
   if(p.trained) return p.wk.count >= p.wk.target ? pickLine('week') : pickLine('done');
   if(p.recovery) return pickLine('recovery');
   if(S.loc==='paris') return pickLine('paris');
+  if(S.loc==='away') return pickLine('away');
   const m = mood();
   if(m==='peckish') return pickLine('peckish');
   if(m==='sulk') return pickLine('sulk');
@@ -335,9 +352,11 @@ function nextFull(){
   const last = sorted().find(s => s.kind==='full' && order.includes(s.code));
   return last ? order[(order.indexOf(last.code)+1)%order.length] : order[0];
 }
-const shortCode = () => S.loc==='uk' ? 'shortUK' : 'shortParis';
+const shortCode = () => ({uk:'shortUK', paris:'shortParis', away:'shortAway'})[S.loc] || 'shortUK';
 const walkCode = () => S.loc==='uk' ? 'walkUK' : 'walkParis';
 const cardioCode = () => S.loc==='uk' ? 'padIV' : 'parisIV';
+const coolCode = () => S.loc==='uk' ? 'coolUK' : 'coolParis';
+const LOCNAME = {uk:'London', paris:'Paris', away:'Travelling'};
 function plan_(){
   const now = new Date(), t = dayKey(now), y = dayKey(addDays(now,-1));
   const todays = sessions.filter(s=>s.day===t);
@@ -610,10 +629,12 @@ function save(){
   (r.loaded||[]).forEach(id=>{
     const used = r.loads[id]; let next = used;
     const reps = r.repsBy[id] || [], top = repRange(EX[id])[1];
-    const topped = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top) && r.efforts[id]!=='max';
+    const toppedNow = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top) && r.efforts[id]!=='max';
+    S.topRun = S.topRun||{}; S.topRun[id] = toppedNow ? (S.topRun[id]||0) + 1 : 0;
+    const topped = S.topRun[id] >= 2; // two sessions in a row at the top of the range
     if((r.efforts[id]==='easy' || topped) && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
       const inc = EX[id].legs ? S.step : Math.max(.5, S.step/2); // upper body moves in smaller jumps
-      next = Math.min(25, +(used + inc).toFixed(2)); if(next>used) ups.push({id,next}); }
+      next = Math.min(25, +(used + inc).toFixed(2)); if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
     S.loads[id] = next;
   });
   const now = new Date(), mk = monthKey(now);
@@ -806,7 +827,7 @@ function render(){
 
 function topbar(){
   return `<header class="top"><span class="brand">Movement</span><div class="r">
-    <button class="pill" data-a="loc" aria-label="Location: ${S.loc==='uk'?'London':'Paris'}. Tap to switch.">${I.pin}${S.loc==='uk'?'London':'Paris'}</button>
+    <button class="pill" data-a="loc" aria-label="Location: ${LOCNAME[S.loc]}. Tap to switch.">${I.pin}${LOCNAME[S.loc]}</button>
     <button class="round" data-a="settings" aria-label="Settings">${I.gear}</button></div></header>`;
 }
 
@@ -906,7 +927,7 @@ function chooseHTML(){
   ];
   return `<div class="enter" style="display:grid;gap:14px">
     <button class="back" data-a="home">${I.back}Today</button>
-    <section class="gcard flat"><h1>Pick your own</h1><p class="meta">${S.loc==='uk'?'London kit':'Paris kit'}. Choose a style. For strength, choose how long you’ve got.</p></section>
+    <section class="gcard flat"><h1>Pick your own</h1><p class="meta">${({uk:'London kit', paris:'Paris kit', away:'Travel kit: band, chair, stairs, backpack'})[S.loc]}. Choose a style. For strength, choose how long you’ve got.</p></section>
     <section class="card">${opts.map(o=> o.times ?
       `<div class="opt str" style="cursor:default"><span class="nm">${o.nm}</span><span class="ds">${esc(o.ds)}</span><div class="times">${o.times.map(([m,k])=>`<button class="time" data-a="${k==='trim'?'starttrim':'start'}" data-code="${k==='short'?shortCode():full}" data-trim="${k==='trim'?1:''}">${k==='short'?estMin(shortCode()):k==='trim'?estMin(full,true):estMin(full)} min</button>`).join('')}</div></div>` :
       `<button class="opt" data-a="start" data-code="${o.code}"><span class="nm">${o.nm}</span><span class="ds">${esc(o.ds)}</span><span class="go">${estMin(o.code)} min</span></button>`).join('')}
@@ -1008,7 +1029,7 @@ function celebrateHTML(){
     ${L.gate ? `<section class="card"><h2 class="ct">${esc(rg.gate)}</h2><p style="margin:0 0 12px">You reached the gate of ${esc(rg.name)}. Your prize is waiting: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
     ${L.newScene>=0 ? `<button class="card unlock" data-a="read" data-t="s" data-i="${L.newScene}"><span class="ct" style="margin:0">New scene unlocked</span><span class="ut">${dx(STORY.scenes[L.newScene].title)}</span><span class="muted">${esc(bookOf(L.newScene).title)} · tap to read, about two minutes</span></button>` : ''}
     ${L.newNote>=0 ? `<button class="card unlock" data-a="read" data-t="n" data-i="${L.newNote}"><span class="ct" style="margin:0">From the satchel · ${esc(kindOf(STORY.notes[L.newNote]))}</span><span class="ut">${dx(STORY.notes[L.newNote].title)}</span><span class="muted">Tap to read</span></button>` : ''}
-    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${S.loc==='paris'?'coolParis':'coolUK'}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='paris'?'march':'walk'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
+    ${TRAINING.has(L.kind) ? `<button class="card listen" data-a="start" data-code="${coolCode()}">${I.ear}<span><span class="lt">Cool down with the story</span><span class="muted">About 7 minutes. A slow ${S.loc==='uk'?'walk':'march'} and four stretches while ${(()=>{ let n=0; for(let i=0;i<scenesOpen();i++) if(!S.read['s'+i]) n++; return L.newScene>=0 && n<=1 ? 'your new scene' : 'the story'; })()} plays.</span></span></button>` : (L.newScene>=0 || L.newNote>=0) ? `<button class="card listen" data-a="storyrun">${I.ear}<span><span class="lt">Listen now</span><span class="muted">Read aloud while you stretch</span></span></button>` : ''}
     ${L.ups.length ? `<section class="card"><h2 class="ct">Going up next time</h2><ul class="uplist">${L.ups.map(u=>`<li>${I.up}<span>${esc(EX[u.id].name)}: ${fmtKg(u.next)}</span></li>`).join('')}</ul></section>` : ''}
     ${TRAINING.has(L.kind) ? `<p class="watchnote">Wearing your Watch? Stop the workout there too.</p>` : ''}
   </div><div class="dock"><div class="in">${cont?`<button class="btn primary" data-a="start" data-code="${cont}">Continue to ${esc(SESS[cont].title)}</button>`:''}<button class="btn ${cont?'':'primary xl'}" data-a="home">Back to today</button></div></div>`;
@@ -1358,7 +1379,7 @@ document.addEventListener('click', e=>{
     case 'realmtab': ui.screen = 'tab'; ui.tab = 'realm'; render(); window.scrollTo(0,0); break;
     case 'overview': ui.sheet = 'overview'; render(); break;
     case 'trainanyway': ui.trainAnyway = true; render(); break;
-    case 'loc': S.loc = S.loc==='uk' ? 'paris' : 'uk'; ui.trainAnyway = false; touch(); render(); toast(S.loc==='uk'?'Back in London. Full kit.':'Paris mode. Light kit, slow tempo.'); break;
+    case 'loc': S.loc = ({uk:'paris', paris:'away', away:'uk'})[S.loc] || 'uk'; ui.trainAnyway = false; touch(); render(); toast(({uk:'Back in London. Full kit.', paris:'Paris mode. Light kit, slow tempo.', away:'Travel mode. Band, chair, stairs. Two sessions a week keeps your streak.'})[S.loc]); break;
     case 'settings': ui.screen = 'settings'; render(); window.scrollTo(0,0); break;
     case 'home': ui.screen = 'tab'; ui.tab = 'today'; ui.last = null; ui.sheet = null; render(); window.scrollTo(0,0); break;
     case 'done': audioOn(); advance(); break;
@@ -1419,6 +1440,7 @@ function applyTheme(){ const r = document.documentElement; if(S.theme==='dark'||
 /* ================= Boot ================= */
 function boot(){
   loadLocal(); applyPlan(); applyTheme();
+  if(!S.slowV1){ S.slowV1 = 1; if(S.step===2){ S.step = 1; touch(); } } // she chose slower progression (13 Oct)
   try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>{ voiceGB = null; }; }catch(e){}
   render();
   if(ghReady()) sync(); else setSync('off');

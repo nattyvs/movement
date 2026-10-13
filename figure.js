@@ -293,3 +293,14 @@ Object.assign(POSES, {
   kneechest:{anchor:'shoulder', at:[56,135], prop:PROP.mat, mode:'once', a:{torso:270, neck:0, thigh:45, shin:150, foot:84, thigh2:45, shin2:150, foot2:84, upper:100, fore:96}, b:{torso:270, neck:-6, thigh:332, shin:118, foot:40, thigh2:45, shin2:150, foot2:84, upper:44, fore:62}}
 });
 Object.assign(EX_POSE, {pad_warm:'walk', pad_cool:'walk', pad_walk:'walk', pad_intervals:'walkfast', pad_iv8:'walkfast', walk_out:'walkout', march_cool:'march'});
+
+/* Bodyweight versions for travel: same movement, no dumbbells. */
+const unweighted = (k, arms) => { const p = POSES[k], strip = q => { const o = Object.assign({}, q, arms||{}); delete o.weight; delete o.oneWeight; delete o.dbAng; return o; };
+  return Object.assign({}, p, {a: strip(p.a), b: strip(p.b)}); };
+Object.assign(POSES, {
+  chairsquat: Object.assign(unweighted('boxsquat', {upper:96, fore:94, upper2:96, fore2:94}), {prop: PROP.chair, propBox:[60,56,126,146]}),
+  bwsplit: unweighted('split'),
+  bwrdl: unweighted('rdl')
+});
+POSES.chairsquat.at = [130,140];
+Object.assign(EX_POSE, {tr_squat:'chairsquat', tr_split:'bwsplit', tr_hinge:'bwrdl', tr_stepup:'stepup'});
