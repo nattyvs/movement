@@ -392,17 +392,20 @@ const hasLoad = id => EX[id] && EX[id].load !== undefined && !EX[id].bw;
 /* ================= Sound, voice, screen ================= */
 let actx = null, wl = null, voiceGB = null;
 function audioOn(){
-  try{ if(navigator.audioSession) navigator.audioSession.type = 'playback'; }catch(e){}
+  setAudioMode();
   try{ if(!actx) actx = new (window.AudioContext||window.webkitAudioContext)(); if(actx.state==='suspended') actx.resume(); }catch(e){}
   try{ if(window.speechSynthesis && !voiceGB){ const vs = speechSynthesis.getVoices(); voiceGB = vs.find(v=>/en-GB/i.test(v.lang) && /female|serena|kate|stephanie|martha/i.test(v.name)) || vs.find(v=>/en-GB/i.test(v.lang)) || null; } }catch(e){}
 }
+// 'transient' plays over other apps' music (iOS treats it as ambient: muted in silent mode).
+// 'playback' takes over: pauses music, ignores silent mode, keeps going when the phone locks. The story uses it.
+function setAudioMode(){ try{ if(navigator.audioSession) navigator.audioSession.type = (NARR.active && NARR.rec) || S.overMusic===false ? 'playback' : 'transient'; }catch(e){} }
 function tone(f=880, len=.18, vol=.28){
   if(!actx) return;
   try{ const t = actx.currentTime, o = actx.createOscillator(), g = actx.createGain();
     o.frequency.value = f; o.type = 'sine'; g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(vol,t+.02); g.gain.exponentialRampToValueAtTime(.0001,t+len);
     o.connect(g).connect(actx.destination); o.start(t); o.stop(t+len+.03); }catch(e){}
 }
-const chime = () => { tone(784,.16); setTimeout(()=>tone(1046,.26),140); };
+const chime = () => { tone(784,.16,.4); setTimeout(()=>tone(1046,.26,.4),140); };
 function say(text){
   if(!S.voice || !window.speechSynthesis) return;
   try{
@@ -482,13 +485,13 @@ function mediaMeta(q, rec){
 function narrStart(queue){
   if(!queue.length) return;
   audioOn(); NARR.tok++; try{ speechSynthesis.cancel(); }catch(e){}
-  Object.assign(NARR, {active:true, playing:true, queue, k:0, c:0});
+  Object.assign(NARR, {active:true, playing:true, queue, k:0, c:0}); NARR.rec = recFor(queue[0]); setAudioMode();
   lockScreen(); narrItem(0);
 }
 function narrPause(){ NARR.playing = false; NARR.tok++; if(NARR.rec) aud.pause(); else try{ speechSynthesis.cancel(); }catch(e){} paintNP(); }
 function narrResume(){ if(!NARR.active) return; NARR.playing = true; lockScreen(); if(NARR.rec){ aud.play(); paintNP(); } else narrSpeak(); }
 function narrStop(){
-  NARR.active = false; NARR.playing = false; NARR.rec = null; NARR.tok++;
+  NARR.active = false; NARR.playing = false; NARR.rec = null; NARR.tok++; setAudioMode();
   try{ aud.pause(); aud.removeAttribute('src'); aud.load(); }catch(e){} try{ speechSynthesis.cancel(); }catch(e){}
   try{ navigator.mediaSession.metadata = null; }catch(e){}
   if(ui.screen!=='run') unlockScreen(); paintNP(); if(ui.screen==='read' || (ui.screen==='tab' && ui.tab==='realm')) render();
@@ -922,7 +925,7 @@ function runHTML(){
   const pct = (r.i/r.steps.length*100).toFixed(1);
   const bar = `<div class="rbar"><div class="r1"><button class="round" data-a="exit" aria-label="Leave session">${I.x}</button><button class="ttl ttlbtn" data-a="overview" aria-label="See every exercise in this session">${esc(def.title)}${r.trim?' · shorter':''} <span aria-hidden="true">▾</span></button>
     <button class="round" data-a="voice" aria-label="${S.voice?'Turn voice off':'Turn voice on'}" aria-pressed="${S.voice}">${S.voice?I.vol:I.mute}</button></div><div class="prog"><i style="width:${pct}%"></i></div></div>`;
-  const watch = r.i===0 && TRAINING.has(def.type) ? `<p class="watchnote">Phone on silent? Voice may not play. The screen flashes at every change.</p>` : '';
+  const watch = r.i===0 && TRAINING.has(def.type) ? `<p class="watchnote">${S.overMusic===false ? 'Cues pause your music. ' : 'Cues play over your music. Take the phone off silent or they’re muted. '}The screen flashes at every change.</p>` : '';
   let body = '', dock = '';
   const loadRow = id => hasLoad(id) ? `<div class="loadrow"><div class="stepper"><button data-a="load" data-d="-1" aria-label="Less weight">${I.minus}</button><span class="v">${fmtKg(r.loads[id])}</span><button data-a="load" data-d="1" aria-label="More weight">${I.plus}</button></div><span class="muted">${esc(EX[id].unit)}</span></div>` : '';
   const guideBtn = id => EX[id].how ? `<button class="linkbtn" data-a="guide" data-id="${id}" style="justify-self:start">How to do it</button>` : '';
@@ -1240,6 +1243,8 @@ function settingsHTML(){
     </section>
     <section class="card"><h2 class="ct">Coach</h2>
       <div class="srow"><span>Voice cues</span><div class="seg"><button data-a="setvoice" data-v="1" aria-pressed="${S.voice}">On</button><button data-a="setvoice" data-v="0" aria-pressed="${!S.voice}">Off</button></div></div>
+      <div class="srow"><span>Cues and music</span><div class="seg"><button data-a="overmusic" data-v="1" aria-pressed="${S.overMusic!==false}">Play over it</button><button data-a="overmusic" data-v="0" aria-pressed="${S.overMusic===false}">Pause it</button></div></div>
+      <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? 'Cues play on top of Spotify or SoundCloud. iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.' : 'Cues pause your music and play even in silent mode.'}</p>
       <div class="srow"><span>Test sound and voice</span><button class="btn-ink" data-a="testsound">Play</button></div>
       <p class="hint" style="margin-top:8px">If you hear nothing, flip the silent switch off. Every cue also flashes on screen.</p>
       <div class="srow"><label for="step">Dumbbell step</label><select id="step" style="width:auto">${[1,2,2.5].map(v=>`<option value="${v}" ${S.step==v?'selected':''}>${v} kg</option>`).join('')}</select></div>
@@ -1332,6 +1337,7 @@ document.addEventListener('click', e=>{
     case 'narrpause': narrPause(); if(ui.screen==='read') render(); break;
     case 'narrplay': narrResume(); if(ui.screen==='read') render(); break;
     case 'narrstop': narrStop(); break;
+    case 'overmusic': S.overMusic = b.dataset.v==='1'; touch(); setAudioMode(); render(); break;
     case 'narrmode': S.narrMode = b.dataset.v; touch(); if(NARR.active) narrStop(); render(); break;
     case 'narrrate': S.narrRate = +b.dataset.v; touch(); try{ aud.playbackRate = recRate(); }catch(e){} render(); break;
     case 'storycool': S.storyCool = b.dataset.v==='1'; touch(); render(); break;
