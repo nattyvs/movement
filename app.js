@@ -735,7 +735,7 @@ const dx = t => esc(t).replace(/([WVY])(?=[a-z\u00e0-\u00ff])/g,'<span class="kw
 const fmtClock = ms => { const t = Math.max(0, Math.floor(ms/1000)), h = Math.floor(t/3600), m = Math.floor(t/60)%60, x = t%60; return (h ? h+':'+pad2(m) : m) + ':' + pad2(x); };
 // '8–12 reps' -> [8,12]; '10 each side' -> [10,10]
 const repRange = e => { const m = /(\d+)\s*[–-]\s*(\d+)/.exec(e.reps||''); if(m) return [+m[1], +m[2]]; const n = /(\d+)/.exec(e.reps||''); return n ? [+n[1], +n[1]] : [10,10]; };
-const DIAL = [2.5, 3.5, 4.5, 5.5, 6.5, 8];
+const DIAL = [2.5, 3.5, 4.5, 5.5, 6.5, 8, 9, 10, 11.5, 13.5, 16, 18, 20.5, 22.5, 24]; // her London dial, read off her photos 13 Oct
 const dial = () => (Array.isArray(S.dial) && S.dial.length ? S.dial : DIAL).slice().sort((a,b)=>a-b);
 const snapKg = x => dial().reduce((b,v)=>Math.abs(v-x) < Math.abs(b-x) ? v : b);
 const stepKg = (x, d) => { const L = dial(), i = L.indexOf(snapKg(x)); return L[Math.max(0, Math.min(L.length-1, i + d))]; };
