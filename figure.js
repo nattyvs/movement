@@ -1,6 +1,7 @@
 'use strict';
 /* Animated demo figure: an original flat-illustrated woman, posed by joint angles.
    Angles: 0 = up, 90 = the way she faces (right), 180 = down, 270 = behind her. */
+let FIG_HAIR = 'afro'; // ponytail | afro | puff | crop
 const FIG = (()=>{
   const L = {torso:52, neck:8, head:12, upper:26, fore:24, thigh:40, shin:39, foot:15};
   const rad = a => (a-90)*Math.PI/180;
@@ -31,6 +32,9 @@ const FIG = (()=>{
   const angLerp = (a,b,t) => { let d = ((b - a) % 360 + 540) % 360 - 180; return a + d*t; };
   function mix(A,B,t){ const o = {}; for(const k of new Set([...Object.keys(A),...Object.keys(B)])){ const a = A[k], b = B[k]; o[k] = (typeof a==='number' && typeof b==='number') ? (k==='weight'||k==='band'||k==='oneWeight' ? a : LIN.has(k) ? lerp(a,b,t) : angLerp(a,b,t)) : (a!==undefined ? a : b); } return o; }
   const F = n => n.toFixed(1);
+  // textured hair: a round mass with small bumps round the edge
+  function cloud(c, R, bump){ let o = `<circle cx="${F(c[0])}" cy="${F(c[1])}" r="${F(R)}" fill="var(--fig-hair)"/>`;
+    for(let a=0; a<360; a+=30){ const p = step(c, a, R - bump*.35); o += `<circle cx="${F(p[0])}" cy="${F(p[1])}" r="${F(bump)}" fill="var(--fig-hair)"/>`; } return o; }
   // a tapered limb: capsule from a (width wa) to b (width wb)
   function limb(a, b, wa, wb, fill){
     const dx = b[0]-a[0], dy = b[1]-a[1], len = Math.hypot(dx,dy)||1, nx = -dy/len, ny = dx/len;
@@ -70,12 +74,20 @@ const FIG = (()=>{
     out.push(limb(T(J.hip), T(far.k), 15, 11.5, 'var(--fig-legs-far)'), limb(T(far.k), T(far.a), 11.5, 8, 'var(--fig-legs-far)'), shoe(T(far.a), far.f, 'var(--fig-shoe-far)'));
     out.push(limb(sh, T(fa.e), 8.5, 7.5, 'var(--fig-skin-far)'), limb(T(fa.e), T(fa.h), 7, 6, 'var(--fig-skin-far)'));
     if(P.weight && !P.oneWeight) out.push(dumbbell(T(fa.h), P.dbAng));
-    // ponytail behind the head
+    // hair behind the head
     const hn = ((J.hAng % 360) + 360) % 360, lying = hn > 225 && hn < 315;
+    if(FIG_HAIR!=='ponytail'){ const H = L.head;
+      // lying down, the hair rests on the floor: push it up and back instead of down through the mat
+      const up = lying ? 300 : J.hAng+300, upP = lying ? 318 : J.hAng+318, k = lying ? .8 : 1;
+      if(FIG_HAIR==='afro') out.push(cloud(step(hd, up, H*.4), H*1.2*k, H*.34));
+      if(FIG_HAIR==='crop') out.push(cloud(step(hd, up, H*.24), H*1.04*k, H*.22));
+      if(FIG_HAIR==='puff') out.push(cloud(step(hd, upP, H*1.05), H*.66, H*.24));
+    } else {
     const pb = step(hd, J.hAng + 255, L.head*.88);
     const tail = lying ? 262 : (hn > 135 && hn < 225 ? 175 : 196) + (P.sway||0);
     const pt = step(pb, tail, 15), pc = step(pb, tail + (lying ? -12 : 18), 8);
     out.push(`<path d="M${F(pb[0])} ${F(pb[1])} Q${F(pc[0])} ${F(pc[1])} ${F(pt[0])} ${F(pt[1])}" stroke="var(--fig-hair)" stroke-width="7" stroke-linecap="round" fill="none"/>`);
+    }
     // neck, torso (tank top), leggings on hips
     out.push(limb(nk, sh, 7, 8, 'var(--fig-skin)'));
     const ta = rad(P.torso) + Math.PI/2, nx = Math.cos(ta), ny = Math.sin(ta);
@@ -86,7 +98,8 @@ const FIG = (()=>{
     const nose = step(hd, J.hAng + 100, L.head*1.08);
     out.push(`<circle cx="${F(hd[0])}" cy="${F(hd[1])}" r="${L.head}" fill="var(--fig-skin)"/>`);
     out.push(`<circle cx="${F(nose[0])}" cy="${F(nose[1])}" r="2.6" fill="var(--fig-skin)"/>`);
-    const h70 = step(hd,J.hAng+70,L.head), h200 = step(hd,J.hAng+200,L.head);
+    const fr = FIG_HAIR==='ponytail' ? 70 : FIG_HAIR==='puff' ? 62 : 52;
+    const h70 = step(hd,J.hAng+fr,L.head), h200 = step(hd,J.hAng+200,L.head);
     out.push(`<path d="M${F(h70[0])} ${F(h70[1])} A${L.head} ${L.head} 0 1 0 ${F(h200[0])} ${F(h200[1])} Q${F(hd[0])} ${F(hd[1])} ${F(h70[0])} ${F(h70[1])}Z" fill="var(--fig-hair)"/>`);
     const eye = step(hd, J.hAng + 72, L.head*.55);
     out.push(`<circle cx="${F(eye[0])}" cy="${F(eye[1])}" r="1.4" fill="var(--fig-hair)"/>`);
@@ -134,9 +147,11 @@ const FIG = (()=>{
       out.push(limb(T(S.sh), T(S.e), 9, 8, col), limb(T(S.e), T(S.h), 7.5, 6.5, col));
     }
     const h = T(J.hd), r = L.head;
+    if(FIG_HAIR==='afro') out.push(cloud([h[0], h[1]-r*.38], r*1.36, r*.34));
+    if(FIG_HAIR==='crop') out.push(cloud([h[0], h[1]-r*.2], r*1.12, r*.22));
     out.push(`<circle cx="${F(h[0])}" cy="${F(h[1])}" r="${r}" fill="var(--fig-skin)"/>`);
     out.push(`<path d="M${F(h[0]-r-.6)} ${F(h[1]+2)} A${r+.6} ${r+.6} 0 0 1 ${F(h[0]+r+.6)} ${F(h[1]+2)} Q${F(h[0]+7)} ${F(h[1]-6)} ${F(h[0])} ${F(h[1]-5.5)} Q${F(h[0]-7)} ${F(h[1]-6)} ${F(h[0]-r-.6)} ${F(h[1]+2)}Z" fill="var(--fig-hair)"/>`);
-    out.push(`<circle cx="${F(h[0])}" cy="${F(h[1]-r-3)}" r="5.5" fill="var(--fig-hair)"/>`);
+    if(FIG_HAIR==='puff') out.push(cloud([h[0], h[1]-r-4], 8, 2.6)); else if(FIG_HAIR==='ponytail') out.push(`<circle cx="${F(h[0])}" cy="${F(h[1]-r-3)}" r="5.5" fill="var(--fig-hair)"/>`);
     out.push(`<circle cx="${F(h[0]-4.3)}" cy="${F(h[1]+1)}" r="1.4" fill="var(--fig-hair)"/><circle cx="${F(h[0]+4.3)}" cy="${F(h[1]+1)}" r="1.4" fill="var(--fig-hair)"/>`);
     return out.join('');
   }
@@ -144,10 +159,11 @@ const FIG = (()=>{
     const P = norm(P0);
     if(P.view==='front' || opt.view==='front'){
       const J = frontJoints(P), low = Math.max(J.R.a[1], J.Lf.a[1]) + 7.5, dx = opt.at[0], dy = opt.at[1]-low-(P.lift||0);
-      return [J.hd.map((v,i)=>i? v-L.head-9 : v), ...['R','Lf'].flatMap(k=>[J[k].a,J[k].k,J[k].sh,J[k].e,J[k].h,[J[k].a[0]+(k==='R'?7:-7),J[k].a[1]]])].map(p=>[p[0]+dx, p[1]+dy]);
+      return [J.hd.map((v,i)=>i? v-L.head-(FIG_HAIR==='afro' ? 15 : 9) : v), ...['R','Lf'].flatMap(k=>[J[k].a,J[k].k,J[k].sh,J[k].e,J[k].h,[J[k].a[0]+(k==='R'?7:-7),J[k].a[1]]])].map(p=>[p[0]+dx, p[1]+dy]);
     }
     const J = joints(P), [dx, dy] = place(J, P, opt);
-    return [J.hip,J.sh,J.hd,J.near.k,J.near.a,J.near.toe,J.far.k,J.far.a,J.far.toe,J.nearArm.e,J.nearArm.h,J.farArm.e,J.farArm.h].map(p=>[p[0]+dx, p[1]+dy]);
+    const hr = L.head*(FIG_HAIR==='afro' ? 1.9 : FIG_HAIR==='puff' ? 2.2 : 1.3), hb = [0,90,180,270].map(a=>step(J.hd, a, hr));
+    return [...hb,J.hip,J.sh,J.hd,J.near.k,J.near.a,J.near.toe,J.far.k,J.far.a,J.far.toe,J.nearArm.e,J.nearArm.h,J.farArm.e,J.farArm.h].map(p=>[p[0]+dx, p[1]+dy]);
   }
   const DEFS = `<defs><linearGradient id="figtop" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="var(--g2)"/><stop offset="1" stop-color="var(--g3)"/></linearGradient></defs>`;
   function bbox(opt){
@@ -190,7 +206,7 @@ const FIG = (()=>{
     };
     raf = requestAnimationFrame(tick);
   }
-  return {svg, animate, draw, joints, norm, mix};
+  return {svg, animate, draw, joints, norm, mix, setHair: h => { FIG_HAIR = h; }};
 })();
 
 /* Poses. Floor at y = 146, figure faces right. a = start, b = end of the rep. */
