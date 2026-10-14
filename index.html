@@ -131,6 +131,34 @@ a{color:var(--violet);text-underline-offset:3px}
 .c-coral{color:var(--coral)} .c-amber{color:var(--amber)} .c-teal{color:var(--teal)} .c-violet{color:var(--violet)} .c-good{color:var(--good)}
 .legend{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:12px;font-size:12.5px;color:var(--muted)}
 .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:0}
+/* movement minutes */
+.moverow{margin-top:14px;padding-top:14px;border-top:1px solid var(--line);display:grid;gap:9px}
+.mvhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.mvk{font-size:12.5px;letter-spacing:.11em;text-transform:uppercase;font-weight:650;color:var(--label)}
+.mvn{font-variant-numeric:tabular-nums;font-size:15px}.mvn b{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.mvbar{height:10px;border-radius:10px;background:var(--line);overflow:hidden}
+.mvbar i{display:block;height:100%;border-radius:10px;background:linear-gradient(90deg,color-mix(in srgb,var(--teal) 55%,transparent),var(--teal));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.mvbar.done i{background:linear-gradient(90deg,var(--teal),var(--good))}
+.mvfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13.5px}
+.mvbtn{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid color-mix(in srgb,var(--teal) 45%,var(--line));background:color-mix(in srgb,var(--teal) 10%,var(--card));color:var(--ink);font-weight:700;font-size:14px;white-space:nowrap}
+.mvbtn svg{width:16px;height:16px;color:var(--teal)}
+/* watch inbox */
+.inbox{border-color:color-mix(in srgb,var(--teal) 50%,var(--line));background:linear-gradient(180deg,color-mix(in srgb,var(--teal) 9%,var(--card)),var(--card));animation:rise .35s cubic-bezier(.2,.8,.2,1)}
+.ibx{display:grid;grid-template-columns:52px 1fr;gap:14px;align-items:start}
+.ibd{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:color-mix(in srgb,var(--teal) 16%,var(--card))}
+.ibd svg{width:34px;height:34px}.ibd rect{fill:color-mix(in srgb,var(--teal) 55%,var(--card))}.ibd .face{fill:var(--teal)}.ibd .hand{fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ibq{margin:0;font-family:var(--display);font-style:italic;font-size:19px;line-height:1.25}
+.chips.mins{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.chips.mins .chip{padding:10px 0;font-variant-numeric:tabular-nums}
+.ibrow{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-top:10px}
+.ibrow .btn{min-height:50px}
+.ibother{display:inline-flex;align-items:center;gap:8px;font-weight:650;font-size:14.5px;color:var(--muted)}
+.ibother input{width:76px;min-height:46px;border:1px solid var(--line);border-radius:12px;background:var(--card-2);color:var(--ink);font:inherit;font-weight:650;text-align:center;padding:0 8px}
+.ibskip{display:block;margin:4px auto 0;font-size:14px;color:var(--muted);text-decoration-color:color-mix(in srgb,var(--muted) 40%,transparent)}
+.sheet h4.flabel{margin:16px 0 0}
+.sheet .seg{margin-top:8px}
+.wsteps{margin:0;padding-left:22px;display:grid;gap:10px;font-size:14.5px;line-height:1.45}
+.wsteps code,.watchsetup .hint code{font-size:12.5px;background:var(--card-2);border:1px solid var(--line);border-radius:6px;padding:1px 5px;overflow-wrap:anywhere}
 
 /* realm teaser */
 .teaser{display:grid;grid-template-columns:1fr 112px;gap:12px;align-items:center;width:100%;text-align:left}
@@ -468,7 +496,7 @@ body.np-on .wrap{padding-bottom:calc(178px + env(safe-area-inset-bottom,0px))}
 .enter{animation:enter .4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){
-  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.pulse .big,.sheet,.scrim{animation:none}
+  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.pulse .big,.sheet,.scrim,.inbox{animation:none}
   .demo .b{opacity:0} #flash.on{animation-duration:.01s} .prog i,.btn-w,.ringbox .arc{transition:none}
 }
 </style>

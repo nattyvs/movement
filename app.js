@@ -411,6 +411,25 @@ function weeksOnTarget(){
   return n;
 }
 const trainingTotal = () => sessions.filter(isTraining).length;
+/* movement minutes: every logged minute counts, strength included. 150 a week is the NHS and WHO baseline for moderate activity. */
+const MOVE_TARGET = 150;
+const moveTarget = () => (plan && plan.moveTarget) || MOVE_TARGET;
+const weekMinutes = wk => wk.all.reduce((a,s)=>a+(s.minutes||0),0);
+const ACTS = [['walk','Walk'],['hike','Hike'],['cycle','Cycle'],['swim','Swim'],['dance','Dance'],['yoga','Yoga'],['other','Other']];
+const ACT_TITLE = {walk:'Outdoor walk', hike:'Hike', cycle:'Bike ride', swim:'Swim', dance:'Dancing', yoga:'Yoga', other:'Movement'};
+const movePoints = m => m>=60 ? 20 : m>=30 ? 15 : 10;
+function logMove(o){
+  const id = o.id || 'm'+uid(); if(sessions.some(s=>s.id===id)) return null;
+  const when = new Date(o.ts || Date.now()), wkNow = weekInfo(new Date(), true);
+  const before = weekMinutes(wkNow), minutes = Math.max(1, Math.min(600, Math.round(o.minutes)));
+  const doc = {id, ts:when.getTime(), day:dayKey(when), kind:'move', code:'move', activity:o.act||'walk', title:ACT_TITLE[o.act]||'Movement',
+    location:S.loc, minutes, points:movePoints(minutes), source:o.source||'manual'};
+  sessions.push(doc); touch();
+  const after = weekMinutes(weekInfo(new Date(), true));
+  if(before < moveTarget() && after >= moveTarget()){ chime(); toast(`${after} minutes this week. That’s the whole guideline, done.`); }
+  else toast(`${doc.title}, ${minutes} min. +${doc.points} points.`);
+  return doc;
+}
 /* blocks: count weeks with at least one London strength session; weeks away or off don't use the block up */
 const ukFull = () => sessions.filter(s=>s.kind==='full' && s.location==='uk').sort((a,b)=>a.ts-b.ts);
 function ensureBlock(){
@@ -544,7 +563,7 @@ function plan_(){
   const todays = sessions.filter(s=>s.day===t);
   const hipDone = todays.some(s=>s.kind==='hip');
   const trained = todays.find(isTraining);
-  const walked = todays.find(s=>s.kind==='walk' || s.kind==='mobility');
+  const walked = todays.find(s=>s.kind==='walk' || s.kind==='mobility' || s.kind==='move');
   const trainedY = sessions.some(s=>s.day===y && isTraining(s));
   const recovery = !trained && trainedY && !ui.trainAnyway;
   let main = null;
@@ -908,9 +927,34 @@ async function ghPut(path, data, sha, message){
   if(res.status===409 || res.status===422) { const e = new Error('conflict'); e.conflict = true; throw e; }
   if(!res.ok) throw new Error('put '+res.status);
 }
+/* watch inbox: the Apple Watch shortcut drops one small file per finished workout in data/inbox.
+   The app asks how long it was, logs it, then deletes the file. Ids come from the file name, so nothing is logged twice. */
+const actOf = t => { t = String(t||'').toLowerCase(); if(!t) return 'walk';
+  return /hik/.test(t)?'hike':/cycl|bike/.test(t)?'cycle':/swim/.test(t)?'swim':/danc/.test(t)?'dance':/yoga|pilates/.test(t)?'yoga':/walk/.test(t)?'walk':'other'; };
+function tsFromName(n){ const m = n.match(/(\d{4})(\d{2})(\d{2})-?(\d{2})(\d{2})(\d{2})?/); return m ? new Date(+m[1], m[2]-1, +m[3], +m[4], +m[5], +(m[6]||0)).getTime() : 0; }
+async function readInbox(){
+  const res = await gh('data/inbox');
+  if(res.status===404){ S.inbox = []; return; }
+  if(!res.ok) return;
+  const list = await res.json(), found = [], done = id => sessions.some(s=>s.id===id) || (S.inboxSkip||{})[id];
+  for(const f of (Array.isArray(list) ? list : []).filter(f=>f.type==='file' && /\.json$/i.test(f.name))){
+    const id = 'w'+f.name.replace(/\.json$/i,'').replace(/[^\w-]/g,''), path = 'data/inbox/'+encodeURIComponent(f.name);
+    const known = (S.inbox||[]).find(x=>x.id===id);
+    if(known){ known.sha = f.sha; known.path = path; found.push(known); continue; }
+    let d = {}; if(!done(id)){ try{ d = (await ghGet(path)).data || {}; }catch(e){} }
+    found.push({id, path, sha:f.sha, ts: Date.parse(d.ts||d.end||'') || tsFromName(f.name) || Date.now(), act: actOf(d.type)});
+  }
+  S.inbox = found.sort((a,b)=>a.ts-b.ts);
+  found.filter(x=>done(x.id)).forEach(clearInbox);
+}
+async function clearInbox(x){
+  S.inbox = (S.inbox||[]).filter(i=>i.id!==x.id); saveLocal();
+  if(!ghReady() || !x.sha || !x.path) return;
+  try{ await gh(x.path, {method:'DELETE', body:JSON.stringify({message:'Clear watch inbox', sha:x.sha}), headers:{Authorization:'Bearer '+GH.token, Accept:'application/vnd.github+json','Content-Type':'application/json'}}); }catch(e){}
+}
 function mergeById(a, b){ const m = new Map(); (a||[]).forEach(x=>m.set(x.id,x)); (b||[]).forEach(x=>m.set(x.id,x)); return [...m.values()]; }
 const stateOut = () => ({loc:S.loc, step:S.step, dial:S.dial, runLevel:S.runLevel, voice:S.voice, theme:S.theme, dragon:S.dragon, loads:S.loads, rewards:S.rewards, rewardsUpdated:S.rewardsUpdated,
-  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, ladder:S.ladder||{}, ladTop:S.ladTop||{}, runTop:S.runTop||0, block:S.block||null, blockSeen:S.blockSeen||0, updated:S.updated});
+  redemptions:S.redemptions, prizes:S.prizes, read:S.read, planApplied:S.planApplied, seenStage:S.seenStage||0, ladder:S.ladder||{}, ladTop:S.ladTop||{}, runTop:S.runTop||0, block:S.block||null, blockSeen:S.blockSeen||0, inboxSkip:S.inboxSkip||{}, updated:S.updated});
 async function sync(retry){
   if(!ghReady()){ setSync('off'); return; }
   if(syncing) return; if(!navigator.onLine){ setSync('wait','Offline. Will sync when you have signal.'); return; }
@@ -923,6 +967,7 @@ async function sync(retry){
     const changed = merged.length !== remote.length || merged.some((s,i)=>JSON.stringify(s)!==JSON.stringify(remote.find(x=>x.id===s.id)));
     sessions = merged;
     if(changed) await ghPut('data/sessions.json', {sessions:merged}, r.sha, `Log ${merged.length} sessions`);
+    try{ await readInbox(); }catch(e){}
     // state: newer wins for settings, unions for history
     r = await ghGet('data/state.json');
     const rs = r.data || {};
@@ -932,6 +977,7 @@ async function sync(retry){
     S.redemptions = mergeById(rs.redemptions, S.redemptions);
     S.prizes = Object.assign({}, rs.prizes||{}, S.prizes);
     S.read = Object.assign({}, rs.read||{}, S.read||{});
+    S.inboxSkip = Object.assign({}, rs.inboxSkip||{}, S.inboxSkip||{});
     S.planApplied = Math.max(rs.planApplied||0, S.planApplied||0);
     S.updated = Math.max(rs.updated||0, S.updated||0);
     const out = stateOut();
@@ -1099,13 +1145,14 @@ function todayHTML(){
   const nudge = findNudge(p);
   const wk = p.wk, tk = dayKey(now);
   const bars = wk.days.map((d,i)=>{
-    const k = d.list.some(s=>s.kind==='full')?'full':d.list.some(s=>s.kind==='short')?'short':d.list.some(s=>s.kind==='cardio')?'cardio':d.list.some(s=>s.kind==='walk'||s.kind==='mobility')?'walk':d.list.some(s=>s.kind==='hip')?'hip':'';
+    const k = d.list.some(s=>s.kind==='full')?'full':d.list.some(s=>s.kind==='short')?'short':d.list.some(s=>s.kind==='cardio')?'cardio':d.list.some(s=>s.kind==='walk'||s.kind==='mobility'||s.kind==='move')?'walk':d.list.some(s=>s.kind==='hip')?'hip':'';
     return `<div class="day ${d.key===tk?'now':''}"><div class="bar ${k}"></div><div class="d">${'MTWTFSS'[i]}</div></div>`;
   }).join('');
   const mk = monthKey(now), rg = region(mk), cnt = Math.min(monthCount(mk), monthTarget(mk)), tgt = monthTarget(mk);
-  const log = sorted().slice(0,5).map(s=>`<li><span class="w">${new Date(s.ts).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</span><span>${esc(s.title)}${s.partial?' <span class="muted">(ended early)</span>':''}</span><span class="p">+${s.points}</span></li>`).join('');
+  const log = sorted().slice(0,5).map(s=>`<li><span class="w">${new Date(s.ts).toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</span><span>${esc(s.title)}${s.kind==='move'?` <span class="muted">${s.minutes} min${s.source==='watch'?' · watch':''}</span>`:''}${s.partial?' <span class="muted">(ended early)</span>':''}</span><span class="p">+${s.points}</span></li>`).join('');
 
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
+  ${inboxHTML()}
   <section class="gcard" aria-label="Today">
     <div class="perch">${dragonSVG()}</div>
     <h1 style="margin-top:4px;max-width:70%">${dx(head)}</h1>
@@ -1123,6 +1170,7 @@ function todayHTML(){
       <div class="stat"><div class="n c-amber">${balance().toLocaleString('en-GB')}</div><div class="k">Points to spend</div></div>
       ${weeksOnTarget() ? `<div class="stat"><div class="n c-violet">${weeksOnTarget()}</div><div class="k">${weeksOnTarget()===1?'Week':'Weeks'} on target</div></div>` : `<div class="stat"><div class="n c-violet">${Math.min(monthCount(monthKey(now)), monthTarget(monthKey(now)))}</div><div class="k">Stones this month</div></div>`}
     </div>
+    ${moveRowHTML(wk)}
   </section>
   <section class="card"><h2 class="ct">Today</h2><div class="items">
     ${items.map(x=>`<div class="it"><span class="tick ${x.done?'on':''}">${x.done?I.check:''}</span><span class="t">${esc(x.title)}</span><span class="m">${x.meta}</span></div>`).join('')}
@@ -1136,6 +1184,30 @@ function todayHTML(){
   </section>
   ${syncLineHTML()}
   </div>${nudge ? nudgeHTML(nudge) : ''}`;
+}
+function moveRowHTML(wk){
+  const m = weekMinutes(wk), t = moveTarget(), pct = Math.min(100, Math.round(m/t*100)), done = m >= t;
+  return `<div class="moverow">
+    <div class="mvhead"><span class="mvk">Movement</span><span class="mvn num"><b class="c-teal">${m}</b><span class="muted"> / ${t} min</span></span></div>
+    <div class="mvbar ${done?'done':''}" role="progressbar" aria-label="Movement minutes this week" aria-valuemin="0" aria-valuemax="${t}" aria-valuenow="${m}"><i style="width:${pct}%"></i></div>
+    <div class="mvfoot"><span class="muted">${done ? 'Guideline met. Everything else is a bonus.' : `${t-m} min to go. Walks count.`}</span><button class="mvbtn" data-a="moveopen">${I.plus}<span>I moved</span></button></div>
+  </div>`;
+}
+function inboxHTML(){
+  const q = (S.inbox||[]).filter(x=>!sessions.some(s=>s.id===x.id) && !(S.inboxSkip||{})[x.id]);
+  if(!q.length) return '';
+  const x = q[0], d = new Date(x.ts), today = dayKey(d)===dayKey(new Date());
+  const when = (today ? 'today' : d.toLocaleDateString('en-GB',{weekday:'long'})) + ' at ' + d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+  const what = (ACT_TITLE[x.act]||'workout').toLowerCase(), sel = ui.inboxMin && ui.inboxMin.id===x.id ? ui.inboxMin.v : null;
+  return `<section class="card inbox" role="status" aria-label="Watch workout to log">
+    <div class="ibx"><div class="ibd" aria-hidden="true"><svg viewBox="0 0 48 48"><rect x="16" y="3" width="16" height="9" rx="3"/><rect x="16" y="36" width="16" height="9" rx="3"/><rect x="10" y="10" width="28" height="28" rx="9" class="face"/><path d="M24 17v7l5 3" class="hand"/></svg></div><div>
+      <h2 class="ct" style="margin:0 0 4px">From your watch${q.length>1?` <span class="aside">1 of ${q.length}</span>`:''}</h2>
+      <p class="ibq">${esc(S.dragon)} spotted ${/^[aeiou]/.test(what)?'an':'a'} ${esc(what)} ending ${esc(when)}. How long was it?</p></div></div>
+    <div class="chips mins">${[15,20,30,45,60,90].map(v=>`<button class="chip" data-a="inboxmin" data-id="${esc(x.id)}" data-v="${v}" aria-pressed="${sel===v}">${v}</button>`).join('')}</div>
+    <div class="ibrow"><label class="ibother">Other <input type="number" inputmode="numeric" min="1" max="600" id="ibmin" placeholder="min" value="${sel && ![15,20,30,45,60,90].includes(sel) ? sel : ''}"></label>
+      <button class="btn primary" data-a="inboxlog" data-id="${esc(x.id)}">Log it</button></div>
+    <button class="linkbtn ibskip" data-a="inboxskip" data-id="${esc(x.id)}">Not worth logging</button>
+  </section>`;
 }
 function miniTrail(cnt, tgt){
   const pts = []; const N = Math.min(tgt, 12);
@@ -1545,11 +1617,24 @@ function settingsHTML(){
       <div class="field"><button class="btn primary" type="submit" style="width:100%">${GH.token?'Save and sync':'Connect'}</button></div></form>
       ${syncLineHTML()}
     </section>
+    <section class="card watchsetup"><h2 class="ct">Walks from your watch <span class="aside">set up once</span></h2>
+      <p style="margin:0 0 10px">When an outdoor walk ends on your Apple Watch, your iPhone drops a note in your data repo. Next time you open Movement, ${esc(S.dragon)} asks how long it was.</p>
+      <ol class="wsteps">
+        <li>Shortcuts app, <b>Automation</b> tab, <b>+</b>, then <b>Apple Watch Workout</b>. Workout type <b>Outdoor Walk</b>, when it <b>Ends</b>. Choose <b>Run Immediately</b>, then <b>New Blank Automation</b>.</li>
+        <li><b>Format Date</b>: Current Date, format <b>ISO 8601</b>, time included.</li>
+        <li><b>Text</b>: <code>{"ts":"</code> Formatted Date <code>","type":"walk"}</code></li>
+        <li><b>Base64 Encode</b> the Text. Set Line Breaks to <b>None</b>.</li>
+        <li>A second <b>Format Date</b>: Current Date, Custom format <code>yyyyMMdd-HHmmss</code>.</li>
+        <li><b>Get Contents of URL</b>:<br><code>https://api.github.com/repos/${esc(GH.owner||'nattyvs')}/${esc(GH.repo||'movement-data')}/contents/data/inbox/watch-</code> second Formatted Date <code>.json</code><br>Method <b>PUT</b>. Headers: <code>Authorization</code> = <code>Bearer</code> plus your token, <code>Accept</code> = <code>application/vnd.github+json</code>. Request Body <b>JSON</b>: <code>message</code> = Watch walk, <code>content</code> = Base64 Encoded.</li>
+      </ol>
+      <p class="hint">Same token as above. It lives inside the shortcut, so don’t share that shortcut. For hikes or rides, duplicate the automation and change <code>walk</code> to <code>hike</code> or <code>cycle</code>.</p>
+    </section>
     <section class="card"><h2 class="ct">How points work</h2>
       <ul class="steps" style="padding-left:18px;margin:0">
-        <li>Full session 30, cardio 20, short or mobility 15, hip block or walk 10, cool-down 5.</li>
+        <li>Full session 30, cardio 20, short or mobility 15, hip block or walk 10, cool-down 5. Logged movement 10, 15 from half an hour, 20 from an hour.</li>
         <li>Plus 5 when a weight goes up, plus 25 for hitting your week.</li>
         <li>Three sessions a week in London, two in a Paris week. Ten minutes counts.</li>
+        <li>Separately, 150 minutes of movement a week. Everything counts: sessions, walks, anything you log.</li>
         <li>Each month is a region. Reach its gate and its prize is free.</li></ul></section>
   </div>`;
 }
@@ -1578,6 +1663,16 @@ function sheetHTML(){
       ${seen.map(x=>{ const done = r.steps.slice(x.first).every((st,j)=>st.ex!==x.id || x.first+j < r.i); const now = x.id===cur;
         return `<div class="ovr ${now?'now':''}"><span class="tick ${done&&!now?'on':''}">${done&&!now?I.check:''}</span><span>${esc(EX[x.id].name)}</span><span class="muted" style="font-size:13px">${now?'Now':''}</span></div>`; }).join('')}
       <button class="btn primary" data-a="close" style="margin-top:14px">Back to it</button></div></div>`;
+  }
+  if(ui.sheet && ui.sheet.type==='move'){
+    const m = ui.sheet;
+    return `<div class="scrim" data-a="close"><div class="sheet" role="dialog" aria-modal="true" aria-label="Log movement">
+      <h3>I moved</h3><p class="muted" style="margin:0 0 4px">Anything that got you moving. It counts towards your weekly minutes, not your strength sessions.</p>
+      <h4 class="flabel">What</h4><div class="chips">${ACTS.map(([v,l])=>`<button class="chip" data-a="moveact" data-v="${v}" aria-pressed="${m.act===v}">${l}</button>`).join('')}</div>
+      <h4 class="flabel">How long</h4><div class="chips mins">${[15,20,30,45,60,90].map(v=>`<button class="chip" data-a="movemin" data-v="${v}" aria-pressed="${m.min===v}">${v}</button>`).join('')}</div>
+      <label class="ibother" style="margin-top:10px">Other <input type="number" inputmode="numeric" min="1" max="600" id="mvmin" placeholder="min" value="${m.min && ![15,20,30,45,60,90].includes(m.min) ? m.min : ''}"></label>
+      <h4 class="flabel">When</h4><div class="seg" role="group" aria-label="Day"><button data-a="moveday" data-v="0" aria-pressed="${!m.ago}">Today</button><button data-a="moveday" data-v="1" aria-pressed="${m.ago===1}">Yesterday</button></div>
+      <button class="btn primary" data-a="movesave" style="margin-top:16px">Log it</button><button class="btn" data-a="close">Cancel</button></div></div>`;
   }
   if(ui.sheet && ui.sheet.type==='claim'){
     const r = S.rewards.find(x=>x.id===ui.sheet.id); const cost = SIZE_COST[r.size];
@@ -1669,6 +1764,22 @@ document.addEventListener('click', e=>{
     case 'setvoice': S.voice = b.dataset.v==='1'; touch(); render(); break;
     case 'testsound': audioOn(); chime(); flash('Go'); setTimeout(()=>say('Testing. If you can hear me, the voice works.'), 400); break;
     case 'settheme': S.theme = b.dataset.v; touch(); applyTheme(); render(); break;
+    case 'moveopen': ui.sheet = {type:'move', act:'walk', min:null, ago:0}; render(); break;
+    case 'moveact': case 'movemin': case 'moveday': { // update in place so the sheet doesn't re-animate
+      const k = ({moveact:'act', movemin:'min', moveday:'ago'})[a]; ui.sheet[k] = a==='moveact' ? b.dataset.v : +b.dataset.v;
+      if(a==='movemin'){ const t = $('mvmin'); if(t) t.value = ''; }
+      document.querySelectorAll(`[data-a="${a}"]`).forEach(x=>x.setAttribute('aria-pressed', x===b)); break; }
+    case 'movesave': { const m = ui.sheet, typed = parseInt(($('mvmin')||{}).value,10), min = typed>0 ? typed : m.min;
+      if(!min){ toast('How many minutes?'); break; }
+      const ts = m.ago ? addDays(new Date(), -1).setHours(12,0,0,0) : Date.now();
+      ui.sheet = null; logMove({act:m.act, minutes:min, ts, source:'manual'}); render(); break; }
+    case 'inboxmin': ui.inboxMin = {id:b.dataset.id, v:+b.dataset.v}; { const t = $('ibmin'); if(t) t.value = ''; } document.querySelectorAll('[data-a="inboxmin"]').forEach(x=>x.setAttribute('aria-pressed', x===b)); break;
+    case 'inboxlog': { const x = (S.inbox||[]).find(i=>i.id===b.dataset.id); if(!x) break;
+      const typed = parseInt(($('ibmin')||{}).value,10), min = typed>0 ? typed : (ui.inboxMin && ui.inboxMin.id===x.id ? ui.inboxMin.v : 0);
+      if(!min){ toast('Pick how long it was.'); break; }
+      ui.inboxMin = null; logMove({id:x.id, act:x.act, minutes:min, ts:x.ts, source:'watch'}); clearInbox(x); render(); break; }
+    case 'inboxskip': { const x = (S.inbox||[]).find(i=>i.id===b.dataset.id); if(!x) break;
+      S.inboxSkip = Object.assign({}, S.inboxSkip, {[x.id]:1}); touch(); clearInbox(x); render(); break; }
   }
 });
 document.addEventListener('submit', e=>{
@@ -1700,6 +1811,8 @@ function boot(){
   try{ if(window.speechSynthesis) speechSynthesis.onvoiceschanged = ()=>{ voiceGB = null; }; }catch(e){}
   render();
   if(ghReady()) sync(); else setSync('off');
+  // back on screen: look for anything new, like a walk the watch just finished
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && ghReady() && ui.screen!=='run') sync(); });
   if('serviceWorker' in navigator && location.protocol==='https:'){
     // pick up new versions by itself: check whenever the app comes back to the screen,
     // and reload once the new version has taken over (never in the middle of a session or the story)
