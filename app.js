@@ -1620,14 +1620,14 @@ function settingsHTML(){
     <section class="card watchsetup"><h2 class="ct">Walks from your watch <span class="aside">set up once</span></h2>
       <p style="margin:0 0 10px">When an outdoor walk ends on your Apple Watch, your iPhone drops a note in your data repo. Next time you open Movement, ${esc(S.dragon)} asks how long it was.</p>
       <ol class="wsteps">
-        <li>Shortcuts app, <b>Automation</b> tab, <b>+</b>, then <b>Apple Watch Workout</b>. Workout type <b>Outdoor Walk</b>, when it <b>Ends</b>. Choose <b>Run Immediately</b>, then <b>New Blank Automation</b>.</li>
-        <li><b>Format Date</b>: Current Date, format <b>ISO 8601</b>, time included.</li>
-        <li><b>Text</b>: <code>{"ts":"</code> Formatted Date <code>","type":"walk"}</code></li>
-        <li><b>Base64 Encode</b> the Text. Set Line Breaks to <b>None</b>.</li>
-        <li>A second <b>Format Date</b>: Current Date, Custom format <code>yyyyMMdd-HHmmss</code>.</li>
-        <li><b>Get Contents of URL</b>:<br><code>https://api.github.com/repos/${esc(GH.owner||'nattyvs')}/${esc(GH.repo||'movement-data')}/contents/data/inbox/watch-</code> second Formatted Date <code>.json</code><br>Method <b>PUT</b>. Headers: <code>Authorization</code> = <code>Bearer</code> plus your token, <code>Accept</code> = <code>application/vnd.github+json</code>. Request Body <b>JSON</b>: <code>message</code> = Watch walk, <code>content</code> = Base64 Encoded.</li>
+        <li>Shortcuts, <b>Automation</b>, <b>+</b>, <b>Apple Watch Workout</b>: <b>Walking</b>, <b>Is Ended</b>. Tap the arrow and choose <b>Run Immediately</b>.</li>
+        <li>Add <b>Format Date</b>. Date Format <b>Custom</b>, format <code>yyyyMMdd-HHmmss</code>.</li>
+        <li>Add <b>Get Contents of URL</b>. URL: <code>https://api.github.com/repos/${esc(GH.owner||'nattyvs')}/${esc(GH.repo||'movement-data')}/contents/data/inbox/watch-</code> then the Formatted Date variable, then <code>.json</code></li>
+        <li>Tap the arrow on that action. Method <b>PUT</b>. Headers: <code>Authorization</code> = <code>Bearer</code>, a space, your token. <code>Accept</code> = <code>application/vnd.github+json</code>.</li>
+        <li>Request Body <b>JSON</b>, two Text fields: <code>message</code> = <code>Watch walk</code>, and <code>content</code> = <code>eyJ0eXBlIjoid2FsayJ9</code></li>
+        <li>Tap play to test. Open Movement and the card should be waiting.</li>
       </ol>
-      <p class="hint">Same token as above. It lives inside the shortcut, so don’t share that shortcut. For hikes or rides, duplicate the automation and change <code>walk</code> to <code>hike</code> or <code>cycle</code>.</p>
+      <p class="hint">Same token as above. It lives inside the shortcut, so don’t share that shortcut. That odd last value is just “walk”, encoded the way GitHub wants it.</p>
     </section>
     <section class="card"><h2 class="ct">How points work</h2>
       <ul class="steps" style="padding-left:18px;margin:0">
