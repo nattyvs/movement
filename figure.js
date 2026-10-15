@@ -342,3 +342,11 @@ Object.assign(EX_POSE, {incline_push:'inclinepush', push_up:'pushup', step_up_db
 
 for(let n=1;n<=7;n++) EX_POSE['run'+n] = n===7 ? 'walk' : 'walkfast';
 for(let n=1;n<=7;n++) EX_POSE['fin'+n] = n===7 ? 'walk' : 'walkfast';
+
+// no step or anchor at home (15 Oct 2026): bird dog; and her foam roller and NeckSaviour
+PROP.roller = (x, y) => `<circle cx="${x}" cy="${y}" r="11" fill="var(--indigo)"/><circle cx="${x}" cy="${y}" r="5" fill="var(--fig-prop-2)"/>`;
+POSES.birddog = {anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:80, neck:0, thigh:180, shin:270, foot:270, upper:180, fore:180}, b:{torso:80, neck:4, thigh:180, shin:270, foot:270, thigh2:262, shin2:266, foot2:176, upper:84, fore:86, upper2:180, fore2:180}};
+POSES.rollext = {anchor:'hip', at:[128,140], prop:PROP.mat+PROP.roller(90,135), propBox:[78,124,102,146], a:{torso:292, neck:24, thigh:52, shin:158, foot:90, upper:330, fore:150}, b:{torso:284, neck:-22, thigh:52, shin:158, foot:90, upper:304, fore:128}};
+POSES.rollcalf = {anchor:'hip', at:[92,140], prop:PROP.mat+PROP.roller(147,135), propBox:[135,124,159,146], a:{torso:322, neck:-8, thigh:76, shin:96, foot:4, thigh2:52, shin2:150, foot2:90, upper:204, fore:204}, b:{torso:318, neck:-8, thigh:82, shin:94, foot:4, thigh2:52, shin2:150, foot2:90, lift:5, upper:200, fore:200}};
+POSES.neckrest = {anchor:'shoulder', at:[60,133], prop:PROP.mat, front:'<path d="M38 146 L40 140 Q44 134 52 137 Q58 134 64 139 L66 146 Z" fill="var(--fig-iron-2)"/>', propBox:[36,130,68,146], a:{torso:270, neck:0, thigh:52, shin:158, foot:90, upper:96, fore:92}, b:{torso:270, neck:-3, thigh:52, shin:158, foot:90, upper:96, fore:92}};
+Object.assign(EX_POSE, {bird_dog:'birddog', roll_thoracic:'rollext', roll_calf:'rollcalf', neck_rest:'neckrest'});

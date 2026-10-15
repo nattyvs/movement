@@ -203,6 +203,20 @@ const EX = {
   alt_press:{name:'Alternating dumbbell press',kind:'reps',sets:3,reps:'8–12 each side',load:3,from:['db_press',1],unit:'each hand',rest:60,est:60,demo:'Standing_Dumbbell_Press',
     cue:'Ribs down, glutes on. Press one arm up while the other waits at your shoulder.',
     how:{setup:['Stand tall, dumbbells at shoulder height, palms forward.','Squeeze glutes and brace your middle.'],go:['Press one dumbbell up until your arm is by your ear.','Lower it and press the other.'],tips:['No leaning to the side as you press.','Stop short of any shoulder pinch.']}},
+  /* ---- no step and no band anchor at home (15 Oct 2026) ---- */
+  bird_dog:{name:'Bird dog',kind:'reps',sets:2,reps:'8 each side',bw:true,rest:30,est:60,
+    cue:'On hands and knees. Reach one arm forward and the opposite leg back, hold two seconds, hips square.',
+    how:{setup:['Hands under shoulders, knees under hips, on a mat.','Brace your middle, as if someone might poke your belly.'],go:['Reach one arm forward and the opposite leg back until both are level with your back.','Hold two seconds, bring them back under you, then swap.'],tips:['Hips stay level. Picture a cup of tea on your lower back.','Reach long, not high.']}},
+  /* ---- foam roller and NeckSaviour ---- */
+  roll_thoracic:{name:'Foam roller upper-back extension',kind:'reps',sets:1,reps:'8 slow reps',bw:true,rest:20,est:60,
+    cue:'Roller across your upper back, hands behind your head, hips on the floor. Ease back over it, then curl up.',note:'Upper back only. Not your lower back, and never the outside of your hip.',
+    how:{setup:['Sit on the mat, roller behind you. Lie back so it sits across your shoulder blades.','Knees bent, feet flat, hands cradling your head, bottom on the floor.'],go:['Breathe out and let your upper back ease back over the roller.','Curl up a little, then shuffle the roller one notch higher and repeat.'],tips:['Ribs stay down. The bend comes from between your shoulder blades.','Keep it off your neck and lower back.']}},
+  roll_calf:{name:'Calf roll',kind:'hold',holds:1,dur:40,
+    cue:'Sit with the roller under one calf, hands behind you. Lift your hips and roll slowly from ankle to knee.',
+    how:{setup:['Sit on the mat, roller under one calf, other foot flat.','Hands on the floor behind you.'],go:['Lift your bottom and roll slowly from just above the ankle to just below the knee.','Pause on any tight spot for a breath.'],tips:['Cross the other leg on top to make it firmer.','Slow is better than hard.']}},
+  neck_rest:{name:'Neck rest on the NeckSaviour',kind:'timed',dur:90,label:'Lie still and breathe',
+    cue:'On your back, knees bent, the NeckSaviour under your neck. Let your head get heavy and breathe slowly.',
+    how:{setup:['Lie on your back on the mat, knees bent, feet flat.','Settle the NeckSaviour under the curve of your neck, base of your skull resting in it.'],go:['Let your head get heavy. Arms rest by your sides.','Long, slow breaths out.'],tips:['Comfortable pressure only. Lift your head off if it tingles or aches.']}},
   /* ---- block three: slow and strong ---- */
   slow_goblet:{name:'Slow goblet squat',kind:'reps',sets:3,reps:'10–12 reps',load:5.5,from:['goblet_box',.8],unit:'one dumbbell',rest:60,est:50,demo:'Goblet_Squat',legs:true,
     cue:'Three seconds down, a one-second pause at the bottom, then stand up strong.',
@@ -220,7 +234,7 @@ const EX = {
 
 const SESS = {
   A:{title:'Session A',sub:'Squat, hinge and push, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},'dead_bug','pad_intervals']},
-  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']},
+  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['kick_rdl_db','db_press']},'bird_dog','pad_intervals']},
   C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_heavy','one_arm_row']},'rdl_heavy','hops','carry']},
   P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
   P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
@@ -229,15 +243,15 @@ const SESS = {
   padIV:{title:'Pad intervals',sub:'Your little runs, eight rounds',type:'cardio',loc:'uk',items:['pad_warm','pad_iv8','pad_cool']},
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
   T1:{title:'Travel one',sub:'Squat, pull and core. Band and a chair',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_squat','band_row']},{pair:['tr_split','pull_apart']},'pause_bridge','dead_bug']},
-  T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'pallof','jacks']},
+  T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'bird_dog','jacks']},
   shortAway:{title:'Ten-minute version',sub:'Anywhere, no kit',type:'short',loc:'away',legs:true,items:[{id:'march_warm',dur:120},{pair:['tr_squat','knee_push'],sets:2,rest:45},{id:'pause_bridge',sets:2},'dead_bug']},
   mobility:{title:'Full body flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
-  mobHips:{title:'Hips and ankles flow',sub:'Hip circles, lunges, deep squat and calves',type:'mobility',items:['hip_circles','rock_back','hip_flexor','lunge_reach','knee_wall','squat_hold','calf_wall','calf_raise']},
+  mobHips:{title:'Hips and ankles flow',sub:'Hip circles, lunges, deep squat and calves',type:'mobility',items:['hip_circles','rock_back','hip_flexor','lunge_reach','knee_wall','squat_hold','roll_calf','calf_wall','calf_raise']},
   mobility2:{title:'Full body flow two',sub:'Hamstrings, upper back, hips and shoulders',type:'mobility',items:['inchworm','elbow_sky','lunge_reach','hip_circles','squat_stand','child_reach','band_pass','calf_wall']},
-  mobSpine:{title:'Spine and shoulders flow',sub:'Upper back, ribs and shoulders',type:'mobility',items:['cat_cow','elbow_sky','thread_needle','rock_back','child_reach','wall_angel','band_pass','doorway_pec','inchworm']},
+  mobSpine:{title:'Spine and shoulders flow',sub:'Upper back, ribs and shoulders, with the roller',type:'mobility',items:['roll_thoracic','cat_cow','elbow_sky','thread_needle','rock_back','child_reach','wall_angel','band_pass','doorway_pec','inchworm']},
   hip:{title:'Hip block',sub:'Your physio’s four stretches',type:'hip',items:['piri_wall','piri_sit','glute_str','supine_flex']},
-  coolUK:{title:'Cool-down',sub:'Slow walk and four stretches, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
-  coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','thread_needle','ham_floss','doorway_pec']},
+  coolUK:{title:'Cool-down',sub:'Slow walk, four stretches and a neck rest, with the story',type:'cool',loc:'uk',items:['pad_cool','hip_flexor','thread_needle','ham_floss','doorway_pec','neck_rest']},
+  coolParis:{title:'Cool-down',sub:'Slow march and four stretches, with the story',type:'cool',loc:'paris',items:['march_cool','hip_flexor','thread_needle','ham_floss','doorway_pec','neck_rest']},
   walkUK:{title:'Easy walk',sub:'Twenty minutes on the pad',type:'walk',items:['pad_walk']},
   walkParis:{title:'Easy walk',sub:'Twenty minutes outside',type:'walk',items:['walk_out']}
 };
@@ -250,7 +264,8 @@ const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hing
   inchworm:['mobility'], elbow_sky:['mobility'], lunge_reach:['mobility'], hip_circles:['mobility'], squat_stand:['mobility'], child_reach:['mobility'], band_pass:['mobility','shoulders'], rock_back:['mobility'], calf_wall:['mobility'],
   incline_push:['chest'], push_up:['chest','core'], step_up_db:['legs','glutes'], dead_bug_long:['core'], dead_bug_db:['core'], hops15:['legs'], hops20:['legs'], sl_bridge:['glutes'],
   heel_goblet:['legs','glutes'], bstance_thrust:['glutes'], kick_rdl_db:['glutes','legs'], rev_lunge:['legs','glutes'], alt_press:['shoulders'],
-  slow_goblet:['legs','glutes'], pause_thrust:['glutes'], slow_rdl:['glutes','legs'], slow_split:['legs','glutes']};
+  slow_goblet:['legs','glutes'], pause_thrust:['glutes'], slow_rdl:['glutes','legs'], slow_split:['legs','glutes'],
+  bird_dog:['core','glutes'], roll_thoracic:['mobility'], roll_calf:['mobility'], neck_rest:['mobility']};
 const BASE_EX = JSON.parse(JSON.stringify(EX));
 const BASE_SESS = JSON.parse(JSON.stringify(SESS));
 const POINTS = {full:30, short:15, cardio:20, hip:10, walk:10, mobility:15, cool:5};
@@ -280,11 +295,11 @@ const BLOCKS = [
   {name:'Foundations', blurb:'The core lifts: box squat, hip thrust, Romanian deadlift, split squat, rows and presses.'},
   {name:'New angles', blurb:'Same movements, new angles: heels-up squats, staggered thrusts and hinges, reverse lunges and alternating presses.', sessions:{
     A:{sub:'Heels-up squat, staggered thrust and hinge, then a pad run', items:['pad_warm',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','kick_rdl_db']},'dead_bug','pad_intervals']},
-    B:{sub:'Reverse lunge, one-arm row and step-ups, then a pad run', items:['pad_warm',{pair:['rev_lunge','one_arm_row']},{pair:['step_up','alt_press']},'pallof','pad_intervals']},
+    B:{sub:'Reverse lunge, one-arm row and a single-leg hinge, then a pad run', items:['pad_warm',{pair:['rev_lunge','one_arm_row']},{pair:['kick_rdl_db','alt_press']},'bird_dog','pad_intervals']},
     C:{sub:'The stronger day: hinge and row, then squat', items:['pad_warm',{pair:['rdl_heavy','row']},'goblet_heavy','hops','carry']}}},
   {name:'Slow and strong', blurb:'Slower lowering and pauses at the hardest point. Lighter weights, more time under tension, kind to tendons.', sessions:{
     A:{sub:'Slow squat, paused thrust and slow hinge, then a pad run', items:['pad_warm',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','slow_rdl']},'dead_bug','pad_intervals']},
-    B:{sub:'Slow split squat, row and step-ups, then a pad run', items:['pad_warm',{pair:['slow_split','row']},{pair:['step_up','db_press']},'pallof','pad_intervals']}}}
+    B:{sub:'Slow split squat, row and a single-leg hinge, then a pad run', items:['pad_warm',{pair:['slow_split','row']},{pair:['kick_rdl_db','db_press']},'bird_dog','pad_intervals']}}}
 ];
 const blockIdx = () => (((typeof S!=='undefined' && S.block && S.block.i) || 0) % BLOCKS.length);
 const mapItem = it => typeof it==='string' ? ladId(it) : it.pair ? Object.assign({}, it, {pair: it.pair.map(ladId)}) : Object.assign({}, it, {id: ladId(it.id)});
@@ -319,6 +334,20 @@ if(SESS.padIV){
 }
 installRuns();
 const runLevel = () => Math.max(1, Math.min(RUNS.length, S.runLevel || 1));
+/* What the coach says at each step. The voice tool (movement-data/tools/voice) records every fragment of these
+   ahead of time, so cues play from recordings and mix with her music. Keep them in short sentences. */
+const ivWord = (e, on) => ((on ? e.onLabel : e.offLabel)||'').split(' · ')[0] || (on ? 'Fast' : 'Easy');
+function spokenText(s, nx){
+  const e = EX[s.ex];
+  if(s.t==='work') return `${e.name}. ${s.of>1?`Set ${s.set} of ${s.of}. `:''}${e.reps}.`;
+  if(s.t==='rest') return nx && EX[nx.ex] ? `Rest. Next, ${EX[nx.ex].name}.` : 'Rest.';
+  if(s.t==='iv') return s.phase==='on' ? (s.set===1 ? `${e.name}. ${ivWord(e,true)}.` : `${ivWord(e,true)}.`) : `${ivWord(e,false)}.`;
+  if(s.t==='hold') return `${s.set===1&&s.side==='Left'?e.name+'. ':''}${s.side} side. Get into position.`;
+  if(s.t==='time'){ const l = s.label || e.label; return l ? `${e.name}. ${l}.` : `${e.name}.`; }
+  return '';
+}
+const CUE_FIXED = ['Done. Lovely work.', 'Hold.', 'Get into position.', 'Voice on.', 'Testing. If you can hear me, the voice works.'];
+const cueFrags = t => String(t||'').split(/(?<=[.!?])\s+/).map(x=>x.trim()).filter(x=>x && x!=='.');
 const ORDER = {uk:['A','B','C'], paris:['P1','P2'], away:['T1','T2']};
 const TRAINING = new Set(['full','short','cardio']);
 
@@ -386,7 +415,6 @@ function applyPlan(){
 }
 
 /* ================= Dates & stats ================= */
-const ivWord = (e, on) => ((on ? e.onLabel : e.offLabel)||'').split(' · ')[0] || (on ? 'Fast' : 'Easy');
 const pad2 = n => String(n).padStart(2,'0');
 const dayKey = d => d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate());
 const monthKey = d => d.getFullYear()+'-'+pad2(d.getMonth()+1);
@@ -635,9 +663,47 @@ function tone(f=880, len=.18, vol=.28){
     o.connect(g).connect(actx.destination); o.start(t); o.stop(t+len+.03); }catch(e){}
 }
 const chime = () => { tone(784,.16,.4); setTimeout(()=>tone(1046,.26,.4),140); };
-function say(text){
-  if(!S.voice || !window.speechSynthesis || NARR.playing) return; // the story has the floor; tones and flashes still mark changes
+/* Spoken cues. Recorded clips (audio.js cues, read by the story narrator) play through Web Audio,
+   which on iPhone mixes with Spotify and SoundCloud. The phone's own voice takes over the audio and
+   stops other apps' music, so it is only a fallback when she has chosen "Cues pause your music".
+   During the story the reading pauses for the cue, then picks up a moment before where it stopped. */
+const CUE = {buf:{}, wait:{}, src:[], tok:0, duck:0};
+const cueClip = f => (typeof AUDIO!=='undefined' && AUDIO.cues && AUDIO.cues[f]) || null;
+function cueFetch(f){
+  const c = cueClip(f); if(!c || !actx) return Promise.resolve(null);
+  if(CUE.buf[c.src]) return Promise.resolve(CUE.buf[c.src]);
+  return CUE.wait[c.src] || (CUE.wait[c.src] = fetch(c.src).then(r=>r.ok ? r.arrayBuffer() : Promise.reject(r.status))
+    .then(a=>new Promise((ok,no)=>actx.decodeAudioData(a, ok, no))).then(b=>(CUE.buf[c.src] = b))
+    .catch(()=>{ delete CUE.wait[c.src]; return null; }));
+}
+const cuePreload = texts => texts.forEach(t=>cueFrags(t).forEach(cueFetch));
+function cueStop(){ CUE.tok++; CUE.src.forEach(x=>{ try{ x.stop(); }catch(e){} }); CUE.src = []; }
+async function cuePlay(frags){
+  const tok = CUE.tok, bufs = (await Promise.all(frags.map(cueFetch))).filter(Boolean);
+  if(tok!==CUE.tok || !bufs.length) return;
+  try{ if(actx.state!=='running') await actx.resume(); }catch(e){}
+  let t = actx.currentTime + .04;
+  CUE.src = bufs.map((b,i)=>{ const x = actx.createBufferSource(); x.buffer = b; x.connect(actx.destination); x.start(t); t += b.duration + (i<bufs.length-1 ? .1 : 0); return x; });
+  await new Promise(res=>setTimeout(res, Math.max(0, (t - actx.currentTime)*1000) + 40));
+}
+function phoneSay(text){
+  if(!window.speechSynthesis) return;
   try{ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.lang = 'en-GB'; if(voiceGB) u.voice = voiceGB; u.rate = 1.02; speechSynthesis.speak(u); }catch(e){}
+}
+// the story steps aside for a cue, and comes back half a second early so no words are lost
+function storyDuck(){ if(!(NARR.active && NARR.playing && NARR.rec)) return false; CUE.duck++; NARR.cue = true; try{ aud.pause(); }catch(e){} return true; }
+function storyBack(){ if(--CUE.duck > 0) return; NARR.cue = false;
+  if(NARR.active && NARR.playing && NARR.rec){ try{ aud.currentTime = Math.max(0, aud.currentTime - .5); aud.play(); }catch(e){} } }
+async function say(text){
+  if(!S.voice || !text) return;
+  cueStop(); try{ speechSynthesis.cancel(); }catch(e){}
+  const frags = cueFrags(text), have = frags.filter(cueClip);
+  if(NARR.active && NARR.playing && !NARR.rec) return; // the phone voice is reading the story; tones and flashes mark changes
+  const noClips = typeof AUDIO==='undefined' || !AUDIO.cues; // recordings not shipped yet: behave as before
+  if(have.length < frags.length && (S.overMusic===false || noClips) && !NARR.active){ phoneSay(text); return; }
+  if(!have.length || !actx) return;
+  const ducked = storyDuck();
+  try{ await cuePlay(have); } finally { if(ducked) storyBack(); }
 }
 function flash(word, rest){
   const f = document.getElementById('flash'); f.textContent = word; f.classList.toggle('rest', !!rest);
@@ -774,18 +840,11 @@ function startSession(code, trim){
   steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = EX[s.ex].fixed ? loadOf(s.ex) : snapKg(loadOf(s.ex)); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, repsBy:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null;
+  cuePreload(steps.map((x,k)=>spokenText(x, steps[k+1])).concat(CUE_FIXED));
   if(SESS[code].type==='cool' && S.storyCool!==false && !NARR.active) narrStart(storyQueue(0, secsLeft(steps, 0))); // inside the tap, so the phone allows playback
   enterStep(true); window.scrollTo(0,0);
 }
-function spokenFor(s){
-  const e = EX[s.ex];
-  if(s.t==='work') return `${e.name}. ${s.of>1?`Set ${s.set} of ${s.of}. `:''}${e.reps}.`;
-  if(s.t==='rest'){ const nx = ui.run.steps[ui.run.i+1]; return nx && EX[nx.ex] ? `Rest. Next, ${EX[nx.ex].name}.` : 'Rest.'; }
-  if(s.t==='iv') return s.phase==='on' ? (s.set===1 ? `${e.name}. ${ivWord(e,true)}.` : `${ivWord(e,true)}.`) : `${ivWord(e,false)}.`;
-  if(s.t==='hold') return `${s.set===1&&s.side==='Left'?e.name+'. ':''}${s.side} side. Get into position.`;
-  if(s.t==='time') return `${e.name}. ${e.label}.`;
-  return '';
-}
+const spokenFor = s => spokenText(s, ui.run && ui.run.steps[ui.run.i+1]);
 function enterStep(first){
   const r = ui.run, s = r.steps[r.i]; r.timer = null; r.lastSec = null;
   if(s.t==='work'){ const last = (S.lastReps||{})[s.ex]; r.repNow = (r.repsBy[s.ex]||[])[s.set-1] ?? (last && last[s.set-1]) ?? repRange(EX[s.ex])[0]; } // last time's reps, so she only taps when she beats it
@@ -824,7 +883,7 @@ setInterval(()=>{
   const r = ui.run; if(ui.screen!=='run' || !r || !r.timer || r.timer.paused) return;
   const s = r.steps[r.i]; const left = Math.max(0, r.timer.end - Date.now());
   paintTimer(s, left);
-  if(s.lead && !r.timer.leadDone && left <= s.dur*1000){ r.timer.leadDone = true; tone(988,.14); say('Hold.'); }
+  if(s.lead && !r.timer.leadDone && left <= s.dur*1000){ r.timer.leadDone = true; tone(988,.14); if(!(NARR.active && NARR.playing)) say('Hold.'); }
   const sec = Math.ceil(left/1000);
   if(sec !== r.lastSec){ r.lastSec = sec; if(sec<=3 && sec>0 && !(s.lead && left > s.dur*1000)){ tone(620,.08,.2); const b = document.getElementById('ring'); if(b){ b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); } } }
   if(left <= 0) advance();
@@ -1591,14 +1650,14 @@ function settingsHTML(){
     <section class="card"><h2 class="ct">Coach</h2>
       <div class="srow"><span>Voice cues</span><div class="seg"><button data-a="setvoice" data-v="1" aria-pressed="${S.voice}">On</button><button data-a="setvoice" data-v="0" aria-pressed="${!S.voice}">Off</button></div></div>
       <div class="srow"><span>Cues and music</span><div class="seg"><button data-a="overmusic" data-v="1" aria-pressed="${S.overMusic!==false}">On top</button><button data-a="overmusic" data-v="0" aria-pressed="${S.overMusic===false}">Pause</button></div></div>
-      <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? 'Cues play on top of Spotify or SoundCloud. iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.' : 'Cues pause your music and play even in silent mode.'}</p>
+      <p class="hint" style="margin-top:-4px">${S.overMusic!==false ? `${typeof AUDIO!=='undefined' && AUDIO.voices ? esc(AUDIO.voices.s) + ' reads the cues on top of Spotify or SoundCloud, and your music keeps playing. ' : 'Cues play on top of Spotify or SoundCloud. '}iPhone mutes them in silent mode, so switch silent off when you train. The story still pauses your music.` : 'Cues pause your music and play even in silent mode.'}</p>
       <div class="field"><span class="flabel">Your dumbbell dial</span><div class="dialchips">${dial().map(v=>`<span class="dchip num">${String(v).replace(/\.0$/,'')}</span>`).join('')}<span class="dunit">kg</span></div>
         ${ui.dialEdit ? `<textarea id="dialkg" rows="2" inputmode="decimal" autocomplete="off" spellcheck="false">${esc(dial().join(', '))}</textarea><p class="hint">Every setting on your London dumbbells, separated by commas. Saved when you tap away.</p>` : `<button class="linkbtn" data-a="dialedit">Edit the dial</button>`}
         <p class="hint">The + and − buttons jump between these, and a lift goes up one notch at a time.</p></div>
     </section>
     <section class="card"><h2 class="ct">Story narrator</h2>
       ${typeof AUDIO!=='undefined' ? `<div class="srow"><span>Narration</span><div class="seg"><button data-a="narrmode" data-v="rec" aria-pressed="${S.narrMode!=='voice'}">Recorded</button><button data-a="narrmode" data-v="voice" aria-pressed="${S.narrMode==='voice'}">Phone voice</button></div></div>
-      <p class="hint" style="margin-top:-4px">${S.narrMode!=='voice' ? `Recorded: ${esc(AUDIO.voices.s)} reads the story, ${esc(AUDIO.voices.n)} reads the satchel. Keeps playing with the phone locked. Needs internet.` : 'Your phone’s own voice. Works offline, stops if the phone locks.'}</p>` : ''}
+      <p class="hint" style="margin-top:-4px">${S.narrMode!=='voice' ? `Recorded: ${AUDIO.voices.s===AUDIO.voices.n ? `${esc(AUDIO.voices.s)} reads the story and the satchel` : `${esc(AUDIO.voices.s)} reads the story, ${esc(AUDIO.voices.n)} reads the satchel`}. Keeps playing with the phone locked. Needs internet.` : 'Your phone’s own voice. Works offline, stops if the phone locks.'}</p>` : ''}
       ${S.narrMode==='voice' || typeof AUDIO==='undefined' ? `<div class="field"><label for="narrator">Phone voice</label><select id="narrator">${(()=>{ const vs = storyVoices(), cur = storyVoice(); return vs.length ? vs.map(v=>`<option value="${esc(v.voiceURI)}" ${cur&&cur.voiceURI===v.voiceURI?'selected':''}>${esc(v.name)} · ${esc(v.lang)}</option>`).join('') : '<option>Your phone’s default voice</option>'; })()}</select>
         <p class="hint">Sounds robotic? On iPhone go to Settings, Accessibility, Read &amp; Speak, Voices, English, and download a Premium or Enhanced UK voice. Then pick it here.</p></div>` : ''}
       <div class="srow"><span>Pace</span><div class="seg">${[[.85,'Slower'],[.95,'Normal'],[1.05,'Brisk']].map(([v,l])=>`<button data-a="narrrate" data-v="${v}" aria-pressed="${(S.narrRate||.95)===v}">${l}</button>`).join('')}</div></div>
@@ -1737,7 +1796,7 @@ document.addEventListener('click', e=>{
     case 'reps': { r.repNow = Math.max(0, Math.min(60, r.repNow + (+b.dataset.d))); render(); break; }
     case 'prev': goBack(); break;
     case 'load': { const s = r.steps[r.i]; r.loads[s.ex] = EX[s.ex].fixed ? Math.min(3, Math.max(2, r.loads[s.ex] + (+b.dataset.d))) : stepKg(r.loads[s.ex], +b.dataset.d); render(); break; }
-    case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
+    case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { cueStop(); try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'feel': r.feel = b.dataset.v; render(); break;
     case 'hipfeel': r.hip = b.dataset.v; render(); break;
