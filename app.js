@@ -622,19 +622,40 @@ function stallFitz(){
   setSay(STALL[(ui.stalls = (ui.stalls||0) + 1) % STALL.length], 15000);
   retrigger(el, 'stare'); const b = document.querySelector('.gcard .btn-w'); if(b) retrigger(b, 'nudge');
 }
-function feedFitz(){
-  if(fedToday()) return toast(`${S.dragon} has eaten today. He says otherwise.`);
-  if(balance() < SNACK_COST) return toast('Not enough points for a snack yet.');
+const SNACK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="13.5" rx="10" ry="8" fill="#E9B45C"/><ellipse cx="12" cy="11" rx="7.5" ry="4.6" fill="#F6D58E"/><circle cx="9" cy="10" r="1" fill="#fff" opacity=".8"/><circle cx="14" cy="9.4" r=".8" fill="#fff" opacity=".8"/></svg>';
+function canFeed(){
+  if(stage().index===0){ toast('Eggs don’t eat. Train first.'); return false; }
+  if(fedToday()){ toast(`${S.dragon} has eaten today. He says otherwise.`); return false; }
+  if(balance() < SNACK_COST){ toast('Not enough points for a snack yet.'); return false; }
+  return true;
+}
+function feedFitz(el){
   const list = SNACKS[S.loc] || SNACKS.uk, snack = list[dayOfYear(new Date()) % list.length];
   S.redemptions.push({id:'f'+uid(), rewardId:'snack', name:`Snack for ${S.dragon}`, cost:SNACK_COST, ts:Date.now(), source:'snack', day:dayKey(new Date())});
   touch();
-  const el = document.querySelector('.gcard .perch[data-a="poke"]');
-  if(el){ el.classList.remove('turned','stare'); const f = document.createElement('span'); f.className = 'snackfly';
-    f.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="13.5" rx="10" ry="8" fill="#E9B45C"/><ellipse cx="12" cy="11" rx="7.5" ry="4.6" fill="#F6D58E"/><circle cx="9" cy="10" r="1" fill="#fff" opacity=".8"/><circle cx="14" cy="9.4" r=".8" fill="#fff" opacity=".8"/></svg>';
-    el.appendChild(f); setTimeout(()=>{ f.remove(); retrigger(el, 'poked'); tone(523,.1,.12); setTimeout(()=>tone(659,.14,.12), 110); }, 760); }
+  try{ navigator.vibrate && navigator.vibrate([10,40,18]); }catch(e){}
+  const h = el && el.querySelector('.snackhold');
+  if(h){ h.classList.add('eat'); setTimeout(()=>h.remove(), 300); }
+  if(el){ el.classList.remove('turned','stare'); setTimeout(()=>{ retrigger(el, 'poked'); tone(523,.1,.12); setTimeout(()=>tone(659,.14,.12), 110); }, 220); }
   setSay(SNACK_SAID[dayOfYear(new Date()) % SNACK_SAID.length](snack));
   setTimeout(()=>{ if(ui.screen==='tab' && ui.tab==='today') render(); }, 2200);
 }
+/* hold Fitz to feed him: a pastry grows under his snout while you hold; let go early and it was just a poke */
+const HOLD_MS = 650;
+function holdStart(el){
+  holdCancel(); ui.held = false;
+  const h = document.createElement('span'); h.className = 'snackhold'; h.innerHTML = SNACK_SVG; el.appendChild(h);
+  ui.holdEl = el;
+  ui.holdT = setTimeout(()=>{ ui.held = true; ui.holdT = null;
+    if(canFeed()) feedFitz(el); else { h.classList.add('nope'); setTimeout(()=>h.remove(), 400); } }, HOLD_MS);
+}
+function holdCancel(){
+  if(ui.holdT){ clearTimeout(ui.holdT); ui.holdT = null; const h = ui.holdEl && ui.holdEl.querySelector('.snackhold:not(.eat):not(.nope)'); if(h) h.remove(); }
+}
+document.addEventListener('pointerdown', e=>{ const el = e.target.closest('.gcard .perch[data-a="poke"]'); if(el) holdStart(el); });
+['pointerup','pointercancel'].forEach(t=>document.addEventListener(t, holdCancel, true));
+document.addEventListener('pointerleave', e=>{ if(e.target===ui.holdEl) holdCancel(); }, true);
+document.addEventListener('contextmenu', e=>{ if(e.target.closest('.perch[data-a="poke"]')) e.preventDefault(); });
 
 /* One nudge a day at most, only when it says something true. */
 function findNudge(p){
@@ -1312,7 +1333,7 @@ function todayHTML(){
     ${plan.note ? `<p class="meta" style="margin-top:10px;color:#fff"><b>Coach:</b> ${esc(plan.note)}</p>` : ''}
     <div class="row2">${actions}</div>
   </section>
-  <div class="say"><q>${dx(ui.sayOverride && ui.sayOverride.until > Date.now() ? ui.sayOverride.line : dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}${stage().index>0 ? (fedToday() ? ' · <span class="fed">fed today</span>' : balance() >= SNACK_COST ? ` · <button class="snackbtn" data-a="feed">Give him a snack, ${SNACK_COST} points</button>` : '') : ''}</span></div>
+  <div class="say"><q>${dx(ui.sayOverride && ui.sayOverride.until > Date.now() ? ui.sayOverride.line : dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}${stage().index>0 ? (fedToday() ? ' · <span class="fed">fed today</span>' : balance() >= SNACK_COST ? ` · <span class="fed">hold him to feed, ${SNACK_COST} points</span>` : '') : ''}</span></div>
   ${S.block && S.block.i > (S.blockSeen||0) ? (()=>{ const bi = blockInfo(); return `<section class="card newblock"><h2 class="ct">New block <span class="aside">${bi.round>1 ? `round ${bi.round}, ` : ''}${BLOCK_WEEKS} weeks</span></h2><p class="nbt">${dx(bi.def.name)}</p><p style="margin:0 0 12px">${esc(bi.def.blurb)} Your weights carry over, and anything new starts from a related lift. Paris and travel sessions stay the same.</p><button class="btn" data-a="blockseen">Got it</button></section>`; })() : ''}
   <section class="card"><h2 class="ct">This week</h2>
     ${wk.all.length ? `<div class="week">${bars}</div>` : `<div class="slots">${Array.from({length:wk.target},(_,i)=>`<div class="slot">Session ${i+1}</div>`).join('')}</div>`}
@@ -1863,8 +1884,7 @@ document.addEventListener('click', e=>{
   const a = b.dataset.a, r = ui.run;
   switch(a){
     case 'start': ui.sheet = null; startSession(b.dataset.code, false); break;
-    case 'poke': pokeFitz(b); break;
-    case 'feed': feedFitz(); break;
+    case 'poke': if(ui.held){ ui.held = false; break; } pokeFitz(b); break;
     case 'kneefeel': r.knee = b.dataset.v; render(); break;
     case 'starttrim': startSession(b.dataset.code, true); break;
     case 'choose': ui.screen = 'choose'; render(); window.scrollTo(0,0); break;
