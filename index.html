@@ -90,6 +90,32 @@ a{color:var(--violet);text-underline-offset:3px}
 .gcard .alt{background:none;border:0;color:#fff;text-decoration:underline;text-decoration-color:var(--on-grad-line);text-underline-offset:4px;padding:12px 2px 2px;min-height:46px;font-weight:600;font-size:15px}
 .perch{position:absolute;right:2px;top:-98px;width:124px;height:124px;pointer-events:none}
 .perch svg{width:100%;height:100%;overflow:visible}
+/* Fitz on Today: poke, stare, snack */
+.gcard .perch[data-a]{pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.gcard .perch[data-a] svg{transition:transform .5s cubic-bezier(.3,1.4,.5,1)}
+.perch.poked svg{animation:poke .55s cubic-bezier(.2,.8,.2,1)}
+@keyframes poke{0%{transform:none}25%{transform:translateY(-10px) rotate(-6deg) scale(1.05,.95)}55%{transform:translateY(0) rotate(4deg) scale(.96,1.04)}100%{transform:none}}
+.perch.turned svg{transform:scaleX(-1)}
+.perch.stare svg{transform:rotate(-9deg) translate(-5px,4px)}
+.perch .puff{position:absolute;left:12%;top:40%;pointer-events:none}
+.perch .puff i{position:absolute;left:0;top:0;width:10px;height:10px;border-radius:50%;background:var(--muted);opacity:.5;animation:puff 1.1s ease-out forwards}
+.perch .puff i:nth-child(2){animation-delay:.08s;width:8px;height:8px;left:-3px;top:5px}
+.perch .puff i:nth-child(3){animation-delay:.16s;width:13px;height:13px;left:3px;top:-4px}
+@keyframes puff{from{transform:translate(0,0) scale(.4);opacity:.95}to{transform:translate(-26px,-24px) scale(1.7);opacity:0}}
+.perch .snackfly{position:absolute;left:-20%;top:62%;width:24px;height:24px;pointer-events:none;animation:snackfly .78s cubic-bezier(.3,.7,.4,1) forwards}
+.perch .snackfly svg{width:100%;height:100%}
+@keyframes snackfly{0%{transform:translate(-30px,30px) scale(.5) rotate(-40deg);opacity:0}25%{opacity:1}80%{transform:translate(34px,-26px) scale(1) rotate(10deg);opacity:1}100%{transform:translate(38px,-28px) scale(.15);opacity:0}}
+.zzz text{animation:zzz 3.6s ease-in-out infinite;opacity:0}
+.zzz text:nth-child(2){animation-delay:1.2s}.zzz text:nth-child(3){animation-delay:2.4s}
+@keyframes zzz{0%{transform:translate(0,0);opacity:0}25%{opacity:.9}100%{transform:translate(-5px,-6px);opacity:0}}
+.btn-w.nudge{animation:nudge 1.4s ease-in-out 2}
+@keyframes nudge{0%,100%{transform:none}50%{transform:scale(1.025)}}
+.say q.fresh{animation:fadein .35s ease-out}
+.say .snackbtn{background:none;border:0;padding:6px 0;color:var(--muted);font:inherit;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px;cursor:pointer}
+.say .fed{color:var(--muted)}
+.askfitz{display:grid;grid-template-columns:58px 1fr;gap:12px;align-items:center;margin-top:8px}
+.askfitz .mini{width:58px;height:58px}.askfitz .mini svg{width:100%;height:100%;overflow:visible}
+.askfitz q{font-family:var(--display);font-style:italic;font-size:18px;line-height:1.3;quotes:"\201C" "\201D"}
 
 /* dragon speech */
 .say{display:grid;grid-template-columns:1fr;gap:4px;padding:2px 4px 0}
@@ -496,7 +522,8 @@ body.np-on .wrap{padding-bottom:calc(178px + env(safe-area-inset-bottom,0px))}
 .enter{animation:enter .4s cubic-bezier(.2,.8,.2,1) both}
 @keyframes enter{from{opacity:.001;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){
-  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.pulse .big,.sheet,.scrim,.inbox{animation:none}
+  .enter,.belt,.bob,.wingflap,.blink,.hop,.demo .b,.ringbox.pulse .big,.sheet,.scrim,.inbox,.perch.poked svg,.btn-w.nudge,.say q.fresh{animation:none}
+  .zzz text{animation:none;opacity:.7} .perch .puff,.perch .snackfly{display:none} .gcard .perch[data-a] svg{transition:none}
   .demo .b{opacity:0} #flash.on{animation-duration:.01s} .prog i,.btn-w,.ringbox .arc{transition:none}
 }
 </style>

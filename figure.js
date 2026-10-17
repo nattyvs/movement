@@ -35,6 +35,8 @@ const FIG = (()=>{
   // textured hair: a round mass with small bumps round the edge
   function cloud(c, R, bump){ let o = `<circle cx="${F(c[0])}" cy="${F(c[1])}" r="${F(R)}" fill="var(--fig-hair)"/>`;
     for(let a=0; a<360; a+=30){ const p = step(c, a, R - bump*.35); o += `<circle cx="${F(p[0])}" cy="${F(p[1])}" r="${F(bump)}" fill="var(--fig-hair)"/>`; } return o; }
+  // an ankle weight: a short fat band round the shin, just above the ankle
+  const cuff = (k, a, fill) => { const at = t => [k[0]+(a[0]-k[0])*t, k[1]+(a[1]-k[1])*t]; return limb(at(.64), at(.8), 13.5, 13, fill); };
   // a tapered limb: capsule from a (width wa) to b (width wb)
   function limb(a, b, wa, wb, fill){
     const dx = b[0]-a[0], dy = b[1]-a[1], len = Math.hypot(dx,dy)||1, nx = -dy/len, ny = dx/len;
@@ -72,6 +74,7 @@ const FIG = (()=>{
     if(P.band) out.push(`<path d="M${F(T(fa.h)[0])} ${F(T(fa.h)[1])} L${F(T(na.h)[0])} ${F(T(na.h)[1])}${opt.bandTo?` M${F(T(na.h)[0])} ${F(T(na.h)[1])} L${opt.bandTo[0]} ${opt.bandTo[1]}`:''}" stroke="var(--fig-band)" stroke-width="3" stroke-linecap="round" fill="none"/>`);
     // far side, darker
     out.push(limb(T(J.hip), T(far.k), 15, 11.5, 'var(--fig-legs-far)'), limb(T(far.k), T(far.a), 11.5, 8, 'var(--fig-legs-far)'), shoe(T(far.a), far.f, 'var(--fig-shoe-far)'));
+    if(P.cuffs) out.push(cuff(T(far.k), T(far.a), 'var(--fig-iron-2)'));
     out.push(limb(sh, T(fa.e), 8.5, 7.5, 'var(--fig-skin-far)'), limb(T(fa.e), T(fa.h), 7, 6, 'var(--fig-skin-far)'));
     if(P.weight && !P.oneWeight) out.push(dumbbell(T(fa.h), P.dbAng));
     // hair behind the head
@@ -105,6 +108,7 @@ const FIG = (()=>{
     out.push(`<circle cx="${F(eye[0])}" cy="${F(eye[1])}" r="1.4" fill="var(--fig-hair)"/>`);
     // near leg, shoe
     out.push(limb(hip, T(near.k), 16, 12, 'var(--fig-legs)'), limb(T(near.k), T(near.a), 12, 8.5, 'var(--fig-legs)'), shoe(T(near.a), near.f, 'var(--fig-shoe)'));
+    if(P.cuffs) out.push(cuff(T(near.k), T(near.a), 'var(--fig-iron)'));
     // near arm on top
     out.push(limb(sh, T(na.e), 9, 8, 'var(--fig-skin)'), limb(T(na.e), T(na.h), 7.5, 6.5, 'var(--fig-skin)'));
     if(P.weight) out.push(dumbbell(T(na.h), P.dbAng));
@@ -138,6 +142,8 @@ const FIG = (()=>{
       const a = T(S.a);
       out.push(`<rect x="${F(a[0]-6.5)}" y="${F(a[1]-1)}" width="13" height="8.5" rx="4" fill="${shoeC}"/><path d="M${F(a[0]-5.5)} ${F(a[1]+6.6)} H${F(a[0]+5.5)}" stroke="var(--fig-sole)" stroke-width="2.2" stroke-linecap="round"/>`);
     }
+    if(P.cuffs) for(const [S, col] of [[J.Lf,'var(--fig-iron-2)'],[J.R,'var(--fig-iron)']]) out.push(cuff(T(S.k), T(S.a), col));
+    if(P.ankleBand){ const l = T(J.Lf.a), r = T(J.R.a); out.push(`<path d="M${F(l[0]+3)} ${F(l[1]-4)} L${F(r[0]-3)} ${F(r[1]-4)}" stroke="var(--fig-band)" stroke-width="3.2" stroke-linecap="round"/>`); }
     const c = T([0,0]), x = c[0], y = c[1];
     out.push(`<rect x="${F(x-14)}" y="${F(y-8)}" width="28" height="16" rx="7" fill="var(--fig-legs)"/>`);
     out.push(limb(T([0,-L.torso-1]), T([0,-L.torso-7]), 7.5, 7.5, 'var(--fig-skin)'));
@@ -350,3 +356,9 @@ POSES.rollext = {anchor:'hip', at:[128,140], prop:PROP.mat+PROP.roller(90,135), 
 POSES.rollcalf = {anchor:'hip', at:[92,140], prop:PROP.mat+PROP.roller(147,135), propBox:[135,124,159,146], a:{torso:322, neck:-8, thigh:76, shin:96, foot:4, thigh2:52, shin2:150, foot2:90, upper:204, fore:204}, b:{torso:318, neck:-8, thigh:82, shin:94, foot:4, thigh2:52, shin2:150, foot2:90, lift:5, upper:200, fore:200}};
 POSES.neckrest = {anchor:'shoulder', at:[60,133], prop:PROP.mat, front:'<path d="M38 146 L40 140 Q44 134 52 137 Q58 134 64 139 L66 146 Z" fill="var(--fig-iron-2)"/>', propBox:[36,130,68,146], a:{torso:270, neck:0, thigh:52, shin:158, foot:90, upper:96, fore:92}, b:{torso:270, neck:-3, thigh:52, shin:158, foot:90, upper:96, fore:92}};
 Object.assign(EX_POSE, {bird_dog:'birddog', roll_thoracic:'rollext', roll_calf:'rollcalf', neck_rest:'neckrest'});
+
+// side glutes, as her PT does every session (17 Oct 2026): band walks, and ankle-weight side raises and kickbacks
+POSES.bandwalk = {view:'front', at:[120,146], dur:1300, a:{view:'front', thigh:174, shin:185, upper:160, fore:212, ankleBand:1}, b:{view:'front', thigh:156, shin:166, thigh2:176, shin2:186, upper:160, fore:212, ankleBand:1}};
+POSES.sideraise = {view:'front', at:[132,146], prop:'<rect x="56" y="10" width="12" height="136" fill="var(--fig-prop)"/>', propBox:[56,10,68,146], a:{view:'front', thigh:180, shin:180, thigh2:180, shin2:180, upper:160, fore:212, upper2:122, fore2:96, cuffs:1}, b:{view:'front', thigh:148, shin:148, thigh2:181, shin2:180, upper:160, fore:212, upper2:122, fore2:96, cuffs:1}};
+POSES.kickback = {anchor:'knee', at:[86,140], prop:PROP.mat, a:{torso:80, neck:0, thigh:180, shin:270, foot:270, thigh2:182, shin2:270, foot2:270, upper:180, fore:180, cuffs:1}, b:{torso:80, neck:4, thigh:180, shin:270, foot:270, thigh2:262, shin2:266, foot2:176, upper:180, fore:180, cuffs:1}};
+Object.assign(EX_POSE, {band_walk:'bandwalk', side_raise:'sideraise', kickback:'kickback'});

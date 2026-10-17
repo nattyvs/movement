@@ -229,21 +229,31 @@ const EX = {
     how:{setup:['Feet hip-width, a dumbbell in each hand in front of your thighs.'],go:['Push your hips back for a slow count of three.','Squeeze your glutes to stand.'],tips:['Back flat all the way.','Weights stay close to your legs.']}},
   slow_split:{name:'Slow split squat',kind:'reps',sets:3,reps:'8–10 each side',load:2.5,from:['split_squat',.8],unit:'each hand',rest:60,est:70,demo:'Split_Squat_with_Dumbbells',legs:true,
     cue:'Three seconds down, pause, drive up. A hand on the wall if you need it.',
-    how:{setup:['Long stride stance, dumbbells at your sides.'],go:['Count three seconds on the way down.','Pause, then drive up through the front heel.'],tips:['Front knee tracks over the toes.','Torso tall.']}}
+    how:{setup:['Long stride stance, dumbbells at your sides.'],go:['Count three seconds on the way down.','Pause, then drive up through the front heel.'],tips:['Front knee tracks over the toes.','Torso tall.']}},
+  /* ---- side glutes: band and ankle weights, as her PT does every session (17 Oct 2026) ---- */
+  band_walk:{name:'Lateral band walk',kind:'reps',sets:1,reps:'12 steps each way',bw:true,rest:20,est:50,legs:true,
+    cue:'Band round your ankles. Soft knees, sit back a touch, and side-step without letting your feet snap together.',
+    how:{setup:['Loop the band round your ankles, or just above the knees if that feels easier.','Feet hip-width, knees soft, a small sit back. Hands on hips.'],go:['Step sideways with the leading foot, then follow with the other. Twelve steps one way.','Twelve steps back the other way. That is the set.'],tips:['Keep the band taut the whole time.','Toes forward, knees push out over the toes.','You should feel it on the side of your bottom.']}},
+  side_raise:{name:'Standing side leg raise',kind:'reps',sets:2,reps:'12–15 each side',load:1,ankle:true,unit:'each ankle',rest:30,est:60,legs:true,
+    cue:'Hand on the wall, standing tall. Lift the leg out to the side, toes forward, and lower for a count of three.',
+    how:{setup:['Ankle weights on. Stand side-on to a wall, one hand on it.','Stand tall, weight in the leg nearest the wall.'],go:['Lift the outside leg out to the side, toes pointing forward.','Pause, then lower for a slow count of three. Swap sides after the set.'],tips:['Small and clean beats high and leaning.','No tipping your body away from the leg.','The standing leg is working too. That is the balance part.']}},
+  kickback:{name:'Kneeling kickback',kind:'reps',sets:2,reps:'12–15 each side',load:1,ankle:true,unit:'each ankle',rest:30,est:60,legs:true,
+    cue:'On hands and knees. Push one heel back and up to hip height, squeeze, then lower slowly.',
+    how:{setup:['Ankle weights on. Hands under shoulders, knees under hips, on a mat.','Brace your middle so your back stays flat.'],go:['Push one heel back and up until the leg is level with your back.','Squeeze your glute for a second, lower slowly. Swap sides after the set.'],tips:['Back stays flat. No arching to get the leg higher.','Hips stay square to the floor.']}}
 };
 
 const SESS = {
-  A:{title:'Session A',sub:'Squat, hinge and push, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},'dead_bug','pad_intervals']},
-  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['split_squat','row']},{pair:['kick_rdl_db','db_press']},'bird_dog','pad_intervals']},
-  C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm',{pair:['goblet_heavy','one_arm_row']},'rdl_heavy','hops','carry']},
-  P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
-  P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
+  A:{title:'Session A',sub:'Squat, hinge and push, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},{pair:['dead_bug','side_raise']},'pad_intervals']},
+  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['split_squat','row']},{pair:['kick_rdl_db','db_press']},{pair:['bird_dog','kickback']},'pad_intervals']},
+  C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_heavy','one_arm_row']},{pair:['rdl_heavy','side_raise']},'hops','carry']},
+  P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm','band_walk',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
+  P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm','band_walk',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
   shortUK:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'uk',legs:true,items:[{id:'pad_warm',dur:120},{pair:['goblet_box','row'],sets:2,rest:45},{id:'hip_thrust',sets:2,rest:45},{id:'dead_bug',sets:1}]},
   shortParis:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'paris',legs:true,items:[{id:'march_warm',dur:120},{pair:['tempo_goblet','band_row'],sets:2,rest:45},{id:'pause_bridge',sets:2},{id:'dead_bug',sets:1}]},
   padIV:{title:'Pad intervals',sub:'Your little runs, eight rounds',type:'cardio',loc:'uk',items:['pad_warm','pad_iv8','pad_cool']},
   parisIV:{title:'Cardio intervals',sub:'Jacks and fast marching, eight rounds',type:'cardio',loc:'paris',items:['march_warm','jacks8','march_cool']},
-  T1:{title:'Travel one',sub:'Squat, pull and core. Band and a chair',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_squat','band_row']},{pair:['tr_split','pull_apart']},'pause_bridge','dead_bug']},
-  T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'bird_dog','jacks']},
+  T1:{title:'Travel one',sub:'Squat, pull and core. Band and a chair',type:'full',loc:'away',legs:true,items:['march_warm','band_walk',{pair:['tr_squat','band_row']},{pair:['tr_split','pull_apart']},'pause_bridge','dead_bug']},
+  T2:{title:'Travel two',sub:'Hinge, push and stairs. Band and a backpack',type:'full',loc:'away',legs:true,items:['march_warm','band_walk',{pair:['tr_hinge','knee_push']},{pair:['tr_stepup','face_pull']},'bird_dog','jacks']},
   shortAway:{title:'Ten-minute version',sub:'Anywhere, no kit',type:'short',loc:'away',legs:true,items:[{id:'march_warm',dur:120},{pair:['tr_squat','knee_push'],sets:2,rest:45},{id:'pause_bridge',sets:2},'dead_bug']},
   mobility:{title:'Full body flow',sub:'Spine, shoulders, hips and ankles',type:'mobility',items:['cat_cow','thread_needle','wall_angel','doorway_pec','hip_flexor','knee_wall','squat_hold','ham_floss','calf_raise']},
   mobHips:{title:'Hips and ankles flow',sub:'Hip circles, lunges, deep squat and calves',type:'mobility',items:['hip_circles','rock_back','hip_flexor','lunge_reach','knee_wall','squat_hold','roll_calf','calf_wall','calf_raise']},
@@ -257,6 +267,7 @@ const SESS = {
 };
 const GROUPS = [['legs','Legs','var(--coral)'],['glutes','Glutes','var(--g2)'],['back','Back','var(--indigo)'],['chest','Chest and arms','var(--amber)'],['shoulders','Shoulders','var(--teal)'],['core','Core','var(--good)'],['mobility','Mobility','var(--violet)']];
 const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hinge:['glutes','legs'], tr_stepup:['legs','glutes'], goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], tempo_goblet:['legs','glutes'], knee_push:['chest'], hip_thrust:['glutes'], rdl:['glutes','legs'], rdl_heavy:['glutes','legs'], kick_rdl:['glutes','legs'],
+  band_walk:['glutes'], side_raise:['glutes'], kickback:['glutes'],
   dead_bug:['core'], split_squat:['legs','glutes'], tempo_split:['legs','glutes'], row:['back'], one_arm_row:['back'], band_row:['back'], step_up:['legs','glutes'], db_press:['shoulders'], pallof:['core'],
   hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
   piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
@@ -294,12 +305,12 @@ const BLOCK_WEEKS = 6;
 const BLOCKS = [
   {name:'Foundations', blurb:'The core lifts: box squat, hip thrust, Romanian deadlift, split squat, rows and presses.'},
   {name:'New angles', blurb:'Same movements, new angles: heels-up squats, staggered thrusts and hinges, reverse lunges and alternating presses.', sessions:{
-    A:{sub:'Heels-up squat, staggered thrust and hinge, then a pad run', items:['pad_warm',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','kick_rdl_db']},'dead_bug','pad_intervals']},
-    B:{sub:'Reverse lunge, one-arm row and a single-leg hinge, then a pad run', items:['pad_warm',{pair:['rev_lunge','one_arm_row']},{pair:['kick_rdl_db','alt_press']},'bird_dog','pad_intervals']},
-    C:{sub:'The stronger day: hinge and row, then squat', items:['pad_warm',{pair:['rdl_heavy','row']},'goblet_heavy','hops','carry']}}},
+    A:{sub:'Heels-up squat, staggered thrust and hinge, then a pad run', items:['pad_warm','band_walk',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','kick_rdl_db']},{pair:['dead_bug','kickback']},'pad_intervals']},
+    B:{sub:'Reverse lunge, one-arm row and a single-leg hinge, then a pad run', items:['pad_warm','band_walk',{pair:['rev_lunge','one_arm_row']},{pair:['kick_rdl_db','alt_press']},{pair:['bird_dog','side_raise']},'pad_intervals']},
+    C:{sub:'The stronger day: hinge and row, then squat', items:['pad_warm','band_walk',{pair:['rdl_heavy','row']},{pair:['goblet_heavy','kickback']},'hops','carry']}}},
   {name:'Slow and strong', blurb:'Slower lowering and pauses at the hardest point. Lighter weights, more time under tension, kind to tendons.', sessions:{
-    A:{sub:'Slow squat, paused thrust and slow hinge, then a pad run', items:['pad_warm',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','slow_rdl']},'dead_bug','pad_intervals']},
-    B:{sub:'Slow split squat, row and a single-leg hinge, then a pad run', items:['pad_warm',{pair:['slow_split','row']},{pair:['kick_rdl_db','db_press']},'bird_dog','pad_intervals']}}}
+    A:{sub:'Slow squat, paused thrust and slow hinge, then a pad run', items:['pad_warm','band_walk',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','slow_rdl']},{pair:['dead_bug','side_raise']},'pad_intervals']},
+    B:{sub:'Slow split squat, row and a single-leg hinge, then a pad run', items:['pad_warm','band_walk',{pair:['slow_split','row']},{pair:['kick_rdl_db','db_press']},{pair:['bird_dog','kickback']},'pad_intervals']}}}
 ];
 const blockIdx = () => (((typeof S!=='undefined' && S.block && S.block.i) || 0) % BLOCKS.length);
 const mapItem = it => typeof it==='string' ? ladId(it) : it.pair ? Object.assign({}, it, {pair: it.pair.map(ladId)}) : Object.assign({}, it, {id: ladId(it.id)});
@@ -535,14 +546,19 @@ const LINES = {
   sulk:['I’m not sulking. I’m resting my face.','Fine. I’ll sit on this cold rock. Ten minutes and I’ll forget it happened.'],
   away:['New place, same dragon. A chair and a band will do.','Travel week. Two sessions keeps the streak. I counted.','Hotel rooms are just gyms with worse lighting.'],
   paris:['Paris stairs count as a mountain. I’ve decided.','Light kit, slow tempo. Very continental.'],
-  week:['Week done. I’ve grown. Slightly. Don’t make it weird.']
+  week:['Week done. I’ve grown. Slightly. Don’t make it weird.'],
+  night:['Asleep. Hip block and bed, if you must.','It’s late. Tomorrow I’ll be unbearable about it.'],
+  nightDone:['Asleep. Proud. Asleep.','Trained and tucked in. Goodnight.']
 };
 function pickLine(key){ const a = LINES[key]; return a[dayOfYear(new Date()) % a.length]; }
 function dragonLine(p){
   const st = stage();
   if(st.index===0 && !p.trained) return pickLine('egg');
+  if(isNight()) return pickLine(p.trained ? 'nightDone' : 'night');
   if(p.trained) return p.wk.count >= p.wk.target ? pickLine('week') : pickLine('done');
   if(p.recovery) return pickLine('recovery');
+  const lastT = sorted().find(isTraining);
+  if(lastT && (lastT.knee==='sore' || lastT.knee==='niggly') && (daysSinceTraining()??9) <= 4) return lastT.knee==='sore' ? 'Your knees were sore last time. I’ve held the leg weights. Go gently.' : 'Knees grumbled last time. I’m keeping an eye on them.';
   if(S.loc==='paris') return pickLine('paris');
   if(S.loc==='away') return pickLine('away');
   const m = mood();
@@ -550,6 +566,64 @@ function dragonLine(p){
   if(m==='sulk') return pickLine('sulk');
   if(p.hipDone) return pickLine('hipOnly');
   return pickLine('ready');
+}
+
+/* ================= Fitz on Today: poke him, he notices you stalling, feed him ================= */
+const isNight = (d=new Date()) => { const h = d.getHours(); return h>=22 || h<6; };
+const hatFor = () => S.loc==='paris' ? 'beret' : S.loc==='away' ? 'sun' : null;
+const POKE = {
+  egg:['Don’t shake the egg.','Still an egg. Still fragile. Still judging you.'],
+  sleep:['I was asleep. You poked a sleeping dragon.','No. Bed. Both of us.','Five more minutes. Five more years.'],
+  1:['Yes?','Can I help you?','That’s my good scale you’re prodding.'],
+  2:['Again. Bold.','I’m not a button. Well. Apparently I am now.','Hmph.'],
+  3:['Third poke. I’m writing this down.','I have teeth, you know. Small ones. Still teeth.'],
+  4:['Right. I’m facing the wall now.'],
+  5:['I’m not here. I’m a lamp.','Still facing the wall. Press Begin if you want my attention.']
+};
+const STALL = ['Still here? The Begin button is right there.','I can see you hovering.','Thinking about training burns nothing. I checked.','The ten-minute version exists. Just saying.'];
+const SNACK_COST = 10;
+const SNACKS = {uk:['A jam doughnut','A sausage roll','A scone, jam first'], paris:['A croissant','A pain au chocolat','A macaron'], away:['A pão de queijo','A brigadeiro','A coxinha']};
+const SNACK_SAID = [s=>`${s}. Acceptable.`, s=>`${s}. Lovely. Doesn’t count as training, mind.`, s=>`${s}. Now go and earn the next one.`];
+const fedToday = () => S.redemptions.some(r=>r.source==='snack' && r.day===dayKey(new Date()));
+function setSay(line, hold=25000){
+  ui.sayOverride = {line, until: Date.now()+hold};
+  const q = document.querySelector('.say q'); if(!q) return;
+  q.innerHTML = dx(line); q.classList.remove('fresh'); void q.offsetWidth; q.classList.add('fresh');
+}
+function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function puff(el){ const p = document.createElement('span'); p.className = 'puff'; p.innerHTML = '<i></i><i></i><i></i>'; el.appendChild(p); setTimeout(()=>p.remove(), 1400); }
+function pokeFitz(el){
+  const now = Date.now(); if(now - (ui.pokeAt||0) > 45000) ui.pokes = 0;
+  ui.pokeAt = now; ui.pokes = (ui.pokes||0) + 1;
+  const n = ui.pokes, egg = stage().index===0, night = isNight() && !egg;
+  const key = egg ? 'egg' : night ? 'sleep' : Math.min(5, n);
+  const a = POKE[key]; setSay(a[(n-1) % a.length]);
+  try{ navigator.vibrate && navigator.vibrate(12); }catch(e){}
+  tone(n>=4 ? 196 : 262, .12, .12);
+  clearTimeout(ui.turnT); clearTimeout(ui.wakeT);
+  if(key===4 || key===5){ el.classList.remove('poked','stare'); el.classList.add('turned'); ui.turnT = setTimeout(()=>el.classList.remove('turned'), 9000); return; }
+  el.classList.remove('turned','stare');
+  if(night){ el.innerHTML = dragonSVG({mood:'sulk'}); ui.wakeT = setTimeout(()=>{ el.innerHTML = dragonSVG({sleep:true}); }, 4000); }
+  retrigger(el, 'poked'); if(!egg && n>=2) puff(el);
+}
+function stallFitz(){
+  if(document.hidden || ui.screen!=='tab' || ui.tab!=='today' || ui.sheet) return;
+  const el = document.querySelector('.gcard .perch[data-a="poke"]'); if(!el || el.classList.contains('turned')) return;
+  setSay(STALL[(ui.stalls = (ui.stalls||0) + 1) % STALL.length], 15000);
+  retrigger(el, 'stare'); const b = document.querySelector('.gcard .btn-w'); if(b) retrigger(b, 'nudge');
+}
+function feedFitz(){
+  if(fedToday()) return toast(`${S.dragon} has eaten today. He says otherwise.`);
+  if(balance() < SNACK_COST) return toast('Not enough points for a snack yet.');
+  const list = SNACKS[S.loc] || SNACKS.uk, snack = list[dayOfYear(new Date()) % list.length];
+  S.redemptions.push({id:'f'+uid(), rewardId:'snack', name:`Snack for ${S.dragon}`, cost:SNACK_COST, ts:Date.now(), source:'snack', day:dayKey(new Date())});
+  touch();
+  const el = document.querySelector('.gcard .perch[data-a="poke"]');
+  if(el){ el.classList.remove('turned','stare'); const f = document.createElement('span'); f.className = 'snackfly';
+    f.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="13.5" rx="10" ry="8" fill="#E9B45C"/><ellipse cx="12" cy="11" rx="7.5" ry="4.6" fill="#F6D58E"/><circle cx="9" cy="10" r="1" fill="#fff" opacity=".8"/><circle cx="14" cy="9.4" r=".8" fill="#fff" opacity=".8"/></svg>';
+    el.appendChild(f); setTimeout(()=>{ f.remove(); retrigger(el, 'poked'); tone(523,.1,.12); setTimeout(()=>tone(659,.14,.12), 110); }, 760); }
+  setSay(SNACK_SAID[dayOfYear(new Date()) % SNACK_SAID.length](snack));
+  setTimeout(()=>{ if(ui.screen==='tab' && ui.tab==='today') render(); }, 2200);
 }
 
 /* One nudge a day at most, only when it says something true. */
@@ -837,7 +911,7 @@ document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState=
 function startSession(code, trim){
   audioOn(); lockScreen();
   const steps = build(code, trim), loads = {};
-  steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = EX[s.ex].fixed ? loadOf(s.ex) : snapKg(loadOf(s.ex)); });
+  steps.forEach(s=>{ if(s.ex && hasLoad(s.ex)) loads[s.ex] = EX[s.ex].fixed ? loadOf(s.ex) : snapKg(loadOf(s.ex), kgList(s.ex)); });
   ui.run = {code, trim:!!trim, steps, i:0, timer:null, started:Date.now(), loads, done:0, efforts:{}, sets:{}, repsBy:{}, lastSec:null};
   ui.screen = 'run'; ui.sheet = null;
   cuePreload(steps.map((x,k)=>spokenText(x, steps[k+1])).concat(CUE_FIXED));
@@ -919,8 +993,8 @@ function save(){
     const toppedNow = reps.length >= Math.min(2, (EX[id].sets||2)) && reps.every(n=>n>=top);
     S.topRun = S.topRun||{}; S.topRun[id] = toppedNow ? (S.topRun[id]||0) + 1 : 0;
     const topped = S.topRun[id] >= 2; // two sessions in a row at the top of the range
-    if(topped && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore'){
-      next = stepKg(used, 1); // one notch up her dial
+    if(topped && !EX[id].fixed && r.feel!=='toomuch' && r.hip!=='sore' && !(r.knee==='sore' && EX[id].legs)){
+      next = stepKg(used, 1, kgList(id)); // one notch up her dial (half a kilo for ankle weights)
       if(next>used){ ups.push({id,next}); S.topRun[id] = 0; } }
     S.loads[id] = next;
   });
@@ -928,13 +1002,14 @@ function save(){
   const ladUps = [], okDay = r.feel!=='toomuch' && r.hip!=='sore'; S.ladder = S.ladder || {}; S.ladTop = S.ladTop || {};
   for(const [k, L] of Object.entries(LADDERS)){
     const lv = ladLevel(k), id = L.rungs[lv]; if(lv >= L.rungs.length-1) continue;
+    const okLeg = okDay && !(r.knee==='sore' && ['stepup','hops','bridge'].includes(k));
     if(!r.steps.some((st,i)=>st.ex===id && i < r.i)) continue;
     const e = EX[id];
     if(e.kind==='reps'){ const reps = r.repsBy[id] || [], top = repRange(e)[1];
       const topped = reps.length >= Math.min(2, e.sets||2) && reps.every(n=>n>=top);
-      S.ladTop[k] = topped && okDay ? (S.ladTop[k]||0) + 1 : 0;
+      S.ladTop[k] = topped && okLeg ? (S.ladTop[k]||0) + 1 : 0;
       if(S.ladTop[k] >= 2){ S.ladder[k] = lv+1; S.ladTop[k] = 0; ladUps.push({from:id, to:L.rungs[lv+1]}); } }
-    else if(okDay){ S.ladTop[k] = (S.ladTop[k]||0) + 1;
+    else if(okLeg){ S.ladTop[k] = (S.ladTop[k]||0) + 1;
       if(S.ladTop[k] >= (L.timed||3)){ S.ladder[k] = lv+1; S.ladTop[k] = 0; ladUps.push({from:id, to:L.rungs[lv+1]}); } }
   }
   const now = new Date(), mk = monthKey(now);
@@ -945,7 +1020,7 @@ function save(){
     minutes:Math.max(1, Math.round((Date.now()-r.started)/60000)), points, partial:!!r.early, trim:!!r.trim,
     story: earnFor(r.code, r.trim, r.early), ...(def.loc==='uk' && kind==='full' && S.block ? {block:S.block.i} : {}), legs: !!def.legs, loads:Object.fromEntries((r.loaded||[]).map(id=>[id, r.loads[id]])), efforts:r.efforts, sets:r.sets, reps:r.repsBy};
   S.lastReps = Object.assign(S.lastReps||{}, r.repsBy);
-  if(r.feel) doc.feel = r.feel; if(r.runFeel) doc.runFeel = r.runFeel; if(r.hip) doc.hip = r.hip; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
+  if(r.feel) doc.feel = r.feel; if(r.runFeel) doc.runFeel = r.runFeel; if(r.hip) doc.hip = r.hip; if(r.knee) doc.knee = r.knee; if(r.note && r.note.trim()) doc.note = r.note.trim().slice(0,400);
   sessions.push(doc);
   const gateNow = TRAINING.has(kind) && monthBefore < monthTarget(mk) && monthCount(mk) >= monthTarget(mk);
   const stageNow = stage().index > stageBefore;
@@ -955,6 +1030,7 @@ function save(){
   const runFeel = r.feel;
   if(ranRun && runFeel){ const was = runLevel(); let now = was;
     if(runFeel==='toomuch' || r.hip==='sore'){ now = Math.max(1, was-1); S.runTop = 0; }
+    else if(r.knee==='sore'){ S.runTop = 0; } // sore knees: the run holds where it is
     else if(runFeel==='easy'){ now = Math.min(RUNS.length, was+1); S.runTop = 0; }
     else if(runFeel==='right'){ S.runTop = (S.runTop||0) + 1; if(S.runTop >= 2){ now = Math.min(RUNS.length, was+1); S.runTop = 0; } }
     else S.runTop = 0;
@@ -1074,8 +1150,10 @@ const fmtClock = ms => { const t = Math.max(0, Math.floor(ms/1000)), h = Math.fl
 const repRange = e => { const m = /(\d+)\s*[–-]\s*(\d+)/.exec(e.reps||''); if(m) return [+m[1], +m[2]]; const n = /(\d+)/.exec(e.reps||''); return n ? [+n[1], +n[1]] : [10,10]; };
 const DIAL = [2.5, 3.5, 4.5, 5.5, 6.5, 8, 9, 10, 11.5, 13.5, 16, 18, 20.5, 22.5, 24]; // her London dial, read off her photos 13 Oct
 const dial = () => (Array.isArray(S.dial) && S.dial.length ? S.dial : DIAL).slice().sort((a,b)=>a-b);
-const snapKg = x => dial().reduce((b,v)=>Math.abs(v-x) < Math.abs(b-x) ? v : b);
-const stepKg = (x, d) => { const L = dial(), i = L.indexOf(snapKg(x)); return L[Math.max(0, Math.min(L.length-1, i + d))]; };
+const ANKLE = [0.5, 1, 1.5, 2, 2.5, 3]; // her ankle weights go up to 3kg each; half-kilo steps assumed
+const kgList = id => (id && EX[id] && EX[id].ankle) ? ANKLE : dial();
+const snapKg = (x, L = dial()) => L.reduce((b,v)=>Math.abs(v-x) < Math.abs(b-x) ? v : b);
+const stepKg = (x, d, L = dial()) => { const i = L.indexOf(snapKg(x, L)); return L[Math.max(0, Math.min(L.length-1, i + d))]; };
 const fmtKg = n => (Math.round(n*10)/10).toString().replace(/\.0$/,'')+' kg';
 const I = {
   check:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
@@ -1114,6 +1192,7 @@ function dragonSVG(opts={}){
     </g></svg>`;
   }
   const [c1,c2,c3] = st.colours; const sz = [0,.78,.88,.96,1][st.index];
+  const sleep = !!opts.sleep, hat = opts.hat === undefined ? hatFor() : opts.hat;
   const wing = [0,.55,.8,1,1.12][st.index];
   const lid = m==='smug' ? 'M33 44c4-3 10-3 13 1l-0.5 3c-3-2-8-3-12.5-1z' : m==='peckish' ? 'M33 45c4-3 10-3 13 1l-0.5 5c-3-3-8-3.5-12.5-2z' : m==='sulk' ? 'M33 45c4-3 10-3 13 1l-0.3 7c-3-3.5-8-4-12.7-2.5z' : 'M33 44c4-3 10-3 13 1l-0.5 2.5c-3-2-8-2.5-12.5-1z';
   const elderHorn = st.index>=4 ? `<path d="M58 37c6-10 14-14 19-13-5 4-9 9-12 16z" fill="var(--horn)"/>` : '';
@@ -1140,10 +1219,12 @@ function dragonSVG(opts={}){
     <ellipse cx="31" cy="60" rx="11" ry="6" fill="${c3}" opacity=".35"/>
     <ellipse cx="21" cy="53.5" rx="1.6" ry="1.2" fill="${c2}"/>
     <path d="M18 63c5 2 11 2 16 0" fill="none" stroke="${c2}" stroke-width="1.6" stroke-linecap="round"/>
-    <g class="blink"><ellipse cx="40" cy="48" rx="4.6" ry="5.4" fill="var(--eye)"/><circle cx="38.6" cy="46.4" r="1.5" fill="#fff"/></g>
-    <path d="${lid}" fill="${c1}"/>
+    ${sleep ? `<path d="M34.5 48.5c3 2.6 8 2.6 11 0" fill="none" stroke="${c2}" stroke-width="2.2" stroke-linecap="round"/>` : `<g class="blink"><ellipse cx="40" cy="48" rx="4.6" ry="5.4" fill="var(--eye)"/><circle cx="38.6" cy="46.4" r="1.5" fill="#fff"/></g>
+    <path d="${lid}" fill="${c1}"/>`}
     <path d="M32 41.5c4.5-2.8 10-2.6 14.5 1" fill="none" stroke="${c2}" stroke-width="2.6" stroke-linecap="round"/>
-  </g></g></svg>`;
+    ${hat==='beret' ? `<g transform="rotate(-14 46 33)"><path d="M32 34c1-8 8-12 15-12s13 4 14 12z" fill="#2C2950"/><ellipse cx="46.5" cy="34" rx="15.5" ry="4.6" fill="#2C2950"/><path d="M33 34.6c8 2 19 2 27 0" fill="none" stroke="#45417A" stroke-width="1.2" stroke-linecap="round"/><path d="M47 22.4l.6-3.4" stroke="#2C2950" stroke-width="2" stroke-linecap="round"/></g>` : ''}
+    ${hat==='sun' ? `<g transform="rotate(-9 45 33)"><path d="M33.5 33c0-9 5.2-14.5 11.8-14.5S57 24 57 33z" fill="#EFD38E" stroke="#C9A458" stroke-width="1"/><path d="M33.6 29.4c7.6 2.2 15.8 2.2 23.3 0v3.6c-7.5 2.2-15.7 2.2-23.3 0z" fill="#E2665E"/><ellipse cx="45.2" cy="33.6" rx="23" ry="4.8" fill="#E8C77A" stroke="#C9A458" stroke-width="1"/></g>` : ''}
+  </g></g>${sleep ? `<g class="zzz" font-family="Bodoni Moda, Georgia, serif" font-style="italic" font-weight="600" fill="var(--violet)"><text x="12" y="72" font-size="13">z</text><text x="1" y="61" font-size="16">z</text><text x="-11" y="49" font-size="19">z</text></g>` : ''}</svg>`;
 }
 
 function render(){
@@ -1165,6 +1246,8 @@ function render(){
   document.body.classList.toggle('inrun', ui.screen==='run');
   app.innerHTML = html + (ui.sheet ? sheetHTML() : '');
   startFigure(); paintNP();
+  clearTimeout(ui.stallT);
+  if(ui.screen==='tab' && ui.tab==='today' && !ui.sheet && !isNight()){ const pp = plan_(); if(pp.main && !pp.trained) ui.stallT = setTimeout(stallFitz, 25000); }
   if(ui.screen==='run'){ const r = ui.run; if(r && r.timer) paintTimer(r.steps[r.i], r.timer.paused ? r.timer.remaining : Math.max(0, r.timer.end-Date.now())); }
 }
 
@@ -1213,13 +1296,13 @@ function todayHTML(){
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
   ${inboxHTML()}
   <section class="gcard" aria-label="Today">
-    <div class="perch">${dragonSVG()}</div>
+    <div class="perch" data-a="poke" role="button" aria-label="Poke ${esc(S.dragon)}">${dragonSVG({sleep:isNight()})}</div>
     <h1 style="margin-top:4px;max-width:70%">${dx(head)}</h1>
     <p class="meta">${esc(date)} · ${esc(meta)}</p>
     ${plan.note ? `<p class="meta" style="margin-top:10px;color:#fff"><b>Coach:</b> ${esc(plan.note)}</p>` : ''}
     <div class="row2">${actions}</div>
   </section>
-  <div class="say"><q>${dx(dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}</span></div>
+  <div class="say"><q>${dx(ui.sayOverride && ui.sayOverride.until > Date.now() ? ui.sayOverride.line : dragonLine(p))}</q><span class="by">${esc(S.dragon)}, ${stage().name.toLowerCase()}${stage().index>0 ? (fedToday() ? ' · <span class="fed">fed today</span>' : balance() >= SNACK_COST ? ` · <button class="snackbtn" data-a="feed">Give him a snack, ${SNACK_COST} points</button>` : '') : ''}</span></div>
   ${S.block && S.block.i > (S.blockSeen||0) ? (()=>{ const bi = blockInfo(); return `<section class="card newblock"><h2 class="ct">New block <span class="aside">${bi.round>1 ? `round ${bi.round}, ` : ''}${BLOCK_WEEKS} weeks</span></h2><p class="nbt">${dx(bi.def.name)}</p><p style="margin:0 0 12px">${esc(bi.def.blurb)} Your weights carry over, and anything new starts from a related lift. Paris and travel sessions stay the same.</p><button class="btn" data-a="blockseen">Got it</button></section>`; })() : ''}
   <section class="card"><h2 class="ct">This week</h2>
     ${wk.all.length ? `<div class="week">${bars}</div>` : `<div class="slots">${Array.from({length:wk.target},(_,i)=>`<div class="slot">Session ${i+1}</div>`).join('')}</div>`}
@@ -1367,7 +1450,7 @@ function runHTML(){
 /* ---------- Review & celebrate ---------- */
 function reviewHTML(){
   const r = ui.run;
-  if(!r.feel) r.feel = 'right'; if(!r.hip) r.hip = 'fine'; // a normal day is already filled in: just Save
+  if(!r.feel) r.feel = 'right'; if(!r.hip) r.hip = 'fine'; if(!r.knee) r.knee = 'fine'; // a normal day is already filled in: just Save
   const pick = (act, cur, val, label, hint) => `<button class="chip" data-a="${act}" data-v="${val}" aria-pressed="${cur===val}">${label}${hint?`<small>${hint}</small>`:''}</button>`;
   const feel = [['easy','Too easy','could do more'],['right','About right','worked, not wrecked'],['hard','Hard','glad it’s over'],['toomuch','Too much','struggled to finish']];
   const hip = [['fine','Fine'],['niggly','Niggly'],['sore','Sore']];
@@ -1376,6 +1459,9 @@ function reviewHTML(){
     <section class="gcard flat"><h1>How was it?</h1><p class="meta">${esc(SESS[r.code].title)}${r.early?', ended early':''}. Filled in for a normal day. If nothing was off, just save.</p></section>
     <section class="card"><h2 class="ct">Overall${ranRun ? ' <span class="aside">run included</span>' : ''}</h2><div class="chips two">${feel.map(([v,l,h])=>pick('feel',r.feel,v,l,h)).join('')}</div>
       <h2 class="ct" style="margin-top:18px">Hip today</h2><div class="chips three">${hip.map(([v,l])=>pick('hipfeel',r.hip,v,l)).join('')}</div>
+      <h2 class="ct" style="margin-top:18px">Knees and ankles</h2>
+      <div class="askfitz"><div class="mini">${dragonSVG({mood: r.knee==='fine' ? 'smug' : 'peckish'})}</div><q>${dx(r.knee==='sore' ? 'Then no extra weight on the legs next time. I’ve decided.' : r.knee==='niggly' ? 'Noted. I’ll keep an eye on them.' : 'How did your knees and ankles take that?')}</q></div>
+      <div class="chips three">${hip.map(([v,l])=>pick('kneefeel',r.knee,v,l)).join('')}</div>
       ${r.noteOpen || r.note ? `<label class="ct" for="snote" style="display:block;margin:18px 0 8px">Note</label>
       <textarea id="snote" rows="2" maxlength="400" placeholder="Knee clicked on lunges, slept badly, loved the pad bit…">${esc(r.note||'')}</textarea>` : `<button class="linkbtn" data-a="noteopen" style="margin-top:14px">Add a note</button>`}</section>
   </div><div class="dock"><div class="in"><button class="btn primary xl" data-a="save">Save session</button></div></div>`;
@@ -1579,7 +1665,7 @@ function treasuryHTML(){
       const ok = bal >= cost;
       return `<div class="rw"><span class="nm">${esc(r.name)}</span>${ok?'':`<span class="need">${(cost-bal).toLocaleString('en-GB')} to go</span>`}<span class="acts"><button class="claim ${ok?'ready':''}" data-a="claim" data-id="${r.id}" ${ok?'':'disabled'}>Claim</button><button class="del" data-a="delreward" data-id="${r.id}" aria-label="Remove ${esc(r.name)}">${I.trash}</button></span></div>`; }).join('')}</section>`;
   }).join('');
-  const hist = S.redemptions.slice().sort((a,b)=>b.ts-a.ts).slice(0,8);
+  const hist = S.redemptions.filter(x=>x.source!=='snack').sort((a,b)=>b.ts-a.ts).slice(0,8);
   return `<div class="enter" style="display:grid;gap:14px">${topbar()}
     <section class="gcard flat"><div class="bal">${bal.toLocaleString('en-GB')}</div><p class="meta">points to spend · ${earned().toLocaleString('en-GB')} earned so far</p></section>
     ${gateReady ? `<section class="card"><h2 class="ct">Gate prize waiting</h2><p style="margin:0 0 12px">${esc(region(mk).gate)} is open. Free, no points needed: <b>${esc(prizeFor(mk).name)}</b>.</p><button class="btn primary" style="width:100%" data-a="claimgate" data-mk="${mk}">Claim it</button></section>` : ''}
@@ -1767,6 +1853,9 @@ document.addEventListener('click', e=>{
   const a = b.dataset.a, r = ui.run;
   switch(a){
     case 'start': ui.sheet = null; startSession(b.dataset.code, false); break;
+    case 'poke': pokeFitz(b); break;
+    case 'feed': feedFitz(); break;
+    case 'kneefeel': r.knee = b.dataset.v; render(); break;
     case 'starttrim': startSession(b.dataset.code, true); break;
     case 'choose': ui.screen = 'choose'; render(); window.scrollTo(0,0); break;
     case 'preview': ui.preview = {code:b.dataset.code, trim:false}; ui.screen = 'preview'; render(); window.scrollTo(0,0); break;
@@ -1795,7 +1884,7 @@ document.addEventListener('click', e=>{
     case 'plus15': if(r.timer){ r.timer.end += 15000; r.timer.total += 15; } break;
     case 'reps': { r.repNow = Math.max(0, Math.min(60, r.repNow + (+b.dataset.d))); render(); break; }
     case 'prev': goBack(); break;
-    case 'load': { const s = r.steps[r.i]; r.loads[s.ex] = EX[s.ex].fixed ? Math.min(3, Math.max(2, r.loads[s.ex] + (+b.dataset.d))) : stepKg(r.loads[s.ex], +b.dataset.d); render(); break; }
+    case 'load': { const s = r.steps[r.i]; r.loads[s.ex] = EX[s.ex].fixed ? Math.min(3, Math.max(2, r.loads[s.ex] + (+b.dataset.d))) : stepKg(r.loads[s.ex], +b.dataset.d, kgList(s.ex)); render(); break; }
     case 'voice': S.voice = !S.voice; touch(); if(S.voice){ audioOn(); say('Voice on.'); } else { cueStop(); try{ speechSynthesis.cancel(); }catch(_){} } render(); break;
     case 'guide': ui.sheet = {type:'guide', id:b.dataset.id}; render(); break;
     case 'feel': r.feel = b.dataset.v; render(); break;
