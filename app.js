@@ -239,13 +239,23 @@ const EX = {
     how:{setup:['Ankle weights on. Stand side-on to a wall, one hand on it.','Stand tall, weight in the leg nearest the wall.'],go:['Lift the outside leg out to the side, toes pointing forward.','Pause, then lower for a slow count of three. Swap sides after the set.'],tips:['Small and clean beats high and leaning.','No tipping your body away from the leg.','The standing leg is working too. That is the balance part.']}},
   kickback:{name:'Kneeling kickback',kind:'reps',sets:2,reps:'12–15 each side',load:1,ankle:true,unit:'each ankle',rest:30,est:60,legs:true,
     cue:'On hands and knees. Push one heel back and up to hip height, squeeze, then lower slowly.',
-    how:{setup:['Ankle weights on. Hands under shoulders, knees under hips, on a mat.','Brace your middle so your back stays flat.'],go:['Push one heel back and up until the leg is level with your back.','Squeeze your glute for a second, lower slowly. Swap sides after the set.'],tips:['Back stays flat. No arching to get the leg higher.','Hips stay square to the floor.']}}
+    how:{setup:['Ankle weights on. Hands under shoulders, knees under hips, on a mat.','Brace your middle so your back stays flat.'],go:['Push one heel back and up until the leg is level with your back.','Squeeze your glute for a second, lower slowly. Swap sides after the set.'],tips:['Back stays flat. No arching to get the leg higher.','Hips stay square to the floor.']}},
+  /* ---- upper body, so every session works everything (17 Oct 2026) ---- */
+  floor_press:{name:'Dumbbell floor press',kind:'reps',sets:3,reps:'10–12 reps',load:5.5,unit:'each hand',rest:60,est:45,
+    cue:'On your back, knees bent. Press the dumbbells up over your chest, then lower until your elbows touch the floor.',
+    how:{setup:['Lie on the mat, knees bent, feet flat.','A dumbbell in each hand, elbows on the floor at about 45 degrees from your body.'],go:['Press both dumbbells up until your arms are straight over your chest.','Lower slowly until your upper arms rest on the floor. Pause, press again.'],tips:['The floor stops you going too deep, so it is kind to shoulders.','Wrists stacked over elbows.']}},
+  tri_ext:{name:'Overhead triceps extension',kind:'reps',sets:2,reps:'10–12 reps',load:3.5,unit:'one dumbbell',rest:45,est:40,
+    cue:'One dumbbell held in both hands overhead. Bend at the elbows to lower it behind your head, then straighten.',
+    how:{setup:['Stand tall, ribs down, glutes on.','Hold one dumbbell in both hands, arms straight overhead.'],go:['Keep your elbows pointing forward and lower the dumbbell behind your head.','Straighten your arms to bring it back up.'],tips:['Elbows stay close to your head.','No arching your back to get it up.']}},
+  curl:{name:'Dumbbell biceps curl',kind:'reps',sets:2,reps:'12–15 reps',load:4.5,unit:'each hand',rest:45,est:40,
+    cue:'Elbows pinned to your sides. Curl up, squeeze, and lower for a count of three.',
+    how:{setup:['Stand tall, a dumbbell in each hand, palms forward.'],go:['Curl both dumbbells up towards your shoulders.','Lower slowly for a count of three.'],tips:['Elbows stay by your sides.','No swinging. Lighter is fine.']}}
 };
 
 const SESS = {
-  A:{title:'Session A',sub:'Squat, hinge and push, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','rdl']},{pair:['dead_bug','side_raise']},'pad_intervals']},
-  B:{title:'Session B',sub:'Single leg and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['split_squat','row']},{pair:['kick_rdl_db','db_press']},{pair:['bird_dog','kickback']},'pad_intervals']},
-  C:{title:'Session C',sub:'The stronger day: a bit more weight, fewer reps',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_heavy','one_arm_row']},{pair:['rdl_heavy','side_raise']},'hops','carry']},
+  A:{title:'Session A',sub:'Squat, thrust, push and pull, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_box','knee_push']},{pair:['hip_thrust','row']},{pair:['dead_bug','side_raise']},'pad_intervals']},
+  B:{title:'Session B',sub:'Single leg, row, press and arms, then a pad run',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['split_squat','one_arm_row']},{pair:['kick_rdl_db','db_press']},{pair:['bird_dog','tri_ext']},'pad_intervals']},
+  C:{title:'Session C',sub:'The stronger day: squat, hinge, chest and back',type:'full',loc:'uk',legs:true,items:['pad_warm','band_walk',{pair:['goblet_heavy','floor_press']},{pair:['rdl_heavy','pull_apart']},{pair:['kickback','curl']},'hops','carry']},
   P1:{title:'Paris one',sub:'Slow tempo, band and light dumbbells',type:'full',loc:'paris',legs:true,items:['march_warm','band_walk',{pair:['tempo_split','band_row']},{pair:['kick_rdl','pull_apart']},'pause_bridge','jacks']},
   P2:{title:'Paris two',sub:'Squat, push and stairs',type:'full',loc:'paris',legs:true,items:['march_warm','band_walk',{pair:['tempo_goblet','knee_push']},{pair:['step_up','face_pull']},'dead_bug','jacks']},
   shortUK:{title:'Ten-minute version',sub:'The minimum that keeps the week alive',type:'short',loc:'uk',legs:true,items:[{id:'pad_warm',dur:120},{pair:['goblet_box','row'],sets:2,rest:45},{id:'hip_thrust',sets:2,rest:45},{id:'dead_bug',sets:1}]},
@@ -267,7 +277,7 @@ const SESS = {
 };
 const GROUPS = [['legs','Legs','var(--coral)'],['glutes','Glutes','var(--g2)'],['back','Back','var(--indigo)'],['chest','Chest and arms','var(--amber)'],['shoulders','Shoulders','var(--teal)'],['core','Core','var(--good)'],['mobility','Mobility','var(--violet)']];
 const MUSCLES = {tr_squat:['legs','glutes'], tr_split:['legs','glutes'], tr_hinge:['glutes','legs'], tr_stepup:['legs','glutes'], goblet_box:['legs','glutes'], goblet_heavy:['legs','glutes'], tempo_goblet:['legs','glutes'], knee_push:['chest'], hip_thrust:['glutes'], rdl:['glutes','legs'], rdl_heavy:['glutes','legs'], kick_rdl:['glutes','legs'],
-  band_walk:['glutes'], side_raise:['glutes'], kickback:['glutes'],
+  band_walk:['glutes'], side_raise:['glutes'], kickback:['glutes'], floor_press:['chest'], tri_ext:['chest'], curl:['chest'],
   dead_bug:['core'], split_squat:['legs','glutes'], tempo_split:['legs','glutes'], row:['back'], one_arm_row:['back'], band_row:['back'], step_up:['legs','glutes'], db_press:['shoulders'], pallof:['core'],
   hops:['legs'], carry:['core','back'], pull_apart:['shoulders','back'], face_pull:['shoulders'], pause_bridge:['glutes'],
   piri_wall:['mobility'], piri_sit:['mobility'], glute_str:['mobility'], supine_flex:['mobility'], cat_cow:['mobility'], thread_needle:['mobility'], wall_angel:['mobility','shoulders'], doorway_pec:['mobility'],
@@ -305,12 +315,12 @@ const BLOCK_WEEKS = 6;
 const BLOCKS = [
   {name:'Foundations', blurb:'The core lifts: box squat, hip thrust, Romanian deadlift, split squat, rows and presses.'},
   {name:'New angles', blurb:'Same movements, new angles: heels-up squats, staggered thrusts and hinges, reverse lunges and alternating presses.', sessions:{
-    A:{sub:'Heels-up squat, staggered thrust and hinge, then a pad run', items:['pad_warm','band_walk',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','kick_rdl_db']},{pair:['dead_bug','kickback']},'pad_intervals']},
-    B:{sub:'Reverse lunge, one-arm row and a single-leg hinge, then a pad run', items:['pad_warm','band_walk',{pair:['rev_lunge','one_arm_row']},{pair:['kick_rdl_db','alt_press']},{pair:['bird_dog','side_raise']},'pad_intervals']},
-    C:{sub:'The stronger day: hinge and row, then squat', items:['pad_warm','band_walk',{pair:['rdl_heavy','row']},{pair:['goblet_heavy','kickback']},'hops','carry']}}},
+    A:{sub:'Heels-up squat, staggered thrust, push and pull, then a pad run', items:['pad_warm','band_walk',{pair:['heel_goblet','knee_push']},{pair:['bstance_thrust','row']},{pair:['dead_bug','kickback']},'pad_intervals']},
+    B:{sub:'Reverse lunge, single-leg hinge, row, press and arms, then a pad run', items:['pad_warm','band_walk',{pair:['rev_lunge','one_arm_row']},{pair:['kick_rdl_db','alt_press']},{pair:['bird_dog','curl']},'pad_intervals']},
+    C:{sub:'The stronger day: hinge, squat, chest and back', items:['pad_warm','band_walk',{pair:['rdl_heavy','floor_press']},{pair:['goblet_heavy','pull_apart']},{pair:['side_raise','tri_ext']},'hops','carry']}}},
   {name:'Slow and strong', blurb:'Slower lowering and pauses at the hardest point. Lighter weights, more time under tension, kind to tendons.', sessions:{
-    A:{sub:'Slow squat, paused thrust and slow hinge, then a pad run', items:['pad_warm','band_walk',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','slow_rdl']},{pair:['dead_bug','side_raise']},'pad_intervals']},
-    B:{sub:'Slow split squat, row and a single-leg hinge, then a pad run', items:['pad_warm','band_walk',{pair:['slow_split','row']},{pair:['kick_rdl_db','db_press']},{pair:['bird_dog','kickback']},'pad_intervals']}}}
+    A:{sub:'Slow squat, paused thrust, push and pull, then a pad run', items:['pad_warm','band_walk',{pair:['slow_goblet','knee_push']},{pair:['pause_thrust','row']},{pair:['dead_bug','side_raise']},'pad_intervals']},
+    B:{sub:'Slow split squat, slow hinge, row, press and arms, then a pad run', items:['pad_warm','band_walk',{pair:['slow_split','one_arm_row']},{pair:['slow_rdl','db_press']},{pair:['bird_dog','tri_ext']},'pad_intervals']}}}
 ];
 const blockIdx = () => (((typeof S!=='undefined' && S.block && S.block.i) || 0) % BLOCKS.length);
 const mapItem = it => typeof it==='string' ? ladId(it) : it.pair ? Object.assign({}, it, {pair: it.pair.map(ladId)}) : Object.assign({}, it, {id: ladId(it.id)});
